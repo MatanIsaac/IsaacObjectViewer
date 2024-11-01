@@ -45,7 +45,7 @@ If you are using another IDE or development environment, you may need to adjust 
     Open the Terminal or Command Prompt
     Navigate to the Project Directory
     
-Run the Makefile: (run make help for more options)
+Run the Makefile: (run 'make help' for more options)
 
     make all
 

@@ -8,10 +8,10 @@ This application aims to provide basic interaction with 3D models, developed gra
 Using C++ and OpenGL along with GLM, GLFW, and ImGui, this project allows exploration and experimentation with 3D graphics fundamentals.
 ### <div align="center">Features</div>
 
-    3D Object Loading: Load various 3D models into the scene.
-    Camera Controls: Move the camera around the scene to view objects from different angles.
-    UI with ImGui: Use ImGui for an intuitive interface, allowing you to change textures, materials, and view object details.
-    Basic Texture & Material Support: Adjust textures and materials of objects for a customized look.
+3D Object Loading: Load various 3D models into the scene.
+Camera Controls: Move the camera around the scene to view objects from different angles.
+UI with ImGui: Use ImGui for an intuitive interface, allowing you to change textures, materials, and view object details.
+Basic Texture & Material Support: Adjust textures and materials of objects for a customized look.
 
 ### <div align="center">Libraries Used</div>
 
@@ -34,11 +34,12 @@ If you are using another IDE or development environment, you may need to adjust 
     Clone the Repository: git clone https://github.com/MatanIsaac/ObjectLoader
     Open the Terminal or Command Prompt
     Navigate to the Project Directory
-    Run the Makefile:
+    
+Run the Makefile:
 
     make all
 
-    Run the Application: After a successful build, the executable isaacObjectLoader can be found in the project directory.
+Run the Application: After a successful build, the executable isaacObjectLoader can be found in the project directory.
 
 ### <div align="center">Contribution</div>
 

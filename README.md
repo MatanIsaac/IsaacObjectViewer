@@ -18,6 +18,7 @@ Using C++ and OpenGL along with GLM, GLFW, and ImGui, this project allows explor
 The project includes all necessary libraries, so there's no need to download them yourself.
 
 included in the repo: 
+
     OpenGL Mathematics (GLM) library  
     GLFW library 
     ImGui library 

@@ -3,7 +3,7 @@
 
 ## <div align="center">Project Overview</div>
 
-Isaac's Object Loader is a fun little evolving project to create a graphical interface for loading and visualizing 3D objects in a scene. 
+Isaac's Object Loader is a (still work-in-progress) fun little evolving project to create a graphical interface for loading and visualizing 3D objects in a scene. 
 This application aims to provide basic interaction with 3D models, developed gradually during free time between semesters. 
 Using C++ and OpenGL along with GLM, GLFW, and ImGui, this project allows exploration and experimentation with 3D graphics fundamentals.
 ### <div align="center">Features</div>

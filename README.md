@@ -5,24 +5,29 @@
 
 Isaac's Object Loader is a (still work-in-progress) fun little evolving project to create a graphical interface for loading and visualizing 3D objects in a scene. 
 This application aims to provide basic interaction with 3D models, developed gradually during free time between semesters. 
-Using C++ and OpenGL along with GLM, GLFW, and ImGui, this project allows exploration and experimentation with 3D graphics fundamentals.
+Using C++ and OpenGL along with GLM, GLFW, and ImGui, it builds on concepts from resources like:
+
+- [LearnOpenGL](LearnOpenGL.com), 
+- [TheCherno ](https://www.youtube.com/@TheCherno),
+- [3D Math Primer](https://gamemath.com/book/index.html)
+    
+
 ### <div align="center">Features</div>
 
-3D Object Loading: Load various 3D models into the scene.
-Camera Controls: Move the camera around the scene to view objects from different angles.
-UI with ImGui: Use ImGui for an intuitive interface, allowing you to change textures, materials, and view object details.
-Basic Texture & Material Support: Adjust textures and materials of objects for a customized look.
+- 3D Object Loading: Load various 3D models into the scene. (To Be Implemented)
+- Camera Controls: Move the camera around the scene to view objects from different angles.
+- UI with ImGui: Use ImGui for an intuitive interface, allowing you to change textures, materials, and view object details.
+- Basic Texture & Material Support: Adjust textures and materials of objects for a customized look.
 
 ### <div align="center">Libraries Used</div>
 
 The project includes all necessary libraries, so there's no need to download them yourself.
 
 included in the repo: 
-
-    OpenGL Mathematics (GLM) library  
-    GLFW library 
-    ImGui library 
-    Glad 
+- OpenGL Mathematics (GLM) library  
+- GLFW library 
+- ImGui library
+- Glad 
 
 ### <div align="center">Building from Source</div>
 
@@ -35,7 +40,7 @@ If you are using another IDE or development environment, you may need to adjust 
     Open the Terminal or Command Prompt
     Navigate to the Project Directory
     
-Run the Makefile:
+Run the Makefile: (run make help for more options)
 
     make all
 

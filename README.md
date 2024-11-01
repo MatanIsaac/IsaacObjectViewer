@@ -37,6 +37,7 @@ included in the repo:
 ### <div align="center">Building from Source</div>
 
 This project is designed to be built using Visual Studio Code with a simple Makefile. 
+
 If you are using another IDE or development environment, you may need to adjust your setup.
 
 ### <div align="center">Build Instructions</div>

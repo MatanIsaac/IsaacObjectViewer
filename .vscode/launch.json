@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "name": "(Windows) Launch isaacObjectLoader",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/isaacObjectLoader.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal"
+        }
+    ]
+}

@@ -10,7 +10,6 @@ Using C++ and OpenGL along with GLM, GLFW, and ImGui, it builds on concepts from
 - [LearnOpenGL](LearnOpenGL.com), 
 - [TheCherno ](https://www.youtube.com/@TheCherno),
 - [3D Math Primer](https://gamemath.com/book/index.html)
-    
 
 ### <div align="center">Features</div>
 
@@ -18,6 +17,12 @@ Using C++ and OpenGL along with GLM, GLFW, and ImGui, it builds on concepts from
 - Camera Controls: Move the camera around the scene to view objects from different angles.
 - UI with ImGui: Use ImGui for an intuitive interface, allowing you to change textures, materials, and view object details.
 - Basic Texture & Material Support: Adjust textures and materials of objects for a customized look.
+
+### <div align="center">Controls</div>
+
+- Control the camera with the mouse
+- Move the camera with WASD keys.
+- Press 'H' key to open imgui menu.
 
 ### <div align="center">Libraries Used</div>
 

@@ -88,5 +88,6 @@
         "text_encoding": "cpp"
     },
     "editor.formatOnSave": true,
-    "C_Cpp.default.compilerPath": "C:\\tools\\w64devkit\\bin\\g++.exe"
+    "C_Cpp.default.compilerPath": "C:\\tools\\w64devkit\\bin\\g++.exe",
+    "cmake.ignoreCMakeListsMissing": true
 }

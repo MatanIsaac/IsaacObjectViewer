@@ -8,120 +8,125 @@
 
 namespace isaacObjectLoader
 {
-class Engine
-{
-public:
-    static Engine* get()
+    class Engine
     {
-        if (s_Instance == nullptr)
+    public:
+        static Engine *get()
         {
-            s_Instance = new Engine();
+            if (s_Instance == nullptr)
+            {
+                s_Instance = new Engine();
+            }
+            return s_Instance;
         }
-        return s_Instance;
-    }
 
-    void RunEngine();
+        void RunEngine();
 
-    // @brief initializes the engine's dependencies, resources and engine objects
-    bool Init(const char* title, int width, int height, bool fullscreen = false);
+        // @brief initializes the engine's dependencies, resources and engine objects
+        bool Init(const char *title, int width, int height, bool fullscreen = false);
 
-    // @brief processes user input
-    void ProcessInput();
+        // @brief processes user input
+        void ProcessInput();
 
-    // @brief updates all of the engine dependencies, resources and engine objects.
-    void Update(float dt);
+        // @brief updates all of the engine dependencies, resources and engine objects.
+        void Update(float dt);
 
-    // @brief renders all of the engine textures, sounds and engine objects.
-    void Render();
+        // @brief renders all of the engine textures, sounds and engine objects.
+        void Render();
 
-    // @brief calls destructor, which cleans all of the engine resources.
-    void Clean();
+        // @brief calls destructor, which cleans all of the engine resources.
+        void Clean();
 
-    // @brief loads up needed resources such as textures, sfx, music etc..
-    bool LoadResources();
+        // @brief loads up needed resources such as textures, sfx, music etc..
+        bool LoadResources();
 
-    float& getMouseSensitivity() { return m_MouseSensitivity; }
-    bool&  getFirstMouse() { return firstMouse; }
-    float& getLastMouseX() { return lastX; }
-    float& getLastMouseY() { return lastY; }
-    float& getMouseYaw() { return yaw; }
-    float& getMousePitch() { return pitch; }
+        float &GetMouseSensitivity() { return m_MouseSensitivity; }
+        bool &GetFirstMouse() { return firstMouse; }
+        float &GetLastMouseX() { return lastX; }
+        float &GetLastMouseY() { return lastY; }
+        float &GetMouseYaw() { return yaw; }
+        float &GetMousePitch() { return pitch; }
 
-    Camera* GetMainCamera() { return m_Camera; }
-    bool    GetDisableInput() { return m_DisableInput; }
+        Camera *GetMainCamera() { return m_Camera; }
+        bool GetDisableInput() { return m_DisableInput; }
+        bool GetKeyPressed() { return m_KeyPressed; }
+        bool GetShowMyWindow() { return show_my_window; }
 
-private:
-    Engine();
+        void SetDisableInput(bool disable) { m_DisableInput = disable; }
+        void SetKeyPressed(bool pressed) { m_KeyPressed = pressed; }
+        void SetShowMyWindow(bool show) { show_my_window = show; }
 
-    void processInput(GLFWwindow* window);
+    private:
+        Engine();
 
-    void imguiInit();
-    void imguiNewFrame();
-    void imguiRender();
-    void imguiCenterItem(float item_width);
-    void imguiSetCustomColorStyle();
+        void processInput(GLFWwindow *window);
 
-private:
-    static Engine* s_Instance;
-    Shader*        m_Shader;
-    Shader*        m_lightingShader;
-    Shader*        m_lightCubeShader;
-    Cube*          m_Cube;
-    GLFWwindow*    m_Window;
-    GLFWmonitor*   m_PrimaryMonitor;
-    Camera*        m_Camera;
-    Renderer       m_Renderer;
+        void imguiInit();
+        void imguiNewFrame();
+        void imguiRender();
+        void imguiCenterItem(float item_width);
+        void imguiSetCustomColorStyle();
 
-    bool m_DisableInput;
+    private:
+        static Engine *s_Instance;
+        Shader *m_Shader;
+        Shader *m_lightingShader;
+        Shader *m_lightCubeShader;
+        Cube *m_Cube;
+        GLFWwindow *m_Window;
+        GLFWmonitor *m_PrimaryMonitor;
+        Camera *m_Camera;
+        Renderer m_Renderer;
 
-    float m_DeltaTime = 0.0f;  // time between current frame and last frame
-    float m_LastFrame = 0.0f;
+        bool m_DisableInput;
+        bool m_KeyPressed;
 
-    glm::vec3 cubeColor;
-    glm::vec3 lightColor;
+        float m_DeltaTime = 0.0f; // time between current frame and last frame
+        float m_LastFrame = 0.0f;
 
-    glm::vec3 modelPosA;
-    glm::vec3 lightPos;
-    glm::vec3 m_BackgroundColor;
-    glm::mat4 modelTranslation;
+        glm::vec3 cubeColor;
+        glm::vec3 lightColor;
 
-    float specularIntensity;
+        glm::vec3 modelPosA;
+        glm::vec3 lightPos;
+        glm::vec3 m_BackgroundColor;
+        glm::mat4 modelTranslation;
 
-    const char* glsl_version = "#version 400";
+        float specularIntensity;
 
-    // Mouse
-    bool  firstMouse = true;
-    float yaw
-        = -90.0f;  // yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction
-                   // vector pointing to the right so we initially rotate a bit to the left.
-    float pitch = 0.0f;
-    float lastX = 800.0f / 2.0;
-    float lastY = 600.0 / 2.0;
-    float fov   = 45.0f;
+        const char *glsl_version = "#version 400";
 
-    float                  m_MouseSensitivity;
-    static constexpr float defaultMouseSensitivity = 0.1;
+        // Mouse
+        bool firstMouse = true;
+        float yaw = -90.0f; // yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction
+                            // vector pointing to the right so we initially rotate a bit to the left.
+        float pitch = 0.0f;
+        float lastX = 800.0f / 2.0;
+        float lastY = 600.0 / 2.0;
+        float fov = 45.0f;
 
-    // ImGui stuff
-    ImGuiIO*  m_io;
-    bool      show_my_window = false;
-    glm::vec4 clear_color    = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
-    bool*     p_open         = nullptr;
+        float m_MouseSensitivity;
+        static constexpr float defaultMouseSensitivity = 0.1;
 
-    Engine(const Engine& other)            = delete;
-    Engine& operator=(const Engine& other) = delete;
-    Engine(Engine&& other)                 = delete;
-    Engine& operator=(Engine&& other)      = delete;
-};
+        // ImGui stuff
+        ImGuiIO *m_io;
+        bool show_my_window = false;
+        glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
+        bool *p_open = nullptr;
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+        Engine(const Engine &other) = delete;
+        Engine &operator=(const Engine &other) = delete;
+        Engine(Engine &&other) = delete;
+        Engine &operator=(Engine &&other) = delete;
+    };
 
+    void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+    void mouse_callback(GLFWwindow *window, double xposIn, double yposIn);
+    void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
+    void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-void setImguiDocking(bool* p_open);
-void ShowDockingDisabledMessage();
-void HelpMarker(const char* desc);
+    void setImguiDocking(bool *p_open);
+    void ShowDockingDisabledMessage();
+    void HelpMarker(const char *desc);
 
-
-}  // namespace isaacObjectLoader
+} // namespace isaacObjectLoader

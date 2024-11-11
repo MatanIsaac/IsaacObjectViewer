@@ -18,7 +18,7 @@ namespace isaacObjectLoader
           m_Camera(nullptr),
           m_DisableInput(false),
           m_KeyPressed(false),
-          m_io(nullptr)
+          m_IO(nullptr)
     {
     }
 
@@ -88,10 +88,10 @@ namespace isaacObjectLoader
         glfwMakeContextCurrent(m_Window);
         glfwSwapInterval(1); // Enable vsync
 
-        glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
-        glfwSetCursorPosCallback(m_Window, mouse_callback);
-        glfwSetScrollCallback(m_Window, scroll_callback);
-        glfwSetKeyCallback(m_Window, keyCallback);
+        glfwSetFramebufferSizeCallback(m_Window, FramebufferSizeCallback);
+        glfwSetCursorPosCallback(m_Window, MouseCallback);
+        glfwSetScrollCallback(m_Window, ScrollCallback);
+        glfwSetKeyCallback(m_Window, KeyCallback);
 
         // tell GLFW to capture our mouse
         glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -114,7 +114,7 @@ namespace isaacObjectLoader
         // Set the blending function to use source alpha and one minus source alpha blending mode.
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        imguiInit();
+        ImguiInit();
 
         m_Cube = new Cube();
         // m_Shader = new Shader("X:\\Programming\\CPP\\ObjectLoader\\src\\shaders\\vertex.vs",
@@ -126,31 +126,49 @@ namespace isaacObjectLoader
         // m_Shader->Bind(); // must bind the shader before setting uniforms
         // m_Shader->setInt("texture1", 0);
 
-        cubeColor = {1.0f, 0.5f, 0.31f};
-        lightColor = {1.0f, 1.0f, 1.0f};
+        m_CubeColor = {1.0f, 0.5f, 0.31f};
+        m_LightColor = {1.0f, 1.0f, 1.0f};
         m_lightingShader->Bind();
 
         // Set the position of the quad in the scene using a model matrix.
-        modelPosA = {0.0f, 0.0f, 0.0f}; // Define the translation vector for the quad's position.
-        lightPos = {1.2f, 1.0f, 2.0f};
-        modelTranslation = glm::mat4(1.0f);
-        modelTranslation = glm::translate(modelTranslation, modelPosA);
+        m_ModelPosA = {0.0f, 0.0f, 0.0f}; // Define the translation vector for the quad's position.
+        m_LightPos = {1.2f, 1.0f, 2.0f};
+        m_ModelTranslation = glm::mat4(1.0f);
+        m_ModelTranslation = glm::translate(m_ModelTranslation, m_ModelPosA);
 
         m_BackgroundColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
-        m_MouseSensitivity = defaultMouseSensitivity; // change this value to your liking
+        m_MouseSensitivity = m_DefaultMouseSensitivity; // change this value to your liking
 
         m_DisableInput = false;
 
-        specularIntensity = 0.5;
+        m_SpecularIntensity = 0.5;
 
         return true;
     }
 
     // @brief processes player input
-    void Engine::ProcessInput() { processInput(m_Window); }
+    void Engine::ProcessInput()
+    {
+        if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        {
+            glfwSetWindowShouldClose(m_Window, true); // Uncomment if you want to close the window on
+        }
+
+        if (!m_DisableInput)
+        {
+            if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS)
+                m_Camera->ProcessKeyboard(FORWARD, m_DeltaTime);
+            if (glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS)
+                m_Camera->ProcessKeyboard(BACKWARD, m_DeltaTime);
+            if (glfwGetKey(m_Window, GLFW_KEY_A) == GLFW_PRESS)
+                m_Camera->ProcessKeyboard(LEFT, m_DeltaTime);
+            if (glfwGetKey(m_Window, GLFW_KEY_D) == GLFW_PRESS)
+                m_Camera->ProcessKeyboard(RIGHT, m_DeltaTime);
+        }
+    }
 
     // @brief updates all of the engine dependencies, resources and objects.
     void Engine::Update(float dt) {} // std::cout << "DeltaTime: " << 1 / dt << '\n';
@@ -163,8 +181,8 @@ namespace isaacObjectLoader
         glfwGetFramebufferSize(m_Window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
 
-        imguiNewFrame();
-        imguiRender();
+        ImguiNewFrame();
+        ImguiRender();
 
         // render
         glClearColor(m_BackgroundColor.x, m_BackgroundColor.y, m_BackgroundColor.z, 1.0f);
@@ -172,7 +190,7 @@ namespace isaacObjectLoader
 
         // MODEL
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, modelPosA);
+        model = glm::translate(model, m_ModelPosA);
         float angle = 0.0f;
         model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
         // rotate the model
@@ -201,11 +219,11 @@ namespace isaacObjectLoader
         m_lightingShader->setMat4("model", model);
         m_lightingShader->setMat4("view", view);
         m_lightingShader->setMat4("projection", projection);
-        m_lightingShader->setVec3("objectColor", cubeColor);
-        m_lightingShader->setVec3("lightColor", lightColor);
-        m_lightingShader->setVec3("lightPos", lightPos);
+        m_lightingShader->setVec3("objectColor", m_CubeColor);
+        m_lightingShader->setVec3("lightColor", m_LightColor);
+        m_lightingShader->setVec3("lightPos", m_LightPos);
         m_lightingShader->setVec3("viewPos", m_Camera->GetCameraPosition());
-        m_lightingShader->setFloat("specularIntensity", specularIntensity);
+        m_lightingShader->setFloat("specularIntensity", m_SpecularIntensity);
 
         // Rotating Cube
         m_Renderer.Render(m_Cube->GetCubeVA(), m_Cube->GetVertexCount(), *m_lightingShader);
@@ -215,10 +233,10 @@ namespace isaacObjectLoader
         m_lightCubeShader->setMat4("projection", projection);
         m_lightCubeShader->setMat4("view", view);
         model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos);
+        model = glm::translate(model, m_LightPos);
         model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
         m_lightCubeShader->setMat4("model", model);
-        m_lightCubeShader->setVec3("lightColor", lightColor);
+        m_lightCubeShader->setVec3("lightColor", m_LightColor);
 
         m_Renderer.Render(m_Cube->GetCubeVA(), m_Cube->GetVertexCount(), *m_lightCubeShader);
 
@@ -233,7 +251,7 @@ namespace isaacObjectLoader
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
 
-        delete m_io;
+        delete m_IO;
         delete m_Cube;
         delete m_Shader;
         glfwDestroyWindow(m_Window);
@@ -243,55 +261,21 @@ namespace isaacObjectLoader
     // @brief loads up needed resources such as textures, sfx, music etc..
     bool Engine::LoadResources() { return false; }
 
-    void Engine::processInput(GLFWwindow *window)
-    {
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        {
-            glfwSetWindowShouldClose(window, true); // Uncomment if you want to close the window on
-        }
-        // In your main loop or appropriate input handling section
-        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
-        {
-            /*
-            if (!m_DisableInput)
-            {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                m_DisableInput = true;
-                show_my_window = !show_my_window;
-            }
-            else
-            {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                m_DisableInput = false;
-                show_my_window = !show_my_window;
-            }
-            */
-        }
+    // -----------------------------------------------------------------------------------------------------
+    // Imgui Stuff
+    // -----------------------------------------------------------------------------------------------------
 
-        if (!m_DisableInput)
-        {
-            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-                m_Camera->ProcessKeyboard(FORWARD, m_DeltaTime);
-            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-                m_Camera->ProcessKeyboard(BACKWARD, m_DeltaTime);
-            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-                m_Camera->ProcessKeyboard(LEFT, m_DeltaTime);
-            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-                m_Camera->ProcessKeyboard(RIGHT, m_DeltaTime);
-        }
-    }
-
-    void Engine::imguiInit()
+    void Engine::ImguiInit()
     {
         // Imgui-Docking Initialization
         //-------------------------------------------------------------------------------------------------
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        m_io = &ImGui::GetIO();
-        (void)m_io;
-        m_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-        m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
+        m_IO = &ImGui::GetIO();
+        (void)m_IO;
+        m_IO->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+        m_IO->ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
 
         ImGui::StyleColorsDark();
 
@@ -301,24 +285,24 @@ namespace isaacObjectLoader
 
         //-------------------------------------------------------------------------------------------------
     }
-    void Engine::imguiNewFrame()
+    void Engine::ImguiNewFrame()
     {
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        setImguiDocking(p_open);
+        SetImguiDocking(m_Open);
     }
 
-    void Engine::imguiRender()
+    void Engine::ImguiRender()
     {
-        imguiSetCustomColorStyle();
+        ImguiSetCustomColorStyle();
 
         // imgui render
-        if (show_my_window)
+        if (m_ShowMyWindow)
         {
-            ImGui::Begin("Scene Settings", &show_my_window);
+            ImGui::Begin("Scene Settings", &m_ShowMyWindow);
 
             if (ImGui::CollapsingHeader("Environment Settings"))
             {
@@ -360,16 +344,16 @@ namespace isaacObjectLoader
 
             if (ImGui::CollapsingHeader("Cube Settings"))
             {
-                ImGui::SliderFloat3("Rotating Cube Position", (float *)&modelPosA, -10.f, 10.f);
-                ImGui::ColorEdit3("Cube Color", (float *)&cubeColor);
+                ImGui::SliderFloat3("Rotating Cube Position", (float *)&m_ModelPosA, -10.f, 10.f);
+                ImGui::ColorEdit3("Cube Color", (float *)&m_CubeColor);
             }
 
             if (ImGui::CollapsingHeader("Light Cube Settings"))
             {
-                ImGui::SliderFloat3("Light Cube Position", (float *)&lightPos, -10.f, 10.f);
+                ImGui::SliderFloat3("Light Cube Position", (float *)&m_LightPos, -10.f, 10.f);
                 // cubeColor
-                ImGui::ColorEdit3("Light Cube Color", (float *)&lightColor);
-                ImGui::InputFloat("Specular Intensity", &specularIntensity, 0.0f, 1.0f);
+                ImGui::ColorEdit3("Light Cube Color", (float *)&m_LightColor);
+                ImGui::InputFloat("Specular Intensity", &m_SpecularIntensity, 0.0f, 1.0f);
             }
 
             ImGui::End();
@@ -379,13 +363,13 @@ namespace isaacObjectLoader
         ImGui::Render();
     }
 
-    void Engine::imguiCenterItem(float itemWidth)
+    void Engine::ImguiCenterItem(float itemWidth)
     {
         float windowWidth = ImGui::GetContentRegionAvail().x;
         ImGui::SetCursorPosX((windowWidth - itemWidth) * 0.5f); // Set the cursor position to the middle
     }
 
-    void Engine::imguiSetCustomColorStyle()
+    void Engine::ImguiSetCustomColorStyle()
     {
         // Set style
         ImGuiStyle *style = &ImGui::GetStyle();
@@ -441,12 +425,18 @@ namespace isaacObjectLoader
         style->Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_COLOR_DARKPURPLE;     // Modal window dim background, covers entire screen
     }
 
-    void framebuffer_size_callback([[maybe_unused]] GLFWwindow *window, int width, int height)
+    // -----------------------------------------------------------------------------------------------------
+
+    // -----------------------------------------------------------------------------------------------------
+    // GLFW Callback Functions
+    // -----------------------------------------------------------------------------------------------------
+
+    void FramebufferSizeCallback([[maybe_unused]] GLFWwindow *window, int width, int height)
     {
         glViewport(0, 0, width, height);
     }
 
-    void mouse_callback([[maybe_unused]] GLFWwindow *window, double xposIn, double yposIn)
+    void MouseCallback([[maybe_unused]] GLFWwindow *window, double xposIn, double yposIn)
     {
         float xpos = static_cast<float>(xposIn);
         float ypos = static_cast<float>(yposIn);
@@ -477,14 +467,14 @@ namespace isaacObjectLoader
 
     // glfw: whenever the mouse scroll wheel scrolls, this callback is called
     // ----------------------------------------------------------------------
-    void scroll_callback([[maybe_unused]] GLFWwindow *window,
-                         [[maybe_unused]] double xoffset,
-                         double yoffset)
+    void ScrollCallback([[maybe_unused]] GLFWwindow *window,
+                        [[maybe_unused]] double xoffset,
+                        double yoffset)
     {
         Engine::get()->GetMainCamera()->ProcessMouseScroll(static_cast<float>(yoffset));
     }
 
-    void keyCallback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods)
+    void KeyCallback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods)
     {
         auto engine = Engine::get();
         if (key == GLFW_KEY_H && action == GLFW_PRESS && !engine->GetKeyPressed())
@@ -509,6 +499,12 @@ namespace isaacObjectLoader
             engine->SetKeyPressed(false);
         }
     }
+
+    // -----------------------------------------------------------------------------------------------------
+
+    // -----------------------------------------------------------------------------------------------------
+    // More Imgui Stuff
+    // -----------------------------------------------------------------------------------------------------
 
     // Helper to display a little (?) mark which shows a tooltip when hovered.
     // In your own code you may want to display an actual icon if you are using a merged icon fonts (see
@@ -535,7 +531,7 @@ namespace isaacObjectLoader
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     }
 
-    void setImguiDocking(bool *p_open)
+    void SetImguiDocking(bool *p_open)
     {
         // READ THIS !!!
         // TL;DR; this demo is more complicated than what most users you would normally use.
@@ -682,5 +678,6 @@ namespace isaacObjectLoader
             ImGui::EndMenuBar();
         }
     }
+    // -----------------------------------------------------------------------------------------------------
 
 } // namespace isaacObjectLoader

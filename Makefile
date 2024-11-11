@@ -48,11 +48,11 @@ $(TARGET): $(OBJECTS)
 
 # Compile source files to object files
 $(OBJ_DIR)/%.o: %.cpp
-	@mkdir -p $(dir $@)
+	@if not exist "$(dir $@)" mkdir "$(dir $@)"
 	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
 $(OBJ_DIR)/%.o: %.c
-	@mkdir -p $(dir $@)
+	@if not exist "$(dir $@)" mkdir "$(dir $@)"
 	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
 # Clean build files

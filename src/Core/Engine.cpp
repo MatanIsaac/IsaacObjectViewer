@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include "Utility/ColorMacros.h"
+#include "Utility/Log.hpp"
 
 namespace isaacObjectLoader
 {
@@ -51,7 +52,7 @@ namespace isaacObjectLoader
         //----------------------------------------------------------------------------------------
         if (!glfwInit())
         {
-            std::cout << "Failed to initialize GLFW" << '\n';
+            LOG_ERROR("Failed to initialize GLFW");
             return false;
         }
 
@@ -70,7 +71,7 @@ namespace isaacObjectLoader
             m_Window = glfwCreateWindow(mode->width, mode->height, title, nullptr, nullptr);
             if (!m_Window)
             {
-                std::cout << "Failed to create a glfw window! - " << '\n';
+                LOG_ERROR("Failed to create a glfw window!");
                 return false;
             }
         }
@@ -79,7 +80,7 @@ namespace isaacObjectLoader
             m_Window = glfwCreateWindow(width, height, title, nullptr, nullptr);
             if (!m_Window)
             {
-                std::cout << "Failed to create a glfw window! - " << '\n';
+                LOG_ERROR("Failed to create a glfw window!");
                 return false;
             }
         }
@@ -101,7 +102,7 @@ namespace isaacObjectLoader
         //----------------------------------------------------------------------------------------
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
-            std::cout << "Failed to load OpenGL!\n";
+            LOG_ERROR("Failed to load OpenGL!");
             glfwTerminate();
             return false;
         }
@@ -118,8 +119,8 @@ namespace isaacObjectLoader
         m_Cube = new Cube();
         // m_Shader = new Shader("X:\\Programming\\CPP\\ObjectLoader\\src\\shaders\\vertex.vs",
         // "X:\\Programming\\CPP\\ObjectLoader\\src\\shaders\\fragment.fs");
-        m_lightingShader = new Shader("src\\shaders\\colors.vs", "src\\shaders\\colors.fs");
-        m_lightCubeShader = new Shader("src\\shaders\\light_cube.vs", "src\\shaders\\light_cube.fs");
+        m_lightingShader = new Shader("src/shaders/colors.vs", "src/shaders/colors.fs");
+        m_lightCubeShader = new Shader("src/shaders/light_cube.vs", "src/shaders/light_cube.fs");
 
         // tell opengl for each sampler to which texture unit it belongs to (only has to be done once
         // m_Shader->Bind(); // must bind the shader before setting uniforms

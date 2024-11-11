@@ -85,7 +85,11 @@
         "xtr1common": "cpp",
         "cassert": "cpp",
         "codecvt": "cpp",
-        "text_encoding": "cpp"
+        "text_encoding": "cpp",
+        "bitset": "cpp",
+        "complex": "cpp",
+        "expected": "cpp",
+        "source_location": "cpp"
     },
     "editor.formatOnSave": true,
     "C_Cpp.default.compilerPath": "C:\\tools\\w64devkit\\bin\\g++.exe",

@@ -1,12 +1,12 @@
 # Set the compiler and flags
 CXX = g++
-CXXFLAGS = -Wall -pedantic -Wextra -std=c++17 -O2 -g -MMD -MP
+CXXFLAGS = -Wall -std=c++17 -MMD -MP
 
 # Include directories
 INCLUDE_DIRS = -Idependencies/include -Isrc/third_party -Isrc -Idependencies/include/imgui
 
-# Linker flags for GLFW
-LIBS = -Ldependencies/libs -lglfw3 -lopengl32 -lgdi32 -luser32
+# Linker flags 
+LIBS = -Ldependencies/libs -lglfw3 -lopengl32 -lgdi32 -luser32 -lassimp-vc143-mtd 
 
 # Object directory
 OBJ_DIR = build
@@ -23,6 +23,7 @@ SOURCES = src/Camera/Camera.cpp \
           src/Graphics/VertexBuffer.cpp \
           src/Graphics/VertexBufferLayout.cpp \
           src/Utility/config.cpp \
+          src/Utility/Log.cpp \
           src/main.cpp \
           src/third_party/glad.c \
           dependencies/include/imgui/imgui.cpp \

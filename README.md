@@ -1,58 +1,68 @@
-# <div align="center">Isaac's Object Loader</div>
-<div align="center"> <img src="https://github.com/MatanIsaac/IsaacObjectLoader/blob/main/BasicCubeScene.png" alt="ObjectLoaderPreview"> </div>
+# CMake Template with GLFW
 
-## <div align="center">Project Overview</div>
+This repository serves as a template for a C++ application using CMake, spdlog for fast and efficient logging, and GLFW for window and input management. It provides a basic application class and a loop structure to help kickstart development.
+## Features
 
-Isaac's Object Loader is a (still work-in-progress) fun little evolving project to create a graphical interface for loading and visualizing 3D objects in a scene. 
-This application aims to provide basic interaction with 3D models, developed gradually during free time between semesters. 
-Using C++ and OpenGL along with GLM, GLFW, and ImGui, it builds on concepts from resources like:
+    CMake Build System: Easily configure, build, and manage dependencies using CMake.
+    GLFW: A cross-platform library for creating windows, receiving input, and managing OpenGL contexts.
+    spdlog: A fast, header-only C++ logging library for providing high-performance logging.
+    google gtest: utilizing google test framework, a test directory to test your application.
 
-- [LearnOpenGL](LearnOpenGL.com), 
-- [TheCherno ](https://www.youtube.com/@TheCherno),
-- [3D Math Primer](https://gamemath.com/book/index.html)
+## Prerequisites
 
-### <div align="center">Features</div>
+To get started with this project, you need to have the following installed:
 
-- 3D Object Loading: Load various 3D models into the scene. (To Be Implemented)
-- Camera Controls: Move the camera around the scene to view objects from different angles.
-- UI with ImGui: Use ImGui for an intuitive interface, allowing you to change textures, materials, and view object details.
-- Basic Texture & Material Support: Adjust textures and materials of objects for a customized look.
+    C++ Compiler: Compatible with C++17 or later.
+    CMake: Version 3.15 or higher is recommended.
+    GLFW and spdlog are included in the template.
 
-### <div align="center">Controls</div>
+## Getting Started
+### Cloning the Repository
 
-- Control the camera with the mouse
-- Move the camera with WASD keys.
-- Press 'H' key to open imgui menu.
-
-### <div align="center">Libraries Used</div>
-
-The project includes all necessary libraries, so there's no need to download them yourself.
-
-included in the repo: 
-- OpenGL Mathematics (GLM) library  
-- GLFW library 
-- ImGui library
-- Glad 
-
-### <div align="center">Building from Source</div>
-
-This project is designed to be built using Visual Studio Code with a simple Makefile. 
-
-If you are using another IDE or development environment, you may need to adjust your setup.
-
-### <div align="center">Build Instructions</div>
-
-    Clone the Repository: git clone https://github.com/MatanIsaac/ObjectLoader
-    Open the Terminal or Command Prompt
-    Navigate to the Project Directory
+    git clone https://github.com/your-username/Isaac's-Object-Viewer.git
+    cd Isaac's-Object-Viewer
     
-Run the Makefile: (run 'make help' for more options)
+### Building the Project
 
-    make all
+    Create a build directory:
+    mkdir build
+    cd build
 
-Run the Application: After a successful build, the executable isaacObjectLoader can be found in the project directory.
+### Configure the project using CMake:
 
-### <div align="center">Contribution</div>
+    cmake ..
 
-This project is open for learning, experimentation, and contributions! Feel free to fork the project and submit pull requests with improvements or fixes. Ensure you include a clear explanation of your proposed changes for review.
-<div align="center"> Developed and maintained as a personal project. Contributions and suggestions are welcome. </div>
+### Build the project:
+
+    cmake --build .
+
+### Running the Application
+
+After building, you can run the application from the build directory:
+
+    Application Exec:
+    ./build/src/Debug/iov_exec
+    Test Exec:
+    ./build/test/Debug/TemplateTest
+
+## Project Structure
+
+    CMake-Project-Template/
+        ├── CMakeLists.txt            
+        ├── dependencies/
+        │   ├── glad/
+        │   ├── glfw/
+        │   ├── spdlog/
+        │   └── googletest/
+        ├── src/
+        │   ├── CMakeLists.txt       
+        │   ├── main.cpp
+        │   ├── App.cpp
+        │   ├── App.h
+        │   └── Utility/
+        │       ├── Log.cpp
+        │       └── Log.h
+        └── test/
+            ├── CMakeLists.txt       
+            │   ├── some_test.cpp
+

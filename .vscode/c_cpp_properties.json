@@ -3,20 +3,22 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/src",
-                "${workspaceFolder}/dependencies/include",
-                "${workspaceFolder}/dependencies/include/imgui"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/src/",
+                "${workspaceFolder}/dependencies/**",
+                "${workspaceFolder}/dependencies/assimp/include/",
+                "${workspaceFolder}/dependencies/assimp/include/assimp/**"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE",
-                "GRAPHICS_API_OPENGL_33",
-                "PLATFORM_DESKTOP"
+                "_UNICODE"
             ],
-            "cStandard": "c11",
+            "windowsSdkVersion": "10.0.26100.0",
+            "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "${default}"
+            "intelliSenseMode": "gcc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

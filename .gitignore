@@ -24,9 +24,15 @@
 *.lai
 *.la
 *.a
-#*.lib
+*.lib
 
 # Executables
 *.exe
 *.out
 *.app
+
+# Build directories
+build/
+
+# VSCode settings
+.vscode/

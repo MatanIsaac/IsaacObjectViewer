@@ -1,1 +1,0 @@
-@isaacObjectLoader.exe

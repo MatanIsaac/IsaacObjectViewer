@@ -5,4 +5,8 @@ file(GLOB_RECURSE ENGINE_SOURCES Core/*.cpp Core/*.h Graphics/OpenGL/*.cpp Graph
 target_sources(isaac_object_loader PRIVATE ${ENGINE_SOURCES})
 
 # Include directories for Engine
-target_include_directories(isaac_object_loader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} src)
+target_include_directories(isaac_object_loader PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/../
+    ${CMAKE_CURRENT_SOURCE_DIR}/Engine
+    ${CMAKE_CURRENT_SOURCE_DIR}/Utility
+)

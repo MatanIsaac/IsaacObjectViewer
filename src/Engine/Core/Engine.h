@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Engine/Scene/Camera/Camera.h"
-#include "Engine/Scene/Primitives/Cube.h"
+#include "Engine/Graphics/OpenGL/Primitives/Cube.h"
+#include "Engine/Graphics/OpenGL/Lighting/Light.h"
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
 #include "Utility/config.h"
@@ -42,7 +43,6 @@ namespace isaacObjectLoader
         // @brief loads up needed resources such as textures, sfx, music etc..
         bool LoadResources();
 
-        float &GetMouseSensitivity() { return m_MouseSensitivity; }
         bool &GetFirstMouse() { return m_FirstMouse; }
         float &GetLastMouseX() { return m_LastX; }
         float &GetLastMouseY() { return m_LastY; }
@@ -73,6 +73,7 @@ namespace isaacObjectLoader
         Shader *m_lightingShader;
         Shader *m_lightCubeShader;
         Cube *m_Cube;
+        Light *m_Light;
         GLFWwindow *m_Window;
         GLFWmonitor *m_PrimaryMonitor;
         Camera *m_Camera;
@@ -83,16 +84,9 @@ namespace isaacObjectLoader
 
         float m_DeltaTime = 0.0f; // time between current frame and last frame
         float m_LastFrame = 0.0f;
-
-        glm::vec3 m_CubeColor;
-        glm::vec3 m_LightColor;
-
-        glm::vec3 m_ModelPosA;
-        glm::vec3 m_LightPos;
+        
         glm::vec3 m_BackgroundColor;
         glm::mat4 m_ModelTranslation;
-
-        float m_SpecularIntensity;
 
         const char *glsl_version = "#version 400";
 
@@ -104,9 +98,6 @@ namespace isaacObjectLoader
         float m_LastX = 800.0f / 2.0;
         float m_LastY = 600.0 / 2.0;
         float m_FOV = 45.0f;
-
-        float m_MouseSensitivity;
-        static constexpr float m_DefaultMouseSensitivity = 0.1;
 
         // ImGui stuff
         ImGuiIO *m_IO;

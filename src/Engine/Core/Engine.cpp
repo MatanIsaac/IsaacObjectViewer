@@ -117,31 +117,23 @@ namespace isaacObjectLoader
         ImguiInit();
 
         m_Cube = new Cube();
-        // m_Shader = new Shader("src/Resources/Shaders/vertex.vs",
+        m_Light = new Light({1.2f, 1.0f, 2.0f},{1.0f, 1.0f, 1.0f});
         
-        
-        m_lightingShader = new Shader("D:\\GitSourceControl\\Isaac's-Object-Viewer\\src\\Resources\\Shaders\\colors.vs", "D:\\GitSourceControl\\Isaac's-Object-Viewer\\src\\Resources\\Shaders\\colors.fs");
-        m_lightCubeShader = new Shader("D:\\GitSourceControl\\Isaac's-Object-Viewer\\src\\Resources\\Shaders\\light_cube.vs", "D:\\GitSourceControl\\Isaac's-Object-Viewer\\src\\Resources\\Shaders\\light_cube.fs");
+        std::string projectRoot = GetProjectRoot();
 
-        // tell opengl for each sampler to which texture unit it belongs to (only has to be done once
-        // m_Shader->Bind(); // must bind the shader before setting uniforms
-        // m_Shader->setInt("texture1", 0);
+        auto colors_vs = projectRoot.append("\\src\\Resources\\Shaders\\colors.vs");
+        projectRoot = GetProjectRoot();
+        auto colors_fs = projectRoot.append("\\src\\Resources\\Shaders\\colors.fs");
 
-        m_CubeColor = {1.0f, 0.5f, 0.31f};
-        m_LightColor = {1.0f, 1.0f, 1.0f};
+        m_lightingShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
         m_lightingShader->Bind();
-
-        // Set the position of the quad in the scene using a model matrix.
-        m_ModelPosA = {0.0f, 0.0f, 0.0f}; // Define the translation vector for the quad's position.
-        m_LightPos = {1.2f, 1.0f, 2.0f};
+                                        
         m_ModelTranslation = glm::mat4(1.0f);
-        m_ModelTranslation = glm::translate(m_ModelTranslation, m_ModelPosA);
+        m_ModelTranslation = glm::translate(m_ModelTranslation, m_Cube->GetPosition());
 
-        m_BackgroundColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        m_BackgroundColor = glm::vec4(0.75f, 0.75f, 0.75f, 1.0f);
 
-        m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
-
-        m_MouseSensitivity = m_DefaultMouseSensitivity; // change this value to your liking
+        m_Camera = new Camera(glm::vec3(0.0f, 2.0f, 5.0f));
 
         m_DisableInput = false;
 
@@ -189,57 +181,26 @@ namespace isaacObjectLoader
         glClearColor(m_BackgroundColor.x, m_BackgroundColor.y, m_BackgroundColor.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // MODEL
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, m_ModelPosA);
-        float angle = 0.0f;
-        model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
-        // rotate the model
-        // model = glm::rotate(
-        //     model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
-        // VIEW
-        glm::mat4 view = m_Camera->GetViewMatrix();
-
-        // PROJECTION
-        glm::mat4 projection = glm::perspective(glm::radians(m_Camera->GetCameraZoom()),
+        m_lightingShader->Bind();
+        m_lightingShader->setVec3("viewPos", m_Camera->GetCameraPosition());
+                
+        // Render Cube
+        //------------------------------------------------------------------------------------
+        glm::mat4 view = m_Camera->GetViewMatrix(); // VIEW
+        glm::mat4 projection = glm::perspective(glm::radians(m_Camera->GetCameraZoom()), // PROJECTION
                                                 (float)display_w / (float)display_h,
                                                 0.1f,
                                                 100.0f);
 
-        // 'model' matrix.
-        // m_Shader->setMat4("model", model); // Upload the translation matrix to the shader as the
-        // m_Shader->setMat4("view",
-        //                  view); // Upload the translation matrix to the shader as the 'model' matrix.
-        // m_Shader->setMat4(
-        //    "projection",
-        //    projection); // Upload the translation matrix to the shader as the 'model' matrix.
-
-        // 'model' matrix.
-        m_lightingShader->Bind();
-        m_lightingShader->setMat4("model", model);
-        m_lightingShader->setMat4("view", view);
-        m_lightingShader->setMat4("projection", projection);
-        m_lightingShader->setVec3("objectColor", m_CubeColor);
-        m_lightingShader->setVec3("lightColor", m_LightColor);
-        m_lightingShader->setVec3("lightPos", m_LightPos);
-        m_lightingShader->setVec3("viewPos", m_Camera->GetCameraPosition());
-        m_lightingShader->setFloat("specularIntensity", m_SpecularIntensity);
-
-        // Rotating Cube
-        m_Renderer.Render(m_Cube->GetCubeVA(), m_Cube->GetVertexCount(), *m_lightingShader);
+        m_Cube->Render(m_Renderer,*m_lightingShader, view, projection);
+        //------------------------------------------------------------------------------------
 
         // render light cube
-        m_lightCubeShader->Bind();
-        m_lightCubeShader->setMat4("projection", projection);
-        m_lightCubeShader->setMat4("view", view);
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, m_LightPos);
-        model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
-        m_lightCubeShader->setMat4("model", model);
-        m_lightCubeShader->setVec3("lightColor", m_LightColor);
-
-        m_Renderer.Render(m_Cube->GetCubeVA(), m_Cube->GetVertexCount(), *m_lightCubeShader);
+        
+        m_Light->Render(m_Renderer,*m_lightingShader, view, projection);
+        
+        
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
@@ -345,16 +306,16 @@ namespace isaacObjectLoader
 
             if (ImGui::CollapsingHeader("Cube Settings"))
             {
-                ImGui::SliderFloat3("Rotating Cube Position", (float *)&m_ModelPosA, -10.f, 10.f);
-                ImGui::ColorEdit3("Cube Color", (float *)&m_CubeColor);
+                ImGui::SliderFloat3("Rotating Cube Position", (float *)&m_Cube->GetPosition(), -10.f, 10.f);
+                ImGui::ColorEdit3("Cube Color", (float *)&m_Cube->GetColor());
             }
 
             if (ImGui::CollapsingHeader("Light Cube Settings"))
             {
-                ImGui::SliderFloat3("Light Cube Position", (float *)&m_LightPos, -10.f, 10.f);
+                ImGui::SliderFloat3("Light Cube Position", (float *)&m_Light->GetPosition(), -10.f, 10.f);
                 // cubeColor
-                ImGui::ColorEdit3("Light Cube Color", (float *)&m_LightColor);
-                ImGui::InputFloat("Specular Intensity", &m_SpecularIntensity, 0.0f, 1.0f);
+                ImGui::ColorEdit3("Light Cube Color", (float *)&m_Light->GetColor());
+                ImGui::SliderFloat("Specular Intensity", &m_Light->GetSpecularIntensity(), 0.0f, 1.0f);
             }
 
             ImGui::End();

@@ -1,5 +1,5 @@
 #include "Engine.h"
-
+#include <algorithm>
 #include "Utility/ColorMacros.h"
 #include "Utility/Log.hpp"
 #include "Mouse.h"
@@ -12,7 +12,7 @@ namespace isaacGraphicsEngine
         : m_Shader(nullptr),
           m_lightingShader(nullptr),
           m_lightCubeShader(nullptr),
-          m_Cube(nullptr), 
+          m_Cubes({}), //m_Cube(nullptr), 
           m_Window(nullptr),
           m_Camera(nullptr),
           m_DisableInput(false),
@@ -32,6 +32,12 @@ namespace isaacGraphicsEngine
             float currentFrame = static_cast<float>(glfwGetTime());
             m_DeltaTime = currentFrame - m_LastFrame;
             m_LastFrame = currentFrame;
+
+            // Calculate FPS
+            if (m_DeltaTime > 0.0f)
+            {
+                m_FPS = 1.0f / m_DeltaTime;
+            }
 
             // input
             ProcessInput();
@@ -75,8 +81,8 @@ namespace isaacGraphicsEngine
 
         ImguiInit();
 
-        m_Cube  = new Cube();
-        m_Light = new Light({1.2f, 1.0f, 2.0f},{1.0f, 1.0f, 1.0f});
+
+        m_Light     = new Light({1.2f, 1.0f, 2.0f},{1.0f, 1.0f, 1.0f});
         
         std::string projectRoot = GetProjectRoot();
 
@@ -87,9 +93,6 @@ namespace isaacGraphicsEngine
         m_lightingShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
         m_lightingShader->Bind();
                                         
-        m_ModelTranslation = glm::mat4(1.0f);
-        m_ModelTranslation = glm::translate(m_ModelTranslation, m_Cube->GetPosition());
-
         m_BackgroundColor = glm::vec4(0.75f, 0.75f, 0.75f, 1.0f);
 
         m_Camera = new Camera(glm::vec3(0.0f, 2.0f, 5.0f));
@@ -157,7 +160,12 @@ namespace isaacGraphicsEngine
                                                 0.1f,
                                                 100.0f);
 
-        m_Cube->Render(m_Renderer,*m_lightingShader, view, projection);
+        //m_Cube->Render(m_Renderer,*m_lightingShader, view, projection);
+        for (auto& cube : m_Cubes)
+        {
+            cube->Render(m_Renderer,*m_lightingShader, view, projection);
+        }
+        
         //------------------------------------------------------------------------------------
 
         // render light cube
@@ -177,8 +185,8 @@ namespace isaacGraphicsEngine
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
 
+        ClearCubes();
         delete m_IO;
-        delete m_Cube;
         delete m_Shader;
         glfwDestroyWindow(m_Window->GetGLFWwindow());
         glfwTerminate();
@@ -237,6 +245,9 @@ namespace isaacGraphicsEngine
 
             ImGui::Begin("Scene Settings", nullptr, windowFlags);
 
+            // Display FPS
+            ImGui::Text("FPS: %.4f", m_FPS);
+
             if (ImGui::CollapsingHeader("Environment Settings"))
             {
                 ImGui::Text("Background Color");
@@ -292,17 +303,61 @@ namespace isaacGraphicsEngine
 
             if (ImGui::CollapsingHeader("Cube Settings"))
             {
-                ImGui::Text("Cube Position");
-                ImGui::DragFloat3("Cube Position", (float *)&m_Cube->GetPosition(), 0.01f,-10.f, 10.f,"%.4f");
+                ImGui::Text("Cube Count: %zu",GetCubeCount());
+
+                static float cubePosition[3] = {0.0f, 0.0f, 0.0f};
+                ImGui::InputFloat3("Cube Position", cubePosition);
+                if (ImGui::Button("Add Cube at Position"))
+                {
+                    AddCube(glm::vec3(cubePosition[0], cubePosition[1], cubePosition[2]));
+                }
                 
-                ImGui::Text("Cube Color");
-                ImGui::ColorEdit3("Cube Color", (float *)&m_Cube->GetColor(),ImGuiColorEditFlags_NoLabel);
+                static int addAmount = 1;
+                ImGui::InputInt("Add Amount", &addAmount);
+                addAmount = std::max(1, addAmount); // Ensure it's at least 1
+
+                if (ImGui::Button("Add Multiple Cubes"))
+                {
+                    AddCubes(addAmount);
+                }
+                
+                if (ImGui::Button("Remove All Cubes"))
+                {
+                    ClearCubes();
+                }
+
+                if (ImGui::CollapsingHeader("Active Cubes"))
+                {
+                    for (size_t i = 0; i < m_Cubes.size(); ++i)
+                    {
+                        ImGui::PushID(static_cast<int>(i)); // Ensure unique IDs for ImGui elements
+                        ImGui::Text("Cube %zu", i + 1);
+
+                        glm::vec3& position = m_Cubes[i]->GetPosition();
+                        if (ImGui::DragFloat3("Position", &position[0], 0.1f, -1000.0f, 1000.0f))
+                        {
+                            m_Cubes[i]->SetPosition(position);
+                        }
+
+                        // Button to remove the cube
+                        if (ImGui::Button("Remove Cube"))
+                        {
+                            RemoveCube(i);
+                            ImGui::PopID();
+                            break; // Exit loop since indices have shifted
+                        }
+
+                        ImGui::Separator();
+                        ImGui::PopID();
+                    }
+                }
             }
+
 
             if (ImGui::CollapsingHeader("Light Cube Settings"))
             {
                 ImGui::Text("Light Cube Position");
-                ImGui::DragFloat3("Light Cube Position", (float *)&m_Light->GetPosition(), 0.01f,-10.f, 10.f,"%.4f");
+                ImGui::DragFloat3("Light Cube Position", (float *)&m_Light->GetPosition(), 0.01f,-1000.f, 1000.f,"%.4f");
                 
                 ImGui::Text("Light Cube Color");
                 ImGui::ColorEdit3("Light Cube Color", (float *)&m_Light->GetColor(),ImGuiColorEditFlags_NoLabel);
@@ -427,7 +482,19 @@ namespace isaacGraphicsEngine
         colors[ImGuiCol_ModalWindowDimBg]    = IMGUI_COLOR_BLACK;
     }
 
-    // -----------------------------------------------------------------------------------------------------
+    void Engine::AddCubes(int addAmount, float minRange, float maxRange)
+    {
+        for (int i = 0; i < addAmount; ++i)
+        {
+            float randomX = static_cast<float>(rand()) / RAND_MAX * (maxRange - minRange) + minRange;
+            float randomY = static_cast<float>(rand()) / RAND_MAX * (maxRange - minRange) + minRange;
+            float randomZ = static_cast<float>(rand()) / RAND_MAX * (maxRange - minRange) + minRange;
+
+            glm::vec3 randomPosition(randomX, randomY, randomZ);
+            Cube* newCube = new Cube(randomPosition);
+            m_Cubes.push_back(newCube);
+        }
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // GLFW Callback Functions

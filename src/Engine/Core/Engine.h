@@ -70,13 +70,40 @@ namespace isaacGraphicsEngine
         void ImguiSetCustomColorStyle();
         //-----------------------------------------------------------------------
 
+        // Cube stuff
+        //-----------------------------------------------------------------------
+        inline void AddCube(const glm::vec3& position = {1.0f, 1.0f, 1.0f})
+        {
+            m_Cubes.push_back(new Cube(position));
+        }
+        inline void RemoveCube(size_t index)
+        {
+            if (index < m_Cubes.size())
+            {
+                delete m_Cubes[index];
+                m_Cubes.erase(m_Cubes.begin() + index);
+            }
+        }
+        inline void ClearCubes()
+        {
+            for (auto cube : m_Cubes)
+            {
+                delete cube;
+            }
+            m_Cubes.clear();
+        }
+        void AddCubes(int addAmount, float minRange = -20.0f, float maxRange = 20.0f);
+        size_t GetCubeCount() const { return m_Cubes.size();}
+        void PrintSize() { std::cout << "Number of cubes: " << m_Cubes.size() << std::endl; }
+     
     private:
         static Engine *s_Instance;
         Window *m_Window;
         Shader *m_Shader;
         Shader *m_lightingShader;
         Shader *m_lightCubeShader;
-        Cube *m_Cube;
+        std::vector<Cube*> m_Cubes;
+
         Light *m_Light;
         
         Camera *m_Camera;
@@ -88,9 +115,9 @@ namespace isaacGraphicsEngine
 
         float m_DeltaTime = 0.0f; // time between current frame and last frame
         float m_LastFrame = 0.0f;
-        
+        float m_FPS = 0.0f; // Stores the calculated FPS
+
         glm::vec3 m_BackgroundColor;
-        glm::mat4 m_ModelTranslation;
 
         const char *glsl_version = "#version 400";
 

@@ -15,7 +15,7 @@ namespace isaacGraphicsEngine
     class Cube
     {
     public:
-        Cube();
+        Cube(const glm::vec3& position = {1.0f, 1.0f, 1.0f});
         ~Cube();
 
         void Update();
@@ -27,6 +27,7 @@ namespace isaacGraphicsEngine
         glm::vec3& GetColor() { return m_Color; }
         glm::mat4 GetModelMatrix() const;
 
+        void ResetPosition() { m_Position = DEFAULT_POSITION; }
         void SetPosition(const glm::vec3& newPosition) { m_Position = newPosition; }
         void SetColor(const glm::vec3& newColor) { m_Color = newColor; }
         void SetScale(const glm::vec3& scale);

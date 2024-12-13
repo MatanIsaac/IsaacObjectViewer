@@ -24,7 +24,7 @@ namespace isaacGraphicsEngine
         }
        
         glfwMakeContextCurrent(m_Window);
-        glfwSwapInterval(1); // Enable vsync
+        glfwSwapInterval(0); 
     }
 
     Window::~Window() 

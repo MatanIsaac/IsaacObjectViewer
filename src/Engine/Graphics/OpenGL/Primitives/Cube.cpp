@@ -1,15 +1,14 @@
 #include "Cube.h"
-// #include "Utility/GLErrorManager.h"
 
 #include <glad/glad.h>
-
 #include <vector>
 
 #include "Utility/config.h"
 
 namespace isaacGraphicsEngine
 {
-    Cube::Cube()
+    Cube::Cube(const glm::vec3& position) 
+        : m_Position(position)
     {
         size_t numFloats = sizeof(m_CubeVertices) / sizeof(m_CubeVertices[0]);
         m_VertexCount = numFloats / 6;
@@ -34,7 +33,6 @@ namespace isaacGraphicsEngine
         vb_layout.Push<float>(3); // Normals
         m_VertexArray->AddBuffer(*m_VertexBuffer, vb_layout);
 
-        m_Position = DEFAULT_POSITION;
         m_Color = DEFAULT_COLOR;
         m_Scale = glm::vec3(1.0f);
         m_Rotation = glm::vec3(0.0f);

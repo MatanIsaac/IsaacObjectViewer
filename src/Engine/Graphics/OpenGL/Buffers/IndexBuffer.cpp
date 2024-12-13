@@ -2,7 +2,7 @@
 #include "IndexBuffer.h"
 #include "Utility/config.h"
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
 
 IndexBuffer::IndexBuffer(const void* data, unsigned int count)

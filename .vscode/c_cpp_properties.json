@@ -7,7 +7,7 @@
                 "${workspaceFolder}/src/",
                 "${workspaceFolder}/dependencies/**",
                 "${workspaceFolder}/dependencies/assimp/include/",
-                "${workspaceFolder}/dependencies/assimp/include/assimp/**"
+                "${workspaceFolder}/dependencies/assimp/include/assimp/*"
             ],
             "defines": [
                 "_DEBUG",

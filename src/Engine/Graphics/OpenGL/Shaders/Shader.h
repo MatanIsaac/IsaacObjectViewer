@@ -3,7 +3,7 @@
 #include "Utility/config.h"
 #include "Utility/GLErrorManager.h"
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
 
 class Shader
@@ -76,4 +76,4 @@ private:
         }
     }
 };
-}  // namespace isaacObjectLoader
+}  // namespace isaacGraphicsEngine

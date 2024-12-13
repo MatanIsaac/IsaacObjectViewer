@@ -1,7 +1,7 @@
-# Isaac's Object Loader
+# isaac's Graphics Engine
 
-This project is a lightweight 3D Object Loader created as a side project during my pursuit of a Computer Science degree.                            
-Its purpose is to experiment with and learn 3D graphics and rendering techniques.                               
+This project is a simple grahics engine created as a side project during my pursuit of a Computer Science degree.                            
+Its purpose is to experiment with and learn 3D graphics programming and rendering techniques.                               
 Built with modern C++ and OpenGL, it offers a simple framework for loading, viewing 3D models, and 2D Textures.
 
 ## Goals
@@ -31,8 +31,8 @@ To get started with this project, you need to have the following installed:
 ## Getting Started
 ### Cloning the Repository
 
-    git clone https://github.com/MatanIsaac/IsaacObjectLoader.git
-    cd IsaacObjectLoader
+    git clone https://github.com/MatanIsaac/isaacGraphicsEngine.git
+    cd isaacGraphicsEngine
     
 ### Building the Project
 
@@ -77,14 +77,14 @@ After building, you can run the application/tests from the build directory:
     │   │   ├── Graphics/       # Graphics-related components
     │   │   │   ├── OpenGL/
     │   │   │   │   ├── Buffers/
+    │   │   │   │   ├── Lighting/
+    │   │   │   │   ├── Primitives/
     │   │   │   │   ├── Renderer/
     │   │   │   │   ├── Shaders/
-    │   │   │   │   └── Models/
     │   │   │   └── Textures/
     │   │   └── Scene/          # Scene management
-    │   │       ├── Camera/
-    │   │       ├── Models/
-    │   │       └── Primitives/
+    │   │   │   ├── Camera/
+    │   │       └── Models/
     │   ├── Resources/          # Assets and shaders
     │   │   ├── Models/
     │   │   ├── Shaders/

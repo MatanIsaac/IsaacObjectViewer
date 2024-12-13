@@ -5,7 +5,7 @@
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
     class Light
     {
@@ -30,4 +30,4 @@ namespace isaacObjectLoader
         float m_SpecularIntensity;
         Shader* m_Shader;
     };
-} // namespace isaacObjectLoader
+} // namespace isaacGraphicsEngine

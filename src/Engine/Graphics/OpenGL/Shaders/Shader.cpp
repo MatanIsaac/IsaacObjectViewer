@@ -1,7 +1,7 @@
 #include "Shader.h"
 #include "Utility/Log.hpp"
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
 
     Shader::Shader(const char *vertexPath, const char *fragmentPath)
@@ -120,4 +120,4 @@ namespace isaacObjectLoader
         GLCall(glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]));
     }
 
-} // namespace isaacObjectLoader
+} // namespace isaacGraphicsEngine

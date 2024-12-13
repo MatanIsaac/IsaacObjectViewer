@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
     Light::Light(const glm::vec3& position, const glm::vec3& color)
         : m_Color(color), m_Cube()

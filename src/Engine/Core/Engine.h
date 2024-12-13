@@ -1,19 +1,20 @@
 #pragma once
 
+#include "Utility/config.h"
+#include "Window.h"
 #include "Engine/Scene/Camera/Camera.h"
 #include "Engine/Graphics/OpenGL/Primitives/Cube.h"
 #include "Engine/Graphics/OpenGL/Lighting/Light.h"
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
-#include "Utility/config.h"
 
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
     class Engine
     {
     public:
-        static Engine *get()
+        static Engine *GetInstance()
         {
             if (s_Instance == nullptr)
             {
@@ -23,7 +24,8 @@ namespace isaacObjectLoader
         }
 
         // @brief Starts the engine.
-        void RunEngine();
+        void Run();
+        inline void Exit() { m_IsRunning = false; }
 
         // @brief initializes the engine's dependencies, resources and engine objects
         bool Init(const char *title, int width, int height, bool fullscreen = false);
@@ -43,44 +45,46 @@ namespace isaacObjectLoader
         // @brief loads up needed resources such as textures, sfx, music etc..
         bool LoadResources();
 
-        bool &GetFirstMouse() { return m_FirstMouse; }
-        float &GetLastMouseX() { return m_LastX; }
-        float &GetLastMouseY() { return m_LastY; }
-        float &GetMouseYaw() { return m_MouseYaw; }
-        float &GetMousePitch() { return m_Pitch; }
+        Camera *GetCamera() { return m_Camera; }
 
-        Camera *GetMainCamera() { return m_Camera; }
         bool GetDisableInput() { return m_DisableInput; }
         bool GetKeyPressed() { return m_KeyPressed; }
-        bool GetShowMyWindow() { return m_ShowMyWindow; }
-
         void SetDisableInput(bool disable) { m_DisableInput = disable; }
         void SetKeyPressed(bool pressed) { m_KeyPressed = pressed; }
+        
+        // ImGui stuff
+        //-----------------------------------------------------------------------
+        bool GetShowMyWindow() { return m_ShowMyWindow; }
         void SetShowMyWindow(bool show) { m_ShowMyWindow = show; }
+        //-----------------------------------------------------------------------
 
     private:
         Engine();
 
+        // ImGui stuff
+        //-----------------------------------------------------------------------
         void ImguiInit();
         void ImguiNewFrame();
         void ImguiRender();
         void ImguiCenterItem(float item_width);
         void ImguiSetCustomColorStyle();
+        //-----------------------------------------------------------------------
 
     private:
         static Engine *s_Instance;
+        Window *m_Window;
         Shader *m_Shader;
         Shader *m_lightingShader;
         Shader *m_lightCubeShader;
         Cube *m_Cube;
         Light *m_Light;
-        GLFWwindow *m_Window;
-        GLFWmonitor *m_PrimaryMonitor;
+        
         Camera *m_Camera;
         Renderer m_Renderer;
 
         bool m_DisableInput;
         bool m_KeyPressed;
+        bool m_IsRunning;
 
         float m_DeltaTime = 0.0f; // time between current frame and last frame
         float m_LastFrame = 0.0f;
@@ -90,20 +94,13 @@ namespace isaacObjectLoader
 
         const char *glsl_version = "#version 400";
 
-        // Mouse
-        bool m_FirstMouse = true;
-        float m_MouseYaw = -90.0f; // yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction
-                                   // vector pointing to the right so we initially rotate a bit to the left.
-        float m_Pitch = 0.0f;
-        float m_LastX = 800.0f / 2.0;
-        float m_LastY = 600.0 / 2.0;
-        float m_FOV = 45.0f;
-
         // ImGui stuff
+        //-----------------------------------------------------------------------
         ImGuiIO *m_IO;
         bool m_ShowMyWindow = false;
         glm::vec4 m_ClearColor = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
         bool *m_Open = nullptr;
+        //-----------------------------------------------------------------------
 
         Engine(const Engine &other) = delete;
         Engine &operator=(const Engine &other) = delete;
@@ -120,4 +117,4 @@ namespace isaacObjectLoader
     void ShowDockingDisabledMessage();
     void HelpMarker(const char *desc);
 
-} // namespace isaacObjectLoader
+} // namespace isaacGraphicsEngine

@@ -1,11 +1,10 @@
 #include "Engine.h"
-#include <cassert>
-#include <chrono>
 
 #include "Utility/ColorMacros.h"
 #include "Utility/Log.hpp"
+#include "Mouse.h"
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
     Engine *Engine::s_Instance = nullptr;
 
@@ -13,20 +12,20 @@ namespace isaacObjectLoader
         : m_Shader(nullptr),
           m_lightingShader(nullptr),
           m_lightCubeShader(nullptr),
-          m_Cube(nullptr), m_Window(nullptr),
-          m_PrimaryMonitor(nullptr),
+          m_Cube(nullptr), 
+          m_Window(nullptr),
           m_Camera(nullptr),
           m_DisableInput(false),
           m_KeyPressed(false),
+          m_IsRunning(false),
           m_IO(nullptr)
-    {
-    }
+    {}
 
-    void Engine::RunEngine()
+    void Engine::Run()
     {
-        assert(Init("Isaac's Object Loader", 1280, 720, true));
+        assert(Init("Isaac's Graphics Engine", 1280, 720, true));
 
-        while (!glfwWindowShouldClose(m_Window))
+        while (m_IsRunning)
         {
             // per-frame time logic
             // --------------------
@@ -39,7 +38,7 @@ namespace isaacObjectLoader
             Update(m_DeltaTime);
             Render();
 
-            glfwSwapBuffers(m_Window);
+            glfwSwapBuffers(m_Window->GetGLFWwindow());
             glfwPollEvents();
         }
         Clean();
@@ -48,55 +47,15 @@ namespace isaacObjectLoader
     // @brief initializes the engine's dependencies, resources and objects
     bool Engine::Init(const char *title, int width, int height, bool fullscreen)
     {
-        // Initialize GLFW
-        //----------------------------------------------------------------------------------------
-        if (!glfwInit())
-        {
-            LOG_ERROR("Failed to initialize GLFW");
-            return false;
-        }
+        m_Window = new Window(title,width,height,false);
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-        if (fullscreen)
-        {
-            // Get the primary monitor
-            m_PrimaryMonitor = glfwGetPrimaryMonitor();
-            // Get the video mode of the primary monitor
-            const GLFWvidmode *mode = glfwGetVideoMode(m_PrimaryMonitor);
-
-            m_Window = glfwCreateWindow(mode->width, mode->height, title, nullptr, nullptr);
-            if (!m_Window)
-            {
-                LOG_ERROR("Failed to create a glfw window!");
-                return false;
-            }
-        }
-        else
-        {
-            m_Window = glfwCreateWindow(width, height, title, nullptr, nullptr);
-            if (!m_Window)
-            {
-                LOG_ERROR("Failed to create a glfw window!");
-                return false;
-            }
-        }
-
-        glfwMakeContextCurrent(m_Window);
-        glfwSwapInterval(1); // Enable vsync
-
-        glfwSetFramebufferSizeCallback(m_Window, FramebufferSizeCallback);
-        glfwSetCursorPosCallback(m_Window, MouseCallback);
-        glfwSetScrollCallback(m_Window, ScrollCallback);
-        glfwSetKeyCallback(m_Window, KeyCallback);
+        glfwSetFramebufferSizeCallback(m_Window->GetGLFWwindow(), FramebufferSizeCallback);
+        glfwSetCursorPosCallback(m_Window->GetGLFWwindow(), MouseCallback);
+        glfwSetScrollCallback(m_Window->GetGLFWwindow(), ScrollCallback);
+        glfwSetKeyCallback(m_Window->GetGLFWwindow(), KeyCallback);
 
         // tell GLFW to capture our mouse
-        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-        //----------------------------------------------------------------------------------------
+        glfwSetInputMode(m_Window->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         // Initialize glad
         //----------------------------------------------------------------------------------------
@@ -116,14 +75,14 @@ namespace isaacObjectLoader
 
         ImguiInit();
 
-        m_Cube = new Cube();
+        m_Cube  = new Cube();
         m_Light = new Light({1.2f, 1.0f, 2.0f},{1.0f, 1.0f, 1.0f});
         
         std::string projectRoot = GetProjectRoot();
 
-        auto colors_vs = projectRoot.append("\\src\\Resources\\Shaders\\colors.vs");
-        projectRoot = GetProjectRoot();
-        auto colors_fs = projectRoot.append("\\src\\Resources\\Shaders\\colors.fs");
+        auto colors_vs  = projectRoot.append("\\src\\Resources\\Shaders\\colors.vs");
+        projectRoot     = GetProjectRoot();
+        auto colors_fs  = projectRoot.append("\\src\\Resources\\Shaders\\colors.fs");
 
         m_lightingShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
         m_lightingShader->Bind();
@@ -137,7 +96,7 @@ namespace isaacObjectLoader
 
         m_DisableInput = false;
 
-        m_SpecularIntensity = 0.5;
+        m_IsRunning = true;
 
         return true;
     }
@@ -145,33 +104,38 @@ namespace isaacObjectLoader
     // @brief processes player input
     void Engine::ProcessInput()
     {
-        if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        if (glfwGetKey(m_Window->GetGLFWwindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) 
         {
-            glfwSetWindowShouldClose(m_Window, true); // Uncomment if you want to close the window on
+            m_IsRunning = false;
+            return;
         }
 
         if (!m_DisableInput)
         {
-            if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS)
+            if (glfwGetKey(m_Window->GetGLFWwindow(), GLFW_KEY_W) == GLFW_PRESS)
                 m_Camera->ProcessKeyboard(FORWARD, m_DeltaTime);
-            if (glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS)
+            if (glfwGetKey(m_Window->GetGLFWwindow(), GLFW_KEY_S) == GLFW_PRESS)
                 m_Camera->ProcessKeyboard(BACKWARD, m_DeltaTime);
-            if (glfwGetKey(m_Window, GLFW_KEY_A) == GLFW_PRESS)
+            if (glfwGetKey(m_Window->GetGLFWwindow(), GLFW_KEY_A) == GLFW_PRESS)
                 m_Camera->ProcessKeyboard(LEFT, m_DeltaTime);
-            if (glfwGetKey(m_Window, GLFW_KEY_D) == GLFW_PRESS)
+            if (glfwGetKey(m_Window->GetGLFWwindow(), GLFW_KEY_D) == GLFW_PRESS)
                 m_Camera->ProcessKeyboard(RIGHT, m_DeltaTime);
+
         }
     }
 
     // @brief updates all of the engine dependencies, resources and objects.
-    void Engine::Update(float dt) {} // std::cout << "DeltaTime: " << 1 / dt << '\n';
+    void Engine::Update(float dt) 
+    {
+          
+    }
 
     // @brief renders all of the engine textures, sounds and objects.
     void Engine::Render()
     {
         // Rendering
         int display_w, display_h;
-        glfwGetFramebufferSize(m_Window, &display_w, &display_h);
+        glfwGetFramebufferSize(m_Window->GetGLFWwindow(), &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
 
         ImguiNewFrame();
@@ -183,12 +147,12 @@ namespace isaacObjectLoader
 
 
         m_lightingShader->Bind();
-        m_lightingShader->setVec3("viewPos", m_Camera->GetCameraPosition());
+        m_lightingShader->setVec3("viewPos", m_Camera->GetPosition());
                 
         // Render Cube
         //------------------------------------------------------------------------------------
         glm::mat4 view = m_Camera->GetViewMatrix(); // VIEW
-        glm::mat4 projection = glm::perspective(glm::radians(m_Camera->GetCameraZoom()), // PROJECTION
+        glm::mat4 projection = glm::perspective(glm::radians(m_Camera->GetZoom()), // PROJECTION
                                                 (float)display_w / (float)display_h,
                                                 0.1f,
                                                 100.0f);
@@ -216,7 +180,7 @@ namespace isaacObjectLoader
         delete m_IO;
         delete m_Cube;
         delete m_Shader;
-        glfwDestroyWindow(m_Window);
+        glfwDestroyWindow(m_Window->GetGLFWwindow());
         glfwTerminate();
     }
 
@@ -242,7 +206,7 @@ namespace isaacObjectLoader
         ImGui::StyleColorsDark();
 
         // Setup Platform/Renderer backends
-        ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
+        ImGui_ImplGlfw_InitForOpenGL(m_Window->GetGLFWwindow(), true);
         ImGui_ImplOpenGL3_Init(glsl_version);
 
         //-------------------------------------------------------------------------------------------------
@@ -259,16 +223,24 @@ namespace isaacObjectLoader
 
     void Engine::ImguiRender()
     {
-        ImguiSetCustomColorStyle();
+        //ImguiSetCustomColorStyle();
 
         // imgui render
         if (m_ShowMyWindow)
         {
-            ImGui::Begin("Scene Settings", &m_ShowMyWindow);
+            ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);    // Position at top-left corner
+            ImGui::SetNextWindowSize(ImVec2(500, ImGui::GetIO().DisplaySize.y), ImGuiCond_FirstUseEver); // Full height panel
+
+            ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking    |
+                                        ImGuiWindowFlags_NoCollapse   |
+                                        ImGuiWindowFlags_NoMove;
+
+            ImGui::Begin("Scene Settings", nullptr, windowFlags);
 
             if (ImGui::CollapsingHeader("Environment Settings"))
             {
-                ImGui::ColorEdit3("Background Color", (float *)&m_BackgroundColor);
+                ImGui::Text("Background Color");
+                ImGui::ColorEdit3("Background Color", (float *)&m_BackgroundColor,ImGuiColorEditFlags_NoLabel);
 
                 if (ImGui::Button("Reset Background Color"))
                 {
@@ -279,51 +251,89 @@ namespace isaacObjectLoader
 
             if (ImGui::CollapsingHeader("Camera Settings"))
             {
-                ImGui::SliderFloat("Camera Speed", &m_Camera->GetCameraSpeed(), 0.1f, 1.0f, "%.1f");
-                if (ImGui::Button("Reset Speed"))
+                ImGui::Text("Camera Movement Speed");
+                ImGui::DragFloat("Camera Movement Speed", &m_Camera->GetSpeed(), 0.01f, 0.1f, 10.0f, "%.2f");
+
+                if (ImGui::Button("Reset Camera Speed"))
                 {
-                    m_Camera->ResetCameraSpeed();
+                    m_Camera->ResetSpeed();
                     ImGui::SetTooltip("Reset camera speed to initial value.");
                 }
                 ImGui::SameLine();
-                if (ImGui::Button("Reset Position"))
+                if (ImGui::Button("Reset Camera Position"))
                 {
-                    m_Camera->SetCameraPosition(glm::vec3(0.0f, 0.0f, 3.0f));
+                    m_Camera->ResetPosition();
                     ImGui::SetTooltip("Reset camera to default position.");
+                }
+
+                ImGui::Text("Camera Zoom");
+                ImGui::DragFloat("Camera Zoom", &m_Camera->GetZoom(), 0.1f, 1.0f, 45.0f, "%.2f");
+
+                if (ImGui::Button("Reset Camera Zoom"))
+                {
+                    m_Camera->SetPosition(glm::vec3(0.0f, 0.0f, 3.0f));
+                    ImGui::SetTooltip("Reset camera zoom to default 45.f ");
                 }
             }
 
             if (ImGui::CollapsingHeader("Mouse Settings"))
             {
-                ImGui::SliderFloat(
-                    "Mouse Sensitivity", &m_Camera->GetMouseSensitivity(), 0.01f, 0.1f, "%.2f");
+                auto& mouse = Mouse::GetInstance();
+
+                ImGui::Text("Mouse Sensitivity");
+                ImGui::DragFloat("Mouse Sensitivity", &mouse.GetSensitivity(),0.01f, 0.01f, 5.0f, "%.4f");
+                
                 if (ImGui::Button("Reset Mouse Sensitivity"))
                 {
-                    m_Camera->ResetMouseSensitivity();
+                    mouse.ResetSensitivity();
                     ImGui::SetTooltip("Reset mouse sensitivity.");
                 }
             }
 
             if (ImGui::CollapsingHeader("Cube Settings"))
             {
-                ImGui::SliderFloat3("Rotating Cube Position", (float *)&m_Cube->GetPosition(), -10.f, 10.f);
-                ImGui::ColorEdit3("Cube Color", (float *)&m_Cube->GetColor());
+                ImGui::Text("Cube Position");
+                ImGui::DragFloat3("Cube Position", (float *)&m_Cube->GetPosition(), 0.01f,-10.f, 10.f,"%.4f");
+                
+                ImGui::Text("Cube Color");
+                ImGui::ColorEdit3("Cube Color", (float *)&m_Cube->GetColor(),ImGuiColorEditFlags_NoLabel);
             }
 
             if (ImGui::CollapsingHeader("Light Cube Settings"))
             {
-                ImGui::SliderFloat3("Light Cube Position", (float *)&m_Light->GetPosition(), -10.f, 10.f);
-                // cubeColor
-                ImGui::ColorEdit3("Light Cube Color", (float *)&m_Light->GetColor());
-                ImGui::SliderFloat("Specular Intensity", &m_Light->GetSpecularIntensity(), 0.0f, 1.0f);
+                ImGui::Text("Light Cube Position");
+                ImGui::DragFloat3("Light Cube Position", (float *)&m_Light->GetPosition(), 0.01f,-10.f, 10.f,"%.4f");
+                
+                ImGui::Text("Light Cube Color");
+                ImGui::ColorEdit3("Light Cube Color", (float *)&m_Light->GetColor(),ImGuiColorEditFlags_NoLabel);
+                
+                ImGui::Text("Specular Intensity");
+                ImGui::DragFloat("Specular Intensity", &m_Light->GetSpecularIntensity(), 0.01f,0.0f, 1.0f,"%.4f");
             }
 
-            ImGui::End();
+            // Exit button styling
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));        
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f)); 
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.0f, 0.0f, 1.0f));
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.5f));
+
+            if (ImGui::Button("Exit", ImVec2(60, 30))) 
+            {
+                Exit();
+                return;
+            }
+
+            ImGui::PopStyleVar(2);
+            ImGui::PopStyleColor(3);
+
+            ImGui::End(); // End the "Scene Settings" window
         }
 
         ImGui::End();
         ImGui::Render();
     }
+
 
     void Engine::ImguiCenterItem(float itemWidth)
     {
@@ -333,58 +343,88 @@ namespace isaacObjectLoader
 
     void Engine::ImguiSetCustomColorStyle()
     {
-        // Set style
-        ImGuiStyle *style = &ImGui::GetStyle();
+        ImGuiStyle& style = ImGui::GetStyle();
+        ImVec4* colors = style.Colors;
 
-        // Assigning colors to various ImGui components using your defined colors
-        style->Colors[ImGuiCol_Text] = IMGUI_COLOR_WHITE;
-        style->Colors[ImGuiCol_TextDisabled] = IMGUI_COLOR_GREY;
-        style->Colors[ImGuiCol_WindowBg] = IMGUI_COLOR_DARKGREY; // Background of window
-        style->Colors[ImGuiCol_ChildBg] = IMGUI_COLOR_LIGHTGREY; // Background of child windows
-        style->Colors[ImGuiCol_PopupBg] = IMGUI_COLOR_LIGHTGREY; // Background of popups
-        style->Colors[ImGuiCol_Border] = IMGUI_COLOR_DARKBLUE;
-        style->Colors[ImGuiCol_BorderShadow] = IMGUI_COLOR_BLACK;
-        style->Colors[ImGuiCol_FrameBg] = IMGUI_COLOR_BLUEGREY; // Background of checkbox, radio button, plot, slider, text input
-        style->Colors[ImGuiCol_FrameBgHovered] = IMGUI_COLOR_BLUE;
-        style->Colors[ImGuiCol_FrameBgActive] = IMGUI_COLOR_DARKBLUE;
-        style->Colors[ImGuiCol_TitleBg] = IMGUI_COLOR_BLUE;
-        style->Colors[ImGuiCol_TitleBgActive] = IMGUI_COLOR_DARKBLUE;
-        style->Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_COLOR_GREY;
-        style->Colors[ImGuiCol_MenuBarBg] = IMGUI_COLOR_BLUEGREY;
-        style->Colors[ImGuiCol_ScrollbarBg] = IMGUI_COLOR_BLUEGREY;
-        style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_COLOR_GREY;
-        style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_COLOR_LIGHTGREY;
-        style->Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_COLOR_DARKGREY;
-        style->Colors[ImGuiCol_CheckMark] = IMGUI_COLOR_BLUEGREY;
-        style->Colors[ImGuiCol_SliderGrab] = IMGUI_COLOR_BLUEGREY;
-        style->Colors[ImGuiCol_SliderGrabActive] = IMGUI_COLOR_DARKBLUE;
-        style->Colors[ImGuiCol_Button] = IMGUI_COLOR_BLUEGREY;        // Normal button
-        style->Colors[ImGuiCol_ButtonHovered] = IMGUI_COLOR_BLUEGREY; // Button on hover
-        style->Colors[ImGuiCol_ButtonActive] = IMGUI_COLOR_DARKBLUE;  // Button when clicked
-        style->Colors[ImGuiCol_Header] = IMGUI_COLOR_DARKGREY;        // Header background (e.g., CollapsingHeader)
-        style->Colors[ImGuiCol_HeaderHovered] = IMGUI_COLOR_BLUEGREY; // Header background when hovered
-        style->Colors[ImGuiCol_HeaderActive] = IMGUI_COLOR_DARKBLUE;  // Header background when active
-        style->Colors[ImGuiCol_Separator] = IMGUI_COLOR_DARKGREY;
-        style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_COLOR_GREY;
-        style->Colors[ImGuiCol_SeparatorActive] = IMGUI_COLOR_WHITE;
-        style->Colors[ImGuiCol_ResizeGrip] = IMGUI_COLOR_LIGHTGREY;
-        style->Colors[ImGuiCol_ResizeGripHovered] = IMGUI_COLOR_GREY;
-        style->Colors[ImGuiCol_ResizeGripActive] = IMGUI_COLOR_DARKGREY;
-        style->Colors[ImGuiCol_Tab] = IMGUI_COLOR_LIGHTGREY;
-        style->Colors[ImGuiCol_TabHovered] = IMGUI_COLOR_GREY;
-        style->Colors[ImGuiCol_TabActive] = IMGUI_COLOR_DARKGREY;
-        style->Colors[ImGuiCol_TabUnfocused] = IMGUI_COLOR_LIGHTGREY;
-        style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_COLOR_GREY;
-        style->Colors[ImGuiCol_PlotLines] = IMGUI_COLOR_YELLOW;
-        style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_COLOR_ORANGE;
-        style->Colors[ImGuiCol_PlotHistogram] = IMGUI_COLOR_RED;
-        style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_COLOR_DARKRED;
-        style->Colors[ImGuiCol_TextSelectedBg] = IMGUI_COLOR_LIGHTGREY;
-        style->Colors[ImGuiCol_DragDropTarget] = IMGUI_COLOR_GREEN;
-        style->Colors[ImGuiCol_NavHighlight] = IMGUI_COLOR_BLUE;               // Navigation highlight color
-        style->Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_COLOR_LIGHTBLUE; // Navigation windowing highlight
-        style->Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_COLOR_PURPLE;        // Navigation windowing dim background, covers entire screen
-        style->Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_COLOR_DARKPURPLE;     // Modal window dim background, covers entire screen
+        // Base style adjustments
+        style.FrameRounding = 5.0f;
+        style.FramePadding = ImVec2(5.0f, 3.0f);
+        style.WindowRounding = 5.0f;
+        style.ScrollbarRounding = 5.0f;
+        style.GrabRounding = 5.0f;
+
+        // Base colors
+        // Let's go with a dark grey background, blue highlights, and lighter elements.
+        colors[ImGuiCol_WindowBg]            = IMGUI_COLOR_DARKGREY;
+        colors[ImGuiCol_ChildBg]             = IMGUI_COLOR_DARKGREY;
+        colors[ImGuiCol_PopupBg]             = IMGUI_COLOR_DARKGREY;
+        colors[ImGuiCol_Border]              = IMGUI_COLOR_GREY;
+        colors[ImGuiCol_BorderShadow]        = IMGUI_COLOR_BLACK;
+
+        // Text
+        colors[ImGuiCol_Text]                = IMGUI_COLOR_WHITE;
+        colors[ImGuiCol_TextDisabled]        = IMGUI_COLOR_GREY;
+
+        // Headers (for collapsing headers)
+        colors[ImGuiCol_Header]              = IMGUI_COLOR_BLUE;
+        colors[ImGuiCol_HeaderHovered]       = IMGUI_COLOR_PURPLE;  
+        colors[ImGuiCol_HeaderActive]        = IMGUI_COLOR_DARKPURPLE;
+
+        // Buttons
+        colors[ImGuiCol_Button]              = IMGUI_COLOR_DARKBLUE;
+        colors[ImGuiCol_ButtonHovered]       = IMGUI_COLOR_BLUE;
+        colors[ImGuiCol_ButtonActive]        = IMGUI_COLOR_DARKPURPLE;
+
+        // Frame BG (used for checkbox, radio button, frame around text input fields, etc.)
+        colors[ImGuiCol_FrameBg]             = IMGUI_COLOR_DARKGREY;
+        colors[ImGuiCol_FrameBgHovered]      = IMGUI_COLOR_BLUEGREY;
+        colors[ImGuiCol_FrameBgActive]       = IMGUI_COLOR_PURPLE;
+
+        // Sliders
+        // Make the slider background distinct from the slider handle:
+        colors[ImGuiCol_SliderGrab]          = IMGUI_COLOR_BLUE;       // Slider handle
+        colors[ImGuiCol_SliderGrabActive]    = IMGUI_COLOR_PURPLE;    // Slider handle when active
+        // The "frame" around slider is FrameBg, already set to a darker color (IMGUI_COLOR_DARKGREY)
+
+        // Checkmarks and other widgets
+        colors[ImGuiCol_CheckMark]           = IMGUI_COLOR_GREEN;
+        
+        // Scrollbar
+        colors[ImGuiCol_ScrollbarBg]         = IMGUI_COLOR_DARKGREY;
+        colors[ImGuiCol_ScrollbarGrab]       = IMGUI_COLOR_GREY;
+        colors[ImGuiCol_ScrollbarGrabHovered]= IMGUI_COLOR_BLUE;
+        colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_COLOR_PURPLE;
+
+        // Tabs (if you use docking)
+        colors[ImGuiCol_Tab]                 = IMGUI_COLOR_DARKGREY;
+        colors[ImGuiCol_TabHovered]          = IMGUI_COLOR_BLUE;
+        colors[ImGuiCol_TabActive]           = IMGUI_COLOR_PURPLE;
+        colors[ImGuiCol_TabUnfocused]        = IMGUI_COLOR_DARKGREY;
+        colors[ImGuiCol_TabUnfocusedActive]  = IMGUI_COLOR_GREY;
+
+        // Title bar
+        colors[ImGuiCol_TitleBg]             = IMGUI_COLOR_DARKGREY;
+        colors[ImGuiCol_TitleBgActive]       = IMGUI_COLOR_BLUE;
+        colors[ImGuiCol_TitleBgCollapsed]    = IMGUI_COLOR_DARKGREY;
+
+        // Separator
+        colors[ImGuiCol_Separator]           = IMGUI_COLOR_GREY;
+        colors[ImGuiCol_SeparatorHovered]    = IMGUI_COLOR_BLUE;
+        colors[ImGuiCol_SeparatorActive]     = IMGUI_COLOR_PURPLE;
+
+        // Resize grip
+        colors[ImGuiCol_ResizeGrip]          = IMGUI_COLOR_GREY;
+        colors[ImGuiCol_ResizeGripHovered]   = IMGUI_COLOR_BLUE;
+        colors[ImGuiCol_ResizeGripActive]    = IMGUI_COLOR_PURPLE;
+
+        // Plotting (if needed)
+        colors[ImGuiCol_PlotLines]           = IMGUI_COLOR_BLUE;
+        colors[ImGuiCol_PlotLinesHovered]    = IMGUI_COLOR_PURPLE;
+        colors[ImGuiCol_PlotHistogram]       = IMGUI_COLOR_GREEN;
+        colors[ImGuiCol_PlotHistogramHovered]= IMGUI_COLOR_PURPLE;
+
+        // Modal Window Darkening
+        colors[ImGuiCol_ModalWindowDimBg]    = IMGUI_COLOR_BLACK;
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -393,20 +433,22 @@ namespace isaacObjectLoader
     // GLFW Callback Functions
     // -----------------------------------------------------------------------------------------------------
 
-    void FramebufferSizeCallback([[maybe_unused]] GLFWwindow *window, int width, int height)
+    void FramebufferSizeCallback(GLFWwindow *window, int width, int height)
     {
         glViewport(0, 0, width, height);
     }
 
-    void MouseCallback([[maybe_unused]] GLFWwindow *window, double xposIn, double yposIn)
+    void MouseCallback( GLFWwindow *window, double xposIn, double yposIn)
     {
         float xpos = static_cast<float>(xposIn);
         float ypos = static_cast<float>(yposIn);
 
-        auto engine = Engine::get();
-        auto &first_mouse = engine->GetFirstMouse();
-        auto &last_x = engine->GetLastMouseX();
-        auto &last_y = engine->GetLastMouseY();
+        auto engine = Engine::GetInstance();
+        auto&  mouse = Mouse::GetInstance();
+
+        auto &first_mouse = mouse.GetFirstMouse();
+        auto &last_x = mouse.GetLastX();
+        auto &last_y = mouse.GetLastY();
 
         if (first_mouse)
         {
@@ -423,7 +465,8 @@ namespace isaacObjectLoader
 
         if (!engine->GetDisableInput())
         {
-            engine->GetMainCamera()->ProcessMouseMovement(xoffset, yoffset);
+            auto camera = engine->GetCamera();
+            mouse.ProcessMovement(camera,xoffset, yoffset);
         }
     }
 
@@ -433,12 +476,14 @@ namespace isaacObjectLoader
                         [[maybe_unused]] double xoffset,
                         double yoffset)
     {
-        Engine::get()->GetMainCamera()->ProcessMouseScroll(static_cast<float>(yoffset));
+        auto&  mouse = Mouse::GetInstance();
+        auto  engine = Engine::GetInstance();
+        mouse.ProcessScroll(static_cast<float>(yoffset),engine->GetCamera());
     }
 
     void KeyCallback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods)
     {
-        auto engine = Engine::get();
+        auto engine = Engine::GetInstance();
         if (key == GLFW_KEY_H && action == GLFW_PRESS && !engine->GetKeyPressed())
         {
             engine->SetKeyPressed(true);
@@ -446,13 +491,13 @@ namespace isaacObjectLoader
             {
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                 engine->SetDisableInput(true);
-                engine->SetShowMyWindow(!engine->GetShowMyWindow());
+                engine->SetShowMyWindow(true);
             }
             else
             {
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                 engine->SetDisableInput(false);
-                engine->SetShowMyWindow(!engine->GetShowMyWindow());
+                engine->SetShowMyWindow(false);
             }
         }
 
@@ -642,4 +687,4 @@ namespace isaacObjectLoader
     }
     // -----------------------------------------------------------------------------------------------------
 
-} // namespace isaacObjectLoader
+} // namespace isaacGraphicsEngine

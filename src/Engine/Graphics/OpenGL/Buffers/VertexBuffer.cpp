@@ -3,7 +3,7 @@
 #include "Utility/config.h"
 #include "Utility/GLErrorManager.h"
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
 
 VertexBuffer::VertexBuffer(const void* data, unsigned int size)

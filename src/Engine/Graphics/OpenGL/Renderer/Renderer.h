@@ -4,7 +4,7 @@
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
 #include "Engine/Graphics/OpenGL/Buffers/VertexArray.h"
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
 class Renderer
 {
@@ -18,4 +18,4 @@ public:
 private:
 };
 
-}  // namespace isaacObjectLoader
+}  // namespace isaacGraphicsEngine

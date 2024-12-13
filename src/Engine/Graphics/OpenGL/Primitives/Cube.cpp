@@ -7,7 +7,7 @@
 
 #include "Utility/config.h"
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
     Cube::Cube()
     {

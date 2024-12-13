@@ -2,11 +2,11 @@
 
 #include <glad/glad.h>
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
     Mesh::Mesh(std::vector<Vertex> vertices,
                std::vector<unsigned int> indices,
-               std::vector<MeshTexture> textures)
+               std::vector<Texture> textures)
     {
         this->vertices = vertices;
         this->indices = indices;
@@ -55,7 +55,7 @@ namespace isaacObjectLoader
     void Mesh::SetupMesh()
     {
         // create buffers/arrays
-        glGenVertexArrays(1, &VAO);
+        glGenVertexArrays(1, &VAO); 
         glGenBuffers(1, &VBO);
         glGenBuffers(1, &EBO);
 
@@ -89,7 +89,6 @@ namespace isaacObjectLoader
         // ids
         glEnableVertexAttribArray(5);
         glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void *)offsetof(Vertex, m_BoneIDs));
-
         // weights
         glEnableVertexAttribArray(6);
         glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, m_Weights));

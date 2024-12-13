@@ -1,7 +1,7 @@
 #include "VertexArray.h"
 #include "Utility/GLErrorManager.h"
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
 VertexArray::VertexArray() { GLCall(glGenVertexArrays(1, &m_RendererID)); }
 VertexArray::~VertexArray() { GLCall(glDeleteVertexArrays(1, &m_RendererID)); }
@@ -32,4 +32,4 @@ void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& la
         offset += element.m_Count * VertexBufferElement::GetSizeOfType(element.m_Type);
     }
 }
-}  // namespace isaacObjectLoader
+}  // namespace isaacGraphicsEngine

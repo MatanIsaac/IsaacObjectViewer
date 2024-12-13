@@ -2,8 +2,7 @@
 
 #include "Utility/config.h"
 
-
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
 enum CameraMovement
 {
@@ -20,7 +19,6 @@ public:
     static constexpr float DEFAULT_YAW         = -90.0f;
     static constexpr float DEFAULT_PITCH       = 0.0f;
     static constexpr float DEFAULT_SPEED       = 2.5f;
-    static constexpr float DEFAULT_SENSITIVITY = 0.1f;
     static constexpr float DEFAULT_ZOOM        = 45.0f;
 
     // constructor with vectors
@@ -48,28 +46,40 @@ public:
 
     // processes input received from a mouse input system. Expects the offset value in both the x
     // and y direction.
-    void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
+    //void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
+    void ProcessCameraMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
 
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical
     // wheel-axis
-    void ProcessMouseScroll(float yoffset);
+    void ProcessMouseScroll(float yoffset, Camera* camera);
 
-    float&     GetMouseSensitivity() { return m_MouseSensitivity; }
-    float&     GetCameraZoom() { return m_Zoom; }
-    float&     GetCameraSpeed() { return m_MovementSpeed; }
-    glm::vec3& GetCameraPosition() { return m_Position; }
+    const float&     GetPitch() { return m_Zoom; }
+    const float&     GetYaw() { return m_Zoom; }
+    float&     GetZoom() { return m_Zoom; }
+    float&     GetSpeed() { return m_MovementSpeed; }
+    const glm::vec3& GetPosition() { return m_Position; }
 
-    void ResetCameraSpeed() { m_MovementSpeed = DEFAULT_SPEED; }
-    void ResetMouseSensitivity() { m_MouseSensitivity = DEFAULT_SENSITIVITY; }
-    void SetCameraSpeed(float newSpeed) { m_MovementSpeed = newSpeed; }
-    void SetCameraPosition(const glm::vec3& newPosition) { m_Position = newPosition; }
+    void ResetSpeed() { m_MovementSpeed = DEFAULT_SPEED; }
+    void ResetPosition() { m_Position = m_InitialPosition; }
+    void SetSpeed(float newSpeed) { m_MovementSpeed = newSpeed; }
+    void SetPosition(const glm::vec3& newPosition) { m_Position = newPosition; }
+    void SetPitch(float newPitch) { m_Pitch = newPitch; }
+    void SetYaw(float newYaw) { m_Yaw = newYaw; }
+    void SetZoom(float newZoom) { m_Zoom = newZoom; }
 
-private:
-    // calculates the front vector from the Camera's (updated) Euler Angles
-    void updateCameraVectors();
+    void AddPitch(float amount) { m_Pitch += amount; }
+    void AddYaw(float amount) { m_Yaw += amount; }
+    void AddZoom(float amount) { m_Zoom += amount; }
+    void AddSpeed(float amount) { m_MovementSpeed += amount; }
+    
+    /**
+     * @brief calculates the front vector from the Camera's (updated) Euler Angles
+     */
+    void UpdateVectors();
 
 private:
     // camera Attributes
+    glm::vec3 m_InitialPosition;
     glm::vec3 m_Position;
     glm::vec3 m_Front;
     glm::vec3 m_Up;
@@ -80,7 +90,6 @@ private:
     float m_Pitch;
     // camera options
     float m_MovementSpeed;
-    float m_MouseSensitivity;
     float m_Zoom;
 };
 

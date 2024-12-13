@@ -16,7 +16,7 @@ target_include_directories(TemplateTest PUBLIC
 target_link_libraries(TemplateTest PUBLIC
     gtest             # Googletest library
     gtest_main        # Main function for googletest
-    isaac_object_loader  # Your application library
+    isaac_graphics_engine  # Your application library
     imgui
     imgui_impl
 )

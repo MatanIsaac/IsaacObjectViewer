@@ -1,0 +1,13 @@
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/CMakeFiles/uninstall.dir
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/CMakeFiles/UpdateAssimpLibsDebugSymbolsAndDLLs.dir
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/CMakeFiles/INSTALL.dir
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/CMakeFiles/ALL_BUILD.dir
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/CMakeFiles/ZERO_CHECK.dir
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/contrib/zlib/CMakeFiles/zlibstatic.dir
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/contrib/zlib/CMakeFiles/INSTALL.dir
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/contrib/zlib/CMakeFiles/ALL_BUILD.dir
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/code/CMakeFiles/assimp.dir
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/code/CMakeFiles/INSTALL.dir
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/test/CMakeFiles/unit.dir
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/test/CMakeFiles/INSTALL.dir
+D:/GitSourceControl/IsaacObjectLoader/dependencies/assimp/test/headercheck/CMakeFiles/INSTALL.dir

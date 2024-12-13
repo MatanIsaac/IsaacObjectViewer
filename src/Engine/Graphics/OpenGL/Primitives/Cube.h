@@ -10,7 +10,7 @@
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
 #include <glm/glm.hpp>
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
     class Cube
     {
@@ -104,4 +104,4 @@ namespace isaacObjectLoader
             -0.5f,  0.5f, -0.5f,    0.0f,  1.0f, 0.0f
         };
     };
-} // namespace isaacObjectLoader
+} // namespace isaacGraphicsEngine

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
 class VertexBuffer
 {

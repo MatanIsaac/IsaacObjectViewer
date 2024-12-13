@@ -6,12 +6,43 @@
 #include <vector>
 
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
+#include "Engine/Graphics/Texture.hpp"
 
 #define MAX_BONE_INFLUENCE 4
-namespace isaacObjectLoader
+namespace isaacGraphicsEngine
 {
     /**
      * @brief a collection of data that represent a single point
+     
+
+
+        // Create and bind buffers using smart pointers
+        m_VertexArray = std::make_unique<VertexArray>();
+        m_VertexBuffer = std::make_unique<VertexBuffer>(MeshVertices, sizeof(MeshVertices));
+        m_IndexBuffer = std::make_unique<IndexBuffer>(mesh_indices, MeshIndicesCount);
+
+        VertexBufferLayout vb_layout;
+        vb_layout.Push<float>(3); // Positions
+        vb_layout.Push<float>(3); // Normals
+        vb_layout.Push<float>(2); // TexCoords
+        vb_layout.Push<float>(3); // Tangent
+        vb_layout.Push<float>(3); // Bitangent
+        vb_layout.Push<int>(MAX_BONE_INFLUENCE); // BoneIDs
+        vb_layout.Push<float>(MAX_BONE_INFLUENCE); // Weights
+
+        
+
+        const glm::vec3 DEFAULT_POSITION = {1.0f, 1.0f, 1.0f};
+        glm::vec3 m_Position;
+        glm::vec3 m_Rotation;
+        glm::vec3 m_Scale;
+
+        std::unique_ptr<IndexBuffer> m_IndexBuffer;
+        std::unique_ptr<VertexBuffer> m_VertexBuffer;
+        std::unique_ptr<VertexArray> m_VertexArray;
+        int m_VertexCount;
+        int m_IndicesCount;
+
      */
     struct Vertex
     {
@@ -35,27 +66,17 @@ namespace isaacObjectLoader
         // ----------------------------------------------------
     };
 
-    struct MeshTexture
-    {
-        // The id of the texture
-        unsigned int id;
-        // The type e.g diffuse or specular texture
-        std::string type;
-        // The path of the texture
-        std::string path;
-    };
-
     class Mesh
     {
     public:
         // Mesh Data
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
-        std::vector<MeshTexture> textures;
+        std::vector<Texture> textures;
         unsigned int VAO;
 
         // constructor
-        Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<MeshTexture> textures);
+        Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
 
         // render the mesh
         void Render(Shader &shader);

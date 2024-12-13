@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 
 # Set project name
-project(isaac_object_loader LANGUAGES C CXX VERSION 1.0 DESCRIPTION "Isaacs-Object-Viewer")
+project(isaac_graphics_engine LANGUAGES C CXX VERSION 1.0 DESCRIPTION "Isaacs-Graphics-Engine")
 
 # Set C++ standards
 set(CMAKE_CXX_STANDARD 17)
@@ -19,6 +19,7 @@ add_subdirectory(dependencies/spdlog)
 add_subdirectory(dependencies/googletest)
 add_subdirectory(dependencies/glad)
 add_subdirectory(dependencies/imgui)
+add_subdirectory(dependencies/assimp)
 
 # Add subdirectory for project source
 add_subdirectory(src)

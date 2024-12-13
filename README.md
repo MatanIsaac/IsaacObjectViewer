@@ -1,5 +1,9 @@
 # isaac's Graphics Engine
 
+<div align="center">
+    <img src="https://github.com/MatanIsaac/IsaacGraphicsEngine/blob/main/60_FPS_3500_CUBES.png" alt="Isaac-Graphics-Engine">
+</div>
+
 This project is a simple grahics engine created as a side project during my pursuit of a Computer Science degree.                            
 Its purpose is to experiment with and learn 3D graphics programming and rendering techniques.                               
 Built with modern C++ and OpenGL, it offers a simple framework for loading, viewing 3D models, and 2D Textures.
@@ -26,7 +30,8 @@ It aims to serve as:
 To get started with this project, you need to have the following installed:
 
     C++ Compiler: Compatible with C++17 or later.
-    CMake: Version 3.15 or higher is recommended.
+    CMake: Version 3.27 or higher is recommended.
+    OpenGL: Ensure your graphics drivers supports OpenGL 4.0 or higher (there may be further changes and support for DirectX or Vulkan in the future). 
 
 ## Getting Started
 ### Cloning the Repository
@@ -63,16 +68,17 @@ After building, you can run the application/tests from the build directory:
     ├── CMakeLists.txt          # Top-level CMake configuration
     ├── run.bat                 # Script to run the application
     ├── dependencies/           # External libraries and dependencies
+    │   ├── assimp/
     │   ├── glad/
     │   ├── glfw/
     │   ├── spdlog/
     │   ├── googletest/
     │   ├── stb_image.h
-    │   └── tiny_obj_loader.h
     ├── src/                    # Source files
-    │   ├── CMakeLists.txt      # CMake configuration for source files
+    │   ├── CMakeLists.txt      # src CMake configuration
     │   ├── main.cpp            # Main entry point of the application
     │   ├── Engine/             # Engine components
+    │   │   ├── CMakeLists.txt      # Engine CMake configuration
     │   │   ├── Core/           # Core engine systems
     │   │   ├── Graphics/       # Graphics-related components
     │   │   │   ├── OpenGL/
@@ -81,7 +87,6 @@ After building, you can run the application/tests from the build directory:
     │   │   │   │   ├── Primitives/
     │   │   │   │   ├── Renderer/
     │   │   │   │   ├── Shaders/
-    │   │   │   └── Textures/
     │   │   └── Scene/          # Scene management
     │   │   │   ├── Camera/
     │   │       └── Models/
@@ -90,8 +95,8 @@ After building, you can run the application/tests from the build directory:
     │   │   ├── Shaders/
     │   │   └── Textures/
     │   └── Utility/            # Utility functions and tools
+    │   │   │   ├── CMakeLists.txt      # Utility CMake configuration
     └── test/                   # Test files
         ├── CMakeLists.txt      # CMake configuration for tests
-        └── some_test.cpp       # Unit test example
 
 

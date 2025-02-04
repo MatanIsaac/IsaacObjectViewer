@@ -59,7 +59,8 @@ namespace isaacGraphicsEngine
         GLCall(glDeleteShader(fragment));
     }
 
-    void Shader::Bind() const { GLCall(glUseProgram(ID)); }
+    void Shader::Bind() const 
+    { GLCall(glUseProgram(ID)); }
 
     void Shader::Unbind() const { GLCall(glUseProgram(0)); }
 

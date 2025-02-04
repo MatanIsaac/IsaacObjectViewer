@@ -4,6 +4,7 @@
 #include "Window.h"
 #include "Engine/Scene/Camera/Camera.h"
 #include "Engine/Graphics/OpenGL/Primitives/Cube.h"
+#include "Engine/Graphics/OpenGL/Primitives/Cylinder.h"
 #include "Engine/Graphics/OpenGL/Lighting/Light.h"
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
@@ -101,9 +102,9 @@ namespace isaacGraphicsEngine
         Window *m_Window;
         Shader *m_Shader;
         Shader *m_lightingShader;
-        Shader *m_lightCubeShader;
         std::vector<Cube*> m_Cubes;
 
+        Cylinder *m_Cylinder;
         Light *m_Light;
         
         Camera *m_Camera;

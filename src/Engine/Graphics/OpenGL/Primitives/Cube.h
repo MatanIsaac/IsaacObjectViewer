@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include "Utility/config.h"
 
 #include "Engine/Graphics/OpenGL/Buffers/IndexBuffer.h"
 #include "Engine/Graphics/OpenGL/Buffers/VertexArray.h"
@@ -8,7 +9,7 @@
 #include "Engine/Graphics/OpenGL/Buffers/VertexBufferLayout.h"
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
-#include <glm/glm.hpp>
+
 
 namespace isaacGraphicsEngine
 {
@@ -50,43 +51,43 @@ namespace isaacGraphicsEngine
         std::unique_ptr<VertexArray> m_VertexArray;
         int m_VertexCount;
         int m_IndicesCount;
-        
+        int m_FloatsPerVertex = 6;
     public:
-        static constexpr float m_CubeVertices[288] = 
+        static constexpr float m_CubeVertices[216] = 
         { 
-            // positions            // texture coords // normals 
+            // positions            // normals 
 
             // Front face
-            -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, -1.0f,
-             0.5f, -0.5f, -0.5f,    0.0f, 0.0f, -1.0f,
-             0.5f,  0.5f, -0.5f,    0.0f, 0.0f, -1.0f,
-             0.5f,  0.5f, -0.5f,    0.0f, 0.0f, -1.0f,
-            -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, -1.0f,
-            -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, -1.0f,
+            -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, -1.0f, // 0
+             0.5f, -0.5f, -0.5f,    0.0f, 0.0f, -1.0f, // 1
+             0.5f,  0.5f, -0.5f,    0.0f, 0.0f, -1.0f, // 2
+             0.5f,  0.5f, -0.5f,    0.0f, 0.0f, -1.0f, // 3
+            -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, -1.0f, // 4
+            -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, -1.0f, // 5
 
             // Back face
-            -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,  1.0f,
-             0.5f, -0.5f,  0.5f,    0.0f, 0.0f,  1.0f,
-             0.5f,  0.5f,  0.5f,    0.0f, 0.0f,  1.0f,
-             0.5f,  0.5f,  0.5f,    0.0f, 0.0f,  1.0f,
-            -0.5f,  0.5f,  0.5f,    0.0f, 0.0f,  1.0f,
-            -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,  1.0f,
+            -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,  1.0f, // 6
+             0.5f, -0.5f,  0.5f,    0.0f, 0.0f,  1.0f, // 7
+             0.5f,  0.5f,  0.5f,    0.0f, 0.0f,  1.0f, // 8
+             0.5f,  0.5f,  0.5f,    0.0f, 0.0f,  1.0f, // 9
+            -0.5f,  0.5f,  0.5f,    0.0f, 0.0f,  1.0f, // 10
+            -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,  1.0f, // 11
 
             // Left face
-            -0.5f,  0.5f,  0.5f,   -1.0f, 0.0f,  0.0f,
-            -0.5f,  0.5f, -0.5f,   -1.0f, 0.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f,   -1.0f, 0.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f,   -1.0f, 0.0f,  0.0f,
-            -0.5f, -0.5f,  0.5f,   -1.0f, 0.0f,  0.0f,
-            -0.5f,  0.5f,  0.5f,   -1.0f, 0.0f,  0.0f,
+            -0.5f,  0.5f,  0.5f,   -1.0f, 0.0f,  0.0f, // 12 
+            -0.5f,  0.5f, -0.5f,   -1.0f, 0.0f,  0.0f, // 13
+            -0.5f, -0.5f, -0.5f,   -1.0f, 0.0f,  0.0f, // 14
+            -0.5f, -0.5f, -0.5f,   -1.0f, 0.0f,  0.0f, // 15
+            -0.5f, -0.5f,  0.5f,   -1.0f, 0.0f,  0.0f, // 16
+            -0.5f,  0.5f,  0.5f,   -1.0f, 0.0f,  0.0f, // 17
 
             // Right face
-            0.5f,  0.5f,  0.5f,    1.0f, 0.0f,  0.0f,
-            0.5f,  0.5f, -0.5f,    1.0f, 0.0f,  0.0f,
-            0.5f, -0.5f, -0.5f,    1.0f, 0.0f,  0.0f,
-            0.5f, -0.5f, -0.5f,    1.0f, 0.0f,  0.0f,
-            0.5f, -0.5f,  0.5f,    1.0f, 0.0f,  0.0f,
-            0.5f,  0.5f,  0.5f,    1.0f, 0.0f,  0.0f,
+            0.5f,  0.5f,  0.5f,    1.0f, 0.0f,  0.0f, // 18
+            0.5f,  0.5f, -0.5f,    1.0f, 0.0f,  0.0f, // 19
+            0.5f, -0.5f, -0.5f,    1.0f, 0.0f,  0.0f, // 20
+            0.5f, -0.5f, -0.5f,    1.0f, 0.0f,  0.0f, // 21
+            0.5f, -0.5f,  0.5f,    1.0f, 0.0f,  0.0f, // 22
+            0.5f,  0.5f,  0.5f,    1.0f, 0.0f,  0.0f, // 23
 
             // Bottom face
             -0.5f, -0.5f, -0.5f,    0.0f, -1.0f, 0.0f,

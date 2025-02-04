@@ -11,7 +11,6 @@ namespace isaacGraphicsEngine
     Engine::Engine()
         : m_Shader(nullptr),
           m_lightingShader(nullptr),
-          m_lightCubeShader(nullptr),
           m_Cubes({}), //m_Cube(nullptr), 
           m_Window(nullptr),
           m_Camera(nullptr),
@@ -53,6 +52,9 @@ namespace isaacGraphicsEngine
     // @brief initializes the engine's dependencies, resources and objects
     bool Engine::Init(const char *title, int width, int height, bool fullscreen)
     {
+        Log::Init();
+
+        LOG_INFO("Welcome to Isaac's Graphics Engine!");
         m_Window = new Window(title,width,height,false);
 
         glfwSetFramebufferSizeCallback(m_Window->GetGLFWwindow(), FramebufferSizeCallback);
@@ -73,15 +75,11 @@ namespace isaacGraphicsEngine
         }
         //----------------------------------------------------------------------------------------
 
-        glEnable(GL_DEPTH_TEST);
-        // Enable blending to allow for transparent textures and effects.
-        glEnable(GL_BLEND);
-        // Set the blending function to use source alpha and one minus source alpha blending mode.
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+        glEnable(GL_DEPTH_TEST); // Enable depth testing
+	
         ImguiInit();
 
-
+        m_Cylinder  = new Cylinder();
         m_Light     = new Light({1.2f, 1.0f, 2.0f},{1.0f, 1.0f, 1.0f});
         
         std::string projectRoot = GetProjectRoot();
@@ -152,15 +150,16 @@ namespace isaacGraphicsEngine
         m_lightingShader->Bind();
         m_lightingShader->setVec3("viewPos", m_Camera->GetPosition());
                 
-        // Render Cube
-        //------------------------------------------------------------------------------------
         glm::mat4 view = m_Camera->GetViewMatrix(); // VIEW
         glm::mat4 projection = glm::perspective(glm::radians(m_Camera->GetZoom()), // PROJECTION
                                                 (float)display_w / (float)display_h,
                                                 0.1f,
                                                 100.0f);
-
-        //m_Cube->Render(m_Renderer,*m_lightingShader, view, projection);
+                                                
+        // Render Cube
+        //------------------------------------------------------------------------------------
+        m_Cylinder->Render(m_Renderer, *m_lightingShader, view, projection);
+        
         for (auto& cube : m_Cubes)
         {
             cube->Render(m_Renderer,*m_lightingShader, view, projection);
@@ -168,12 +167,9 @@ namespace isaacGraphicsEngine
         
         //------------------------------------------------------------------------------------
 
-        // render light cube
-        
+        // render light
         m_Light->Render(m_Renderer,*m_lightingShader, view, projection);
         
-        
-
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
@@ -186,6 +182,7 @@ namespace isaacGraphicsEngine
         ImGui::DestroyContext();
 
         ClearCubes();
+        delete m_Cylinder;
         delete m_IO;
         delete m_Shader;
         glfwDestroyWindow(m_Window->GetGLFWwindow());

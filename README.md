@@ -1,7 +1,11 @@
 # isaac's Graphics Engine
 
 <div align="center">
+<<<<<<< HEAD
     <img src="https://github.com/MatanIsaac/IsaacGraphicsEngine/blob/main/Picute1.png" alt="Isaac-Graphics-Engine">
+=======
+    <img src="https://github.com/MatanIsaac/IsaacGraphicsEngine/blob/main/60_FPS_3500_CUBES.png" alt="Isaac-Graphics-Engine">
+>>>>>>> d6ff629a833350017f51019c2872d95ff0d5fca3
 </div>
 
 This project is a simple grahics engine created as a side project during my pursuit of a Computer Science degree.                            
@@ -31,7 +35,11 @@ To get started with this project, you need to have the following installed:
 
     C++ Compiler: Compatible with C++17 or later.
     CMake: Version 3.27 or higher is recommended.
+<<<<<<< HEAD
     OpenGL: Ensure your graphics drivers supports OpenGL 3.3 or higher (there may be further changes and support for DirectX or Vulkan in the future). 
+=======
+    OpenGL: Ensure your graphics drivers supports OpenGL 4.0 or higher (there may be further changes and support for DirectX or Vulkan in the future). 
+>>>>>>> d6ff629a833350017f51019c2872d95ff0d5fca3
 
 ## Getting Started
 ### Cloning the Repository

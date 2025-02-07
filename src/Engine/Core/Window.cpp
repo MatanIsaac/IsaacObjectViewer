@@ -14,20 +14,25 @@ namespace isaacGraphicsEngine
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        if(fullscreen)  
-            m_PrimaryMonitor = glfwGetPrimaryMonitor();
+          
+        m_PrimaryMonitor = glfwGetPrimaryMonitor();
         
-        if(m_PrimaryMonitor == nullptr)
+        if(!fullscreen)
             m_Window = glfwCreateWindow(width, height, title, nullptr, nullptr);
         else
             m_Window = glfwCreateWindow(width, height, title, m_PrimaryMonitor, nullptr);
-
+    
         if (!m_Window) 
         {
             glfwTerminate();
             throw std::runtime_error("Failed to create GLFW window");
         }
        
+        const GLFWvidmode* mode = glfwGetVideoMode(m_PrimaryMonitor);
+        // Putting it in the centre
+        glfwSetWindowPos(m_Window, mode->width/6, mode->height/6);
+        
+
         glfwMakeContextCurrent(m_Window);
         glfwSwapInterval(0); 
     }

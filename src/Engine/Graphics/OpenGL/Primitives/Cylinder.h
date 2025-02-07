@@ -1,8 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <vector>
+#include <glm/glm.hpp>
 #include "Utility/config.h"
-
 #include "Engine/Graphics/OpenGL/Buffers/IndexBuffer.h"
 #include "Engine/Graphics/OpenGL/Buffers/VertexArray.h"
 #include "Engine/Graphics/OpenGL/Buffers/VertexBuffer.h"
@@ -24,7 +25,7 @@ namespace isaacGraphicsEngine
         glm::vec3& GetPosition() { return m_Position; }
         glm::vec3& GetColor()    { return m_Color; }
 
-        void ResetPosition() { m_Position = DEFAULT_POSITION;}
+        void ResetPosition() { m_Position = DEFAULT_POSITION; }
         void SetPosition(const glm::vec3& newPosition) { m_Position = newPosition; }
         void SetColor(const glm::vec3& newColor) { m_Color = newColor; }
 
@@ -41,13 +42,18 @@ namespace isaacGraphicsEngine
         glm::vec3 m_Scale;
         glm::vec3 m_Color;
 
-        std::unique_ptr<IndexBuffer> m_IndexBuffer;
         std::unique_ptr<VertexArray> m_VertexArray;
+        std::unique_ptr<VertexBuffer> m_VertexBuffer; // Added member for the vertex buffer
+        std::unique_ptr<IndexBuffer> m_IndexBuffer;
+
         glm::mat4 m_ModelMatrix;
 
         int m_VertexCount;
         unsigned int m_IndexCount;
 
-        int  GenerateCylinder(float baseRadius, float topRadius, float height, int sectorCount, std::vector<float>& vertices, std::vector<unsigned int>& indices);
+        // Generates vertices and indices for the cylinder.
+        // Returns the number of vertices (each vertex has 6 floats: position and normal).
+        int GenerateCylinder(float baseRadius, float topRadius, float height, int sectorCount,
+                             std::vector<float>& vertices, std::vector<unsigned int>& indices);
     };
 } // namespace isaacGraphicsEngine

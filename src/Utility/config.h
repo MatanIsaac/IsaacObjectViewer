@@ -19,6 +19,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #define PI 3.14159265358979323846
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 780
 
 // ImGui OpenGL loader definition
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD

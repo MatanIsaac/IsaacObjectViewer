@@ -22,7 +22,7 @@ namespace isaacGraphicsEngine
 
     void Engine::Run()
     {
-        assert(Init("Isaac's Graphics Engine", 1280, 720, true));
+        assert(Init("Isaac's Graphics Engine", SCREEN_WIDTH, SCREEN_HEIGHT, true));
 
         while (m_IsRunning)
         {
@@ -63,7 +63,7 @@ namespace isaacGraphicsEngine
         glfwSetKeyCallback(m_Window->GetGLFWwindow(), KeyCallback);
 
         // tell GLFW to capture our mouse
-        glfwSetInputMode(m_Window->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(m_Window->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
         // Initialize glad
         //----------------------------------------------------------------------------------------
@@ -78,7 +78,8 @@ namespace isaacGraphicsEngine
         glEnable(GL_DEPTH_TEST); // Enable depth testing
 	
         ImguiInit();
-
+        const glm::vec3 plane_pos = {5.f,1.f,1.f};
+        m_Plane     = new Plane(plane_pos);
         m_Cylinder  = new Cylinder();
         m_Light     = new Light({1.2f, 1.0f, 2.0f},{1.0f, 1.0f, 1.0f});
         
@@ -95,8 +96,9 @@ namespace isaacGraphicsEngine
 
         m_Camera = new Camera(glm::vec3(0.0f, 2.0f, 5.0f));
 
-        m_DisableInput = false;
-
+        m_DisableInput = true;
+        m_ShowMyWindow = true;
+        
         m_IsRunning = true;
 
         return true;
@@ -107,8 +109,9 @@ namespace isaacGraphicsEngine
     {
         if (glfwGetKey(m_Window->GetGLFWwindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) 
         {
-            m_IsRunning = false;
-            return;
+            glfwSetInputMode(m_Window->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            SetDisableInput(true);
+            SetShowMyWindow(true);
         }
 
         if (!m_DisableInput)
@@ -128,7 +131,11 @@ namespace isaacGraphicsEngine
     // @brief updates all of the engine dependencies, resources and objects.
     void Engine::Update(float dt) 
     {
-          
+        /*
+            TODO: 
+            if mouse is in scene view box, and not in play mode, 
+            and right mouse button is down, allow mouse look around input.
+        */
     }
 
     // @brief renders all of the engine textures, sounds and objects.
@@ -156,8 +163,9 @@ namespace isaacGraphicsEngine
                                                 0.1f,
                                                 100.0f);
                                                 
-        // Render Cube
+        // Render Primitives
         //------------------------------------------------------------------------------------
+        m_Plane->Render(m_Renderer, *m_lightingShader, view, projection);
         m_Cylinder->Render(m_Renderer, *m_lightingShader, view, projection);
         
         for (auto& cube : m_Cubes)
@@ -182,6 +190,7 @@ namespace isaacGraphicsEngine
         ImGui::DestroyContext();
 
         ClearCubes();
+        delete m_Plane;
         delete m_Cylinder;
         delete m_IO;
         delete m_Shader;
@@ -229,27 +238,102 @@ namespace isaacGraphicsEngine
     void Engine::ImguiRender()
     {
         //ImguiSetCustomColorStyle();
+        ImGuiIO& io = ImGui::GetIO();
+        float display_w = io.DisplaySize.x;
+        float display_h = io.DisplaySize.y;
+    
+        // ===================================================
+        // Top Control Panel 
+        // ===================================================
+        {
+            int button_num = 3;
+            glm::vec2 button_size = {40,20}; // in px
+            int spacing = 20;
+            // Fixed height for the control panel (e.g., 50 pixels)
+            float controlPanelHeight = 20.0f;
+            ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+            ImGui::SetNextWindowSize(ImVec2(display_w - 300.f, controlPanelHeight), ImGuiCond_Always);
+    
+            // No docking, collapse, or moving; and hide title bar for a clean look.
+            ImGuiWindowFlags topPanelFlags = ImGuiWindowFlags_NoDocking |
+                                             ImGuiWindowFlags_NoCollapse |
+                                             ImGuiWindowFlags_NoMove |
+                                             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration;
 
-        // imgui render
+            ImGui::Begin("Engine Controls", nullptr, topPanelFlags);
+    
+            // Center the buttons horizontally:
+            float totalButtonWidth = button_size.x * button_num + spacing; // Three buttons at 80 px each plus spacing
+            float cursorX = (display_w - totalButtonWidth) * 0.5f;
+            ImGui::SetCursorPosX(cursorX);
+    
+            // Play Button
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.1f, 0.8f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 1.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 0.6f, 1.0f));
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.5f));
+            if (ImGui::Button("Play", ImVec2(button_size.x,button_size.y)))
+            {
+                glfwSetInputMode(m_Window->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                SetDisableInput(false);
+                SetShowMyWindow(false);
+            }
+            ImGui::SameLine();
+            ImGui::PopStyleVar(2);
+            ImGui::PopStyleColor(3);
+            
+            // Style and exit button styling
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.0f, 0.0f, 1.0f));
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.5f));
+            if (ImGui::Button("Exit", ImVec2(button_size.x,button_size.y)))
+            {
+                Exit();
+                return;
+            }
+            ImGui::PopStyleVar(2);
+            ImGui::PopStyleColor(3);
+
+            ImGui::End();
+        }
+    
+        // ===================================================
+        // Right Panel: Scene Settings
+        // ===================================================
         if (m_ShowMyWindow)
         {
-            ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);    // Position at top-left corner
-            ImGui::SetNextWindowSize(ImVec2(500, ImGui::GetIO().DisplaySize.y), ImGuiCond_FirstUseEver); // Full height panel
+            float panel_width = 300.0f;
+            // Get the main viewport's work area
+            const ImGuiViewport* viewport = ImGui::GetMainViewport();
+            // Set position: right side of the viewport (work area) and at the top
+            ImGui::SetNextWindowPos
+            (
+                ImVec2(viewport->WorkPos.x + viewport->WorkSize.x - panel_width, viewport->WorkPos.y),
+                ImGuiCond_Always
+            );
+            // Set size: fixed panel width, and full height of the viewport work area
+            ImGui::SetNextWindowSize
+            (
+                ImVec2(panel_width, viewport->WorkSize.y),
+                ImGuiCond_Always
+            );
 
-            ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking    |
-                                        ImGuiWindowFlags_NoCollapse   |
-                                        ImGuiWindowFlags_NoMove;
+            ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking       | 
+                                           ImGuiWindowFlags_NoCollapse      | 
+                                           ImGuiWindowFlags_NoDecoration;
 
             ImGui::Begin("Scene Settings", nullptr, windowFlags);
 
-            // Display FPS
+            // Display FPS.
             ImGui::Text("FPS: %.4f", m_FPS);
 
             if (ImGui::CollapsingHeader("Environment Settings"))
             {
                 ImGui::Text("Background Color");
-                ImGui::ColorEdit3("Background Color", (float *)&m_BackgroundColor,ImGuiColorEditFlags_NoLabel);
-
+                ImGui::ColorEdit3("Background Color", (float *)&m_BackgroundColor, ImGuiColorEditFlags_NoLabel);
                 if (ImGui::Button("Reset Background Color"))
                 {
                     m_BackgroundColor = {0.0f, 0.0f, 0.0f};
@@ -260,8 +344,7 @@ namespace isaacGraphicsEngine
             if (ImGui::CollapsingHeader("Camera Settings"))
             {
                 ImGui::Text("Camera Movement Speed");
-                ImGui::DragFloat("Camera Movement Speed", &m_Camera->GetSpeed(), 0.01f, 0.1f, 10.0f, "%.2f");
-
+                ImGui::DragFloat("##", &m_Camera->GetSpeed(), 0.01f, 0.1f, 10.0f, "%.2f");
                 if (ImGui::Button("Reset Camera Speed"))
                 {
                     m_Camera->ResetSpeed();
@@ -275,22 +358,19 @@ namespace isaacGraphicsEngine
                 }
 
                 ImGui::Text("Camera Zoom");
-                ImGui::DragFloat("Camera Zoom", &m_Camera->GetZoom(), 0.1f, 1.0f, 45.0f, "%.2f");
-
+                ImGui::DragFloat("##", &m_Camera->GetZoom(), 0.1f, 1.0f, 45.0f, "%.2f");
                 if (ImGui::Button("Reset Camera Zoom"))
                 {
                     m_Camera->SetPosition(glm::vec3(0.0f, 0.0f, 3.0f));
-                    ImGui::SetTooltip("Reset camera zoom to default 45.f ");
+                    ImGui::SetTooltip("Reset camera zoom to default (45.f).");
                 }
             }
 
             if (ImGui::CollapsingHeader("Mouse Settings"))
             {
                 auto& mouse = Mouse::GetInstance();
-
                 ImGui::Text("Mouse Sensitivity");
-                ImGui::DragFloat("Mouse Sensitivity", &mouse.GetSensitivity(),0.01f, 0.01f, 5.0f, "%.4f");
-                
+                ImGui::DragFloat("##", &mouse.GetSensitivity(), 0.01f, 0.01f, 5.0f, "%.4f");
                 if (ImGui::Button("Reset Mouse Sensitivity"))
                 {
                     mouse.ResetSensitivity();
@@ -300,88 +380,64 @@ namespace isaacGraphicsEngine
 
             if (ImGui::CollapsingHeader("Cube Settings"))
             {
-                ImGui::Text("Cube Count: %zu",GetCubeCount());
-
+                ImGui::Text("Cube Count: %zu", GetCubeCount());
                 static float cubePosition[3] = {0.0f, 0.0f, 0.0f};
-                ImGui::InputFloat3("Cube Position", cubePosition);
+                ImGui::Text("Position");
+                ImGui::InputFloat3("##", cubePosition);
                 if (ImGui::Button("Add Cube at Position"))
                 {
                     AddCube(glm::vec3(cubePosition[0], cubePosition[1], cubePosition[2]));
                 }
-                
                 static int addAmount = 1;
-                ImGui::InputInt("Add Amount", &addAmount);
-                addAmount = std::max(1, addAmount); // Ensure it's at least 1
-
+                ImGui::Text("Add Amount");
+                ImGui::InputInt("##", &addAmount);
+                addAmount = std::max(1, addAmount);
                 if (ImGui::Button("Add Multiple Cubes"))
                 {
                     AddCubes(addAmount);
                 }
-                
                 if (ImGui::Button("Remove All Cubes"))
                 {
                     ClearCubes();
                 }
-
                 if (ImGui::CollapsingHeader("Active Cubes"))
                 {
                     for (size_t i = 0; i < m_Cubes.size(); ++i)
                     {
-                        ImGui::PushID(static_cast<int>(i)); // Ensure unique IDs for ImGui elements
+                        ImGui::PushID(static_cast<int>(i));
                         ImGui::Text("Cube %zu", i + 1);
-
+                        ImGui::Text("Position");
                         glm::vec3& position = m_Cubes[i]->GetPosition();
-                        if (ImGui::DragFloat3("Position", &position[0], 0.1f, -1000.0f, 1000.0f))
+                        if (ImGui::DragFloat3("##", &position[0], 0.1f, -1000.0f, 1000.0f))
                         {
                             m_Cubes[i]->SetPosition(position);
                         }
-
-                        // Button to remove the cube
                         if (ImGui::Button("Remove Cube"))
                         {
                             RemoveCube(i);
                             ImGui::PopID();
-                            break; // Exit loop since indices have shifted
+                            break;
                         }
-
                         ImGui::Separator();
                         ImGui::PopID();
                     }
                 }
             }
 
-
             if (ImGui::CollapsingHeader("Light Cube Settings"))
             {
                 ImGui::Text("Light Cube Position");
-                ImGui::DragFloat3("Light Cube Position", (float *)&m_Light->GetPosition(), 0.01f,-1000.f, 1000.f,"%.4f");
-                
+                ImGui::DragFloat3("##", (float *)&m_Light->GetPosition(), 0.01f, -1000.f, 1000.f, "%.4f");
                 ImGui::Text("Light Cube Color");
-                ImGui::ColorEdit3("Light Cube Color", (float *)&m_Light->GetColor(),ImGuiColorEditFlags_NoLabel);
-                
+                ImGui::ColorEdit3("##", (float *)&m_Light->GetColor(), ImGuiColorEditFlags_NoLabel);
                 ImGui::Text("Specular Intensity");
-                ImGui::DragFloat("Specular Intensity", &m_Light->GetSpecularIntensity(), 0.01f,0.0f, 1.0f,"%.4f");
+                ImGui::DragFloat("##", &m_Light->GetSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.4f");
             }
 
-            // Exit button styling
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));        
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f)); 
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.0f, 0.0f, 1.0f));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.5f));
-
-            if (ImGui::Button("Exit", ImVec2(60, 30))) 
-            {
-                Exit();
-                return;
-            }
-
-            ImGui::PopStyleVar(2);
-            ImGui::PopStyleColor(3);
-
-            ImGui::End(); // End the "Scene Settings" window
+            ImGui::End();
         }
 
+        // Finalize ImGui rendering
         ImGui::End();
         ImGui::Render();
     }
@@ -547,6 +603,7 @@ namespace isaacGraphicsEngine
 
     void KeyCallback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods)
     {
+        /*
         auto engine = Engine::GetInstance();
         if (key == GLFW_KEY_H && action == GLFW_PRESS && !engine->GetKeyPressed())
         {
@@ -569,6 +626,8 @@ namespace isaacGraphicsEngine
         {
             engine->SetKeyPressed(false);
         }
+        
+        */
     }
 
     // -----------------------------------------------------------------------------------------------------

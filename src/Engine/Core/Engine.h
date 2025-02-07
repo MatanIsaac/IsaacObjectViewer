@@ -3,6 +3,7 @@
 #include "Utility/config.h"
 #include "Window.h"
 #include "Engine/Scene/Camera/Camera.h"
+#include "Engine/Graphics/OpenGL/Primitives/Plane.h"
 #include "Engine/Graphics/OpenGL/Primitives/Cube.h"
 #include "Engine/Graphics/OpenGL/Primitives/Cylinder.h"
 #include "Engine/Graphics/OpenGL/Lighting/Light.h"
@@ -102,8 +103,9 @@ namespace isaacGraphicsEngine
         Window *m_Window;
         Shader *m_Shader;
         Shader *m_lightingShader;
+        
+        Plane* m_Plane;
         std::vector<Cube*> m_Cubes;
-
         Cylinder *m_Cylinder;
         Light *m_Light;
         
@@ -125,7 +127,7 @@ namespace isaacGraphicsEngine
         // ImGui stuff
         //-----------------------------------------------------------------------
         ImGuiIO *m_IO;
-        bool m_ShowMyWindow = false;
+        bool m_ShowMyWindow;
         glm::vec4 m_ClearColor = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
         bool *m_Open = nullptr;
         //-----------------------------------------------------------------------

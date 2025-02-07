@@ -1,49 +1,53 @@
 #include "Light.h"
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Utility/config.h"  // for GetProjectRoot()
 
 namespace isaacGraphicsEngine
 {
     Light::Light(const glm::vec3& position, const glm::vec3& color)
-        : m_Color(color), m_Cube()
+        : m_Color(color), m_Cube(position), m_SpecularIntensity(0.5f)
     {
-        m_Cube.SetPosition(position);
-        m_Cube.SetScale(glm::vec3(0.2f)); // Scale down for a smaller light representation
+        // Scale down the cube representation for the light.
+        m_Cube.SetScale(glm::vec3(0.2f));
         m_Cube.SetColor(color);
-        m_SpecularIntensity = 0.5f;
 
+        // Build paths to the light cube shader files.
         std::string projectRoot = GetProjectRoot();
-        auto light_cube_vs = projectRoot.append("\\src\\Resources\\Shaders\\light_cube.vs");
-        projectRoot = GetProjectRoot();
-        auto light_cube_fs = projectRoot.append("\\src\\Resources\\Shaders\\light_cube.fs");
+        std::string lightCubeVS = projectRoot + "\\src\\Resources\\Shaders\\light_cube.vs";
+        std::string lightCubeFS = projectRoot + "\\src\\Resources\\Shaders\\light_cube.fs";
 
-        m_Shader =  new Shader(light_cube_vs.c_str(), light_cube_fs.c_str());
+        // Create the shader using a unique pointer.
+        m_Shader = std::make_unique<Shader>(lightCubeVS.c_str(), lightCubeFS.c_str());
     }
-        
+
     Light::~Light()
     {
-    
+        // Unique pointer cleans up m_Shader automatically.
     }
-
 
     void Light::Update()
     {
-        // Update light logic (e.g., animations) if necessary
+        // Update light logic (for example, animate the light position) if needed.
     }
 
-    void Light::Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection)
+    void Light::Render(const Renderer& renderer, Shader& sceneShader, const glm::mat4& view, const glm::mat4& projection)
     {
+        // First, update and bind the internal light cube shader.
         m_Shader->Bind();
         m_Shader->setMat4("model", m_Cube.GetModelMatrix());
         m_Shader->setMat4("view", view);
         m_Shader->setMat4("projection", projection);
-        m_Shader->setVec3( "lightColor", m_Color);
+        m_Shader->setVec3("lightColor", m_Color);
 
-        shader.Bind();
-        shader.setVec3("lightColor", m_Color);
-        shader.setVec3("lightPos", m_Cube.GetPosition());
-        shader.setFloat("specularIntensity", m_SpecularIntensity);
+        // Then update the scene shader with the light properties so that the scene objects
+        // can use the light’s color, position, and specular intensity.
+        sceneShader.Bind();
+        sceneShader.setVec3("lightColor", m_Color);
+        sceneShader.setVec3("lightPos", m_Cube.GetPosition());
+        sceneShader.setFloat("specularIntensity", m_SpecularIntensity);
 
-        renderer.Render(m_Cube.GetCubeVA(), m_Cube.GetVertexCount(), *m_Shader);
+        // Render the light cube using indexed drawing.
+        renderer.Render(m_Cube.GetCubeVA(), m_Cube.GetCubeIB(), *m_Shader);
     }
 }

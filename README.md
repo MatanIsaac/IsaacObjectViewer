@@ -27,11 +27,7 @@ To get started with this project, you need to have the following installed:
 
     C++ Compiler: Compatible with C++17 or later.
     CMake: Version 3.27 or higher is recommended.
-<<<<<<< HEAD
-    OpenGL: Ensure your graphics drivers supports OpenGL 3.3 or higher (there may be further changes and support for DirectX or Vulkan in the future). 
-=======
-    OpenGL: Ensure your graphics drivers supports OpenGL 4.0 or higher (there may be further changes and support for DirectX or Vulkan in the future). 
->>>>>>> d6ff629a833350017f51019c2872d95ff0d5fca3
+    OpenGL: Ensure your graphics drivers supports OpenGL 3.3 or higher (there may be further changes and support for DirectX or Vulkan in the future).  
 
 ## Getting Started
 ### Cloning the Repository

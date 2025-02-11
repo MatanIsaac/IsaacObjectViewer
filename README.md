@@ -1,13 +1,5 @@
 # isaac's Graphics Engine
 
-<div align="center">
-<<<<<<< HEAD
-    <img src="https://github.com/MatanIsaac/IsaacGraphicsEngine/blob/main/Picute1.png" alt="Isaac-Graphics-Engine">
-=======
-    <img src="https://github.com/MatanIsaac/IsaacGraphicsEngine/blob/main/60_FPS_3500_CUBES.png" alt="Isaac-Graphics-Engine">
->>>>>>> d6ff629a833350017f51019c2872d95ff0d5fca3
-</div>
-
 This project is a simple grahics engine created as a side project during my pursuit of a Computer Science degree.                            
 Its purpose is to experiment with and learn 3D graphics programming and rendering techniques.                               
 Built with modern C++ and OpenGL, it offers a simple framework for loading, viewing 3D models, and 2D Textures.

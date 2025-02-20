@@ -7,6 +7,8 @@
     <img src="https://github.com/MatanIsaac/IsaacGraphicsEngine/blob/main/Picture1.png" alt="Isaac-Graphics-Engine">
 </div>
 
+---                                                                                                                                                                                                              
+
 This project is a simple graphics engine created as a side project during my pursuit of a Computer Science degree.                            
 While its still a work-in-progress, its purpose is to experiment with and learn 3D graphics programming and rendering techniques.                               
 Built with modern C++ and OpenGL, it offers a simple framework for loading, viewing 3D models, and 2D Textures.
@@ -24,10 +26,10 @@ It aims to serve as:
 ## <div align="center"> ✨ Features </div>
 
     CMake Build System: Simplify configuration, building, and dependency management.
-    GLFW</strong>: Seamless creation of windows, input handling, and OpenGL context management.
-    spdlog</strong>: Fast, header-only logging for high-performance output.
-    Google Test (gtest)</strong>: Integrated tests to help ensure code quality.
-    ImGui</strong>: Lightweight, in-app GUI library for creating tools, controls, and settings.
+    GLFW: Seamless creation of windows, input handling, and OpenGL context management.
+    spdlog: Fast, header-only logging for high-performance output.
+    Google Test (gtest): Integrated tests to help ensure code quality.
+    ImGui: Lightweight, in-app GUI library for creating tools, controls, and settings.
 
 
 ## <div align="center"> 🛠️ Prerequisites </div>

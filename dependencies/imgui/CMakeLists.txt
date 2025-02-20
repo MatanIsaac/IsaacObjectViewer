@@ -49,10 +49,11 @@ target_include_directories(imgui_impl PUBLIC
 # Link glfw (from parent project), opengl32, and imm32 for IME support on Windows
 if(WIN32)
     target_link_libraries(imgui_impl PUBLIC imgui glfw opengl32 imm32)
+elseif(UNIX)
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(imgui_impl PUBLIC imgui glfw OpenGL::GL)
 else()
-    # On other platforms, you might use OpenGL::GL after find_package(OpenGL REQUIRED)
-    # target_link_libraries(imgui_impl PUBLIC imgui glfw OpenGL::GL)
-    message(FATAL_ERROR "This configuration is Windows-specific. On other platforms, use OpenGL::GL after find_package(OpenGL REQUIRED).")
+    message(FATAL_ERROR "This configuration is Linux-Windows-specific.")
 endif()
 
 # Install configuration

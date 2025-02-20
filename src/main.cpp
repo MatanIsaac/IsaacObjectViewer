@@ -3,7 +3,7 @@
 using namespace isaacGraphicsEngine;
 
 int main()
-{
+{   
     auto engine = Engine::GetInstance();
     if (engine)
     {

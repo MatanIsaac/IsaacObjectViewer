@@ -30,4 +30,13 @@
 
 #include <filesystem>
 
+#ifdef _WIN32
+    #define OS_SEPARATOR '\\'
+#else
+    #define OS_SEPARATOR '/'
+#endif
+
+
 std::string GetProjectRoot();
+
+void ConvertSeparators(std::string& relative_path);

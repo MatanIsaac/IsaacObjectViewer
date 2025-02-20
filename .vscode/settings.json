@@ -76,6 +76,7 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "regex": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "filesystem": "cpp"
     }
 }

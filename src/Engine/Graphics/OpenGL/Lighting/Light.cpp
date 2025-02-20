@@ -1,7 +1,8 @@
 #include "Light.h"
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include "Utility/config.h"  // for GetProjectRoot()
+#include "Utility/config.h"  
+#include "Utility/Log.hpp"
 
 namespace isaacGraphicsEngine
 {
@@ -13,12 +14,17 @@ namespace isaacGraphicsEngine
         m_Cube.SetColor(color);
 
         // Build paths to the light cube shader files.
-        std::string projectRoot = GetProjectRoot();
-        std::string lightCubeVS = projectRoot + "\\src\\Resources\\Shaders\\light_cube.vs";
-        std::string lightCubeFS = projectRoot + "\\src\\Resources\\Shaders\\light_cube.fs";
+        std::string lightCubeVS = "src/Resources/Shaders/light_cube.vs";
+        std::string lightCubeFS = "src/Resources/Shaders/light_cube.fs";
+        ConvertSeparators(lightCubeVS);
+        ConvertSeparators(lightCubeFS);
 
         // Create the shader using a unique pointer.
         m_Shader = std::make_unique<Shader>(lightCubeVS.c_str(), lightCubeFS.c_str());
+        if(m_Shader == nullptr)
+        {
+            LOG_ERROR("Failed to create parse light cube shader!\n");
+        }
     }
 
     Light::~Light()

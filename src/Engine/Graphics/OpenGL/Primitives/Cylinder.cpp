@@ -62,89 +62,174 @@ namespace isaacGraphicsEngine
     }
   
     int Cylinder::GenerateCylinder(float baseRadius, float topRadius, float height, int sectorCount,
-                                     std::vector<float>& vertices, std::vector<unsigned int>& indices)
+        std::vector<float>& vertices, std::vector<unsigned int>& indices)
     {
+        // Clear any previous data.
         vertices.clear();
         indices.clear();
 
+        // Precompute common values.
         float halfHeight = height * 0.5f;
         float sectorStep = 2.0f * glm::pi<float>() / sectorCount;
 
-        // Generate side vertices
+        // Compute the slope for the side (used for normals)
+        // For a conical frustum, dr/dz = (baseRadius - topRadius) / height.
+        float dr = (baseRadius - topRadius) / height;
+        // The length of the vector (1, 0, dr) is sqrt(1 + dr^2). This factor will normalize the side normal.
+        float sideNormalFactor = std::sqrt(1.0f + dr * dr);
+
+        // =========================
+        // 1. Generate Side Vertices
+        // =========================
+        // We generate (sectorCount+1) pairs of vertices (bottom and top) so that the first and last are identical.
+        // Each vertex has 6 floats: (x, y, z, nx, ny, nz).
+        int sideVertexStart = static_cast<int>(vertices.size() / 6);
         for (int i = 0; i <= sectorCount; ++i)
         {
-            float sectorAngle = i * sectorStep;
-            float x = cos(sectorAngle);
-            float y = sin(sectorAngle);
+            float theta = i * sectorStep;
+            float cosTheta = cos(theta);
+            float sinTheta = sin(theta);
 
-            // Bottom vertex (position and normal)
-            vertices.push_back(baseRadius * x); // x
-            vertices.push_back(baseRadius * y); // y
-            vertices.push_back(-halfHeight);      // z
-            vertices.push_back(x);                // normal x
-            vertices.push_back(y);                // normal y
-            vertices.push_back(0.0f);             // normal z
+            // --- Compute the side normal.
+            // For a conical frustum the unnormalized normal would be (cosTheta, sinTheta, -dr).
+            // Normalize it:
+            float nx = cosTheta / sideNormalFactor;
+            float ny = sinTheta / sideNormalFactor;
+            float nz = -dr / sideNormalFactor;
 
-            // Top vertex (position and normal)
-            vertices.push_back(topRadius * x);    // x
-            vertices.push_back(topRadius * y);    // y
-            vertices.push_back(halfHeight);       // z
-            vertices.push_back(x);                // normal x
-            vertices.push_back(y);                // normal y
-            vertices.push_back(0.0f);             // normal z
+            // Bottom vertex (at z = -halfHeight) using baseRadius.
+            float bx = baseRadius * cosTheta;
+            float by = baseRadius * sinTheta;
+            float bz = -halfHeight;
+            vertices.push_back(bx);  // position x
+            vertices.push_back(by);  // position y
+            vertices.push_back(bz);  // position z
+            vertices.push_back(nx);  // normal x
+            vertices.push_back(ny);  // normal y
+            vertices.push_back(nz);  // normal z
+
+            // Top vertex (at z = halfHeight) using topRadius.
+            float tx = topRadius * cosTheta;
+            float ty = topRadius * sinTheta;
+            float tz = halfHeight;
+            vertices.push_back(tx);  // position x
+            vertices.push_back(ty);  // position y
+            vertices.push_back(tz);  // position z
+            vertices.push_back(nx);  // normal x (same as bottom)
+            vertices.push_back(ny);  // normal y
+            vertices.push_back(nz);  // normal z
         }
 
-        // Generate side indices
-        int k1, k2;
+        // -------------------------
+        // Generate Side Indices
+        // -------------------------
+        // Each sector (quad) is made of two triangles.
         for (int i = 0; i < sectorCount; ++i)
         {
-            k1 = i * 2;       // current bottom vertex index
-            k2 = k1 + 2;      // next bottom vertex index
+            int k1 = sideVertexStart + i * 2;     // current bottom vertex index
+            int k2 = k1 + 2;                      // next bottom vertex index
 
-            // Two triangles per sector
+            // First triangle of the quad.
             indices.push_back(k1);
             indices.push_back(k2);
             indices.push_back(k1 + 1);
 
+            // Second triangle of the quad.
             indices.push_back(k1 + 1);
             indices.push_back(k2);
             indices.push_back(k2 + 1);
         }
 
-        // Generate bottom cap
-        int baseCenterIndex = static_cast<int>(vertices.size() / 6);
-        // Center vertex for the bottom cap
-        vertices.push_back(0.0f); // x
-        vertices.push_back(0.0f); // y
-        vertices.push_back(-halfHeight); // z
-        vertices.push_back(0.0f); // normal x
-        vertices.push_back(0.0f); // normal y
+        // ========================
+        // 2. Generate Bottom Cap
+        // ========================
+        // For a sharp edge between side and cap, we generate separate vertices for the cap rim.
+        int bottomCapVertexStart = static_cast<int>(vertices.size() / 6);
+        for (int i = 0; i <= sectorCount; ++i)
+        {
+            float theta = i * sectorStep;
+            float cosTheta = cos(theta);
+            float sinTheta = sin(theta);
+
+            // Position on the bottom rim.
+            float bx = baseRadius * cosTheta;
+            float by = baseRadius * sinTheta;
+            float bz = -halfHeight;
+            // The cap's flat normal.
+            float nx = 0.0f, ny = 0.0f, nz = -1.0f;
+            vertices.push_back(bx);
+            vertices.push_back(by);
+            vertices.push_back(bz);
+            vertices.push_back(nx);
+            vertices.push_back(ny);
+            vertices.push_back(nz);
+        }
+        // Bottom cap center vertex.
+        int bottomCenterIndex = static_cast<int>(vertices.size() / 6);
+        vertices.push_back(0.0f);  // x
+        vertices.push_back(0.0f);  // y
+        vertices.push_back(-halfHeight);  // z
+        vertices.push_back(0.0f);  // normal x
+        vertices.push_back(0.0f);  // normal y
         vertices.push_back(-1.0f); // normal z
 
+        // Bottom cap indices.
+        // Note: To have a consistent winding order (counterclockwise when looking from the bottom),
+        // we define triangles as (center, next rim vertex, current rim vertex).
         for (int i = 0; i < sectorCount; ++i)
         {
-            indices.push_back(baseCenterIndex);
-            indices.push_back(i * 2);
-            indices.push_back(((i + 1) % sectorCount) * 2);
+            int current = bottomCapVertexStart + i;
+            int next = bottomCapVertexStart + i + 1;
+            indices.push_back(bottomCenterIndex);
+            indices.push_back(next);
+            indices.push_back(current);
         }
 
-        // Generate top cap
+        // ========================
+        // 3. Generate Top Cap
+        // ========================
+        int topCapVertexStart = static_cast<int>(vertices.size() / 6);
+        for (int i = 0; i <= sectorCount; ++i)
+        {
+            float theta = i * sectorStep;
+            float cosTheta = cos(theta);
+            float sinTheta = sin(theta);
+
+            // Position on the top rim.
+            float tx = topRadius * cosTheta;
+            float ty = topRadius * sinTheta;
+            float tz = halfHeight;
+            // The cap's flat normal for the top.
+            float nx = 0.0f, ny = 0.0f, nz = 1.0f;
+            vertices.push_back(tx);
+            vertices.push_back(ty);
+            vertices.push_back(tz);
+            vertices.push_back(nx);
+            vertices.push_back(ny);
+            vertices.push_back(nz);
+        }
+        // Top cap center vertex.
         int topCenterIndex = static_cast<int>(vertices.size() / 6);
-        // Center vertex for the top cap
-        vertices.push_back(0.0f); // x
-        vertices.push_back(0.0f); // y
-        vertices.push_back(halfHeight); // z
-        vertices.push_back(0.0f); // normal x
-        vertices.push_back(0.0f); // normal y
-        vertices.push_back(1.0f); // normal z
+        vertices.push_back(0.0f);  // x
+        vertices.push_back(0.0f);  // y
+        vertices.push_back(halfHeight);  // z
+        vertices.push_back(0.0f);  // normal x
+        vertices.push_back(0.0f);  // normal y
+        vertices.push_back(1.0f);  // normal z
 
+        // Top cap indices.
+        // For the top cap, we want a counterclockwise winding order when viewed from above.
         for (int i = 0; i < sectorCount; ++i)
         {
+            int current = topCapVertexStart + i;
+            int next = topCapVertexStart + i + 1;
             indices.push_back(topCenterIndex);
-            indices.push_back(i * 2 + 1);
-            indices.push_back(((i + 1) % sectorCount) * 2 + 1);
+            indices.push_back(current);
+            indices.push_back(next);
         }
 
-        return static_cast<int>(vertices.size() / 6); // Return the vertex count.
+        // Return the total number of vertices (each vertex is 6 floats).
+        return static_cast<int>(vertices.size() / 6);
     }
+
 }

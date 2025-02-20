@@ -1,18 +1,17 @@
-# isaac's Graphics Engine
+# <div align="center"> Isaac's Graphics Engine </div>
+<!-- License -->
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 
 <div align="center">
-<<<<<<< HEAD
     <img src="https://github.com/MatanIsaac/IsaacGraphicsEngine/blob/main/Picute1.png" alt="Isaac-Graphics-Engine">
-=======
-    <img src="https://github.com/MatanIsaac/IsaacGraphicsEngine/blob/main/60_FPS_3500_CUBES.png" alt="Isaac-Graphics-Engine">
->>>>>>> d6ff629a833350017f51019c2872d95ff0d5fca3
 </div>
 
-This project is a simple grahics engine created as a side project during my pursuit of a Computer Science degree.                            
-Its purpose is to experiment with and learn 3D graphics programming and rendering techniques.                               
+This project is a simple graphics engine created as a side project during my pursuit of a Computer Science degree.                            
+While its still a work-in-progress, its purpose is to experiment with and learn 3D graphics programming and rendering techniques.                               
 Built with modern C++ and OpenGL, it offers a simple framework for loading, viewing 3D models, and 2D Textures.
 
-## Goals
+## <div align="center"> 🎯 Goals </div>
 
 The primary goal of this project is to create a simple tool to load, view, and debug 3D objects and 2D textures.    
 It aims to serve as:
@@ -21,60 +20,55 @@ It aims to serve as:
     - A development environment for experimenting with shaders, lighting, and rendering techniques.
     - A debugging tool for inspecting 3D object structures and textures.
 
-## Features
 
-    - CMake Build System: Easily configure, build, and manage dependencies using CMake.
-    - GLFW: A cross-platform library for creating windows, receiving input, and managing OpenGL contexts.
-    - spdlog: A fast, header-only C++ logging library for providing high-performance logging.
-    - google gtest: Utilizing google test framework, a test directory to test your application.
-    - imgui: Lightweight and fast graphical user interface library for creating in-app tools, controls, and settings.
+## <div align="center"> ✨ Features </div>
 
-## Prerequisites
+    CMake Build System: Simplify configuration, building, and dependency management.
+    GLFW</strong>: Seamless creation of windows, input handling, and OpenGL context management.
+    spdlog</strong>: Fast, header-only logging for high-performance output.
+    Google Test (gtest)</strong>: Integrated tests to help ensure code quality.
+    ImGui</strong>: Lightweight, in-app GUI library for creating tools, controls, and settings.
 
-To get started with this project, you need to have the following installed:
 
-    C++ Compiler: Compatible with C++17 or later.
+## <div align="center"> 🛠️ Prerequisites </div>
+
+Before getting started, make sure you have:
+
+    C++ Compiler: Must support C++17 or later.
     CMake: Version 3.27 or higher is recommended.
-<<<<<<< HEAD
-    OpenGL: Ensure your graphics drivers supports OpenGL 3.3 or higher (there may be further changes and support for DirectX or Vulkan in the future). 
-=======
-    OpenGL: Ensure your graphics drivers supports OpenGL 4.0 or higher (there may be further changes and support for DirectX or Vulkan in the future). 
->>>>>>> d6ff629a833350017f51019c2872d95ff0d5fca3
+    OpenGL: Your graphics drivers should support OpenGL 3.3 or higher (with potential future support for DirectX or Vulkan).
 
-## Getting Started
+## <div align="center"> 🚀 Getting Started </div>
+
 ### Cloning the Repository
 
     git clone https://github.com/MatanIsaac/isaacGraphicsEngine.git
     cd isaacGraphicsEngine
-    
+
 ### Building the Project
+Build scripts simplify the entire process:
+  
+      Windows: Run build.bat
+      Linux:   Run build.sh
 
-    Create a build directory:
-    mkdir build
-    cd build
-
-### Configure the project using CMake:
-
-    cmake ..
-
-### Build the project:
-
-    cmake --build .
 
 ### Running the Application
 
-After building, you can run the application/tests from the build directory:
+Once built, you can start the application with:
 
-    Application Exec:
-    ./build/src/Debug/iov_exec
-    Test Exec:
-    ./build/test/Debug/TemplateTest
+    Windows: Run run.bat
+    Linux:   Run run.sh
 
-## Project Structure
+Alternatively, execute the binaries directly from the build directory:
 
-    Isaac-Object-Loader/
+    Application: build/src/ige_exec
+    Tests: build/test/TemplateTest
+
+## <div align="center"> 📁 Project Structure </div>  
+
+
+    Isaac-Graphics-Engine/
     ├── CMakeLists.txt          # Top-level CMake configuration
-    ├── run.bat                 # Script to run the application
     ├── dependencies/           # External libraries and dependencies
     │   ├── assimp/
     │   ├── glad/
@@ -108,3 +102,13 @@ After building, you can run the application/tests from the build directory:
         ├── CMakeLists.txt      # CMake configuration for tests
 
 
+## <div align="center"> 🤝 Contributing </div>
+Thanks for your interest in helping with Isaac's Graphics Engine! I'm just a second-year CS student working on this project as a hobby, so every bit of help is greatly appreciated.
+
+### How to Contribute
+
+- **Report Issues:** Found a bug or have an idea? Please open an issue on our [GitHub Issue Tracker](https://github.com/MatanIsaac/IsaacGraphicsEngine/issues).
+- **Improve Documentation:** Simple fixes or clarifications to the docs are very welcome.
+- **Submit a Pull Request:** Fork the repo, create a branch off `main`, and open a PR with your changes. Keep things small and clear.
+
+Every contribution, big or small, makes a difference. Thanks for your support!

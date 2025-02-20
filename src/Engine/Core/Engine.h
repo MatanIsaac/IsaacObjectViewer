@@ -3,6 +3,7 @@
 #include "Utility/config.h"
 #include "Window.h"
 #include "Engine/Scene/Camera/Camera.h"
+#include "Engine/Graphics/OpenGL/Primitives/Sphere.h"
 #include "Engine/Graphics/OpenGL/Primitives/Plane.h"
 #include "Engine/Graphics/OpenGL/Primitives/Cube.h"
 #include "Engine/Graphics/OpenGL/Primitives/Cylinder.h"
@@ -104,6 +105,7 @@ namespace isaacGraphicsEngine
         Shader *m_Shader;
         Shader *m_lightingShader;
         
+        Sphere* m_Sphere;
         Plane* m_Plane;
         std::vector<Cube*> m_Cubes;
         Cylinder *m_Cylinder;

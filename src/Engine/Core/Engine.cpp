@@ -11,6 +11,8 @@ namespace isaacGraphicsEngine
     Engine::Engine()
         : m_Shader(nullptr),
           m_lightingShader(nullptr),
+          m_Plane(nullptr),
+          m_Sphere(nullptr),
           m_Cubes({}), //m_Cube(nullptr), 
           m_Window(nullptr),
           m_Camera(nullptr),
@@ -79,15 +81,16 @@ namespace isaacGraphicsEngine
 	
         ImguiInit();
         const glm::vec3 plane_pos = {5.f,1.f,1.f};
+        const glm::vec3 sphere_pos = {-2.5f,1.f,1.f};
+        m_Sphere    = new Sphere(sphere_pos);
         m_Plane     = new Plane(plane_pos);
         m_Cylinder  = new Cylinder();
         m_Light     = new Light({1.2f, 1.0f, 2.0f},{1.0f, 1.0f, 1.0f});
         
-        std::string projectRoot = GetProjectRoot();
-
-        auto colors_vs  = projectRoot.append("\\src\\Resources\\Shaders\\colors.vs");
-        projectRoot     = GetProjectRoot();
-        auto colors_fs  = projectRoot.append("\\src\\Resources\\Shaders\\colors.fs");
+        std::string colors_vs  = "src/Resources/Shaders/colors.vs";
+        std::string colors_fs  = "src/Resources/Shaders/colors.fs";
+        ConvertSeparators(colors_vs);
+        ConvertSeparators(colors_fs);
 
         m_lightingShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
         m_lightingShader->Bind();
@@ -165,6 +168,7 @@ namespace isaacGraphicsEngine
                                                 
         // Render Primitives
         //------------------------------------------------------------------------------------
+        m_Sphere->Render(m_Renderer, *m_lightingShader, view, projection);
         m_Plane->Render(m_Renderer, *m_lightingShader, view, projection);
         m_Cylinder->Render(m_Renderer, *m_lightingShader, view, projection);
         
@@ -190,6 +194,7 @@ namespace isaacGraphicsEngine
         ImGui::DestroyContext();
 
         ClearCubes();
+        delete m_Sphere;
         delete m_Plane;
         delete m_Cylinder;
         delete m_IO;
@@ -237,75 +242,77 @@ namespace isaacGraphicsEngine
 
     void Engine::ImguiRender()
     {
-        //ImguiSetCustomColorStyle();
-        ImGuiIO& io = ImGui::GetIO();
-        float display_w = io.DisplaySize.x;
-        float display_h = io.DisplaySize.y;
-    
-        // ===================================================
-        // Top Control Panel 
-        // ===================================================
+        if (m_ShowMyWindow)
         {
-            int button_num = 3;
-            glm::vec2 button_size = {40,20}; // in px
-            int spacing = 20;
-            // Fixed height for the control panel (e.g., 50 pixels)
-            float controlPanelHeight = 20.0f;
-            ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-            ImGui::SetNextWindowSize(ImVec2(display_w - 300.f, controlPanelHeight), ImGuiCond_Always);
-    
-            // No docking, collapse, or moving; and hide title bar for a clean look.
-            ImGuiWindowFlags topPanelFlags = ImGuiWindowFlags_NoDocking |
-                                             ImGuiWindowFlags_NoCollapse |
-                                             ImGuiWindowFlags_NoMove |
-                                             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration;
-
-            ImGui::Begin("Engine Controls", nullptr, topPanelFlags);
-    
-            // Center the buttons horizontally:
-            float totalButtonWidth = button_size.x * button_num + spacing; // Three buttons at 80 px each plus spacing
-            float cursorX = (display_w - totalButtonWidth) * 0.5f;
-            ImGui::SetCursorPosX(cursorX);
-    
-            // Play Button
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.1f, 0.8f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 0.6f, 1.0f));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.5f));
-            if (ImGui::Button("Play", ImVec2(button_size.x,button_size.y)))
+            float panel_width = 320.0f;
+            //ImguiSetCustomColorStyle();
+            ImGuiIO& io = ImGui::GetIO();
+            float display_w = io.DisplaySize.x;
+            float display_h = io.DisplaySize.y;
+        
+            // ===================================================
+            // Top Control Panel 
+            // ===================================================
             {
-                glfwSetInputMode(m_Window->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                SetDisableInput(false);
-                SetShowMyWindow(false);
-            }
-            ImGui::SameLine();
-            ImGui::PopStyleVar(2);
-            ImGui::PopStyleColor(3);
-            
-            // Style and exit button styling
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.0f, 0.0f, 1.0f));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.5f));
-            if (ImGui::Button("Exit", ImVec2(button_size.x,button_size.y)))
-            {
-                Exit();
-                return;
-            }
-            ImGui::PopStyleVar(2);
-            ImGui::PopStyleColor(3);
+                int button_num = 3;
+                glm::vec2 button_size = {40,20}; // in px
+                int spacing = 20;
+                // Fixed height for the control panel (e.g., 50 pixels)
+                float controlPanelHeight = 20.0f;
+                ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+                ImGui::SetNextWindowSize(ImVec2(display_w - panel_width, controlPanelHeight), ImGuiCond_Always);
+        
+                // No docking, collapse, or moving; and hide title bar for a clean look.
+                ImGuiWindowFlags topPanelFlags = ImGuiWindowFlags_NoDocking |
+                                                ImGuiWindowFlags_NoCollapse |
+                                                ImGuiWindowFlags_NoMove |
+                                                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration;
 
-            ImGui::End();
-        }
+                ImGui::Begin("Engine Controls", nullptr, topPanelFlags);
+        
+                // Center the buttons horizontally:
+                float totalButtonWidth = button_size.x * button_num + spacing; // Three buttons at 80 px each plus spacing
+                float cursorX = (display_w - totalButtonWidth) * 0.5f;
+                ImGui::SetCursorPosX(cursorX);
+        
+                // Play Button
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.1f, 0.8f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 1.0f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 0.6f, 1.0f));
+                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.5f));
+                if (ImGui::Button("Play", ImVec2(button_size.x,button_size.y)))
+                {
+                    // TOFIX: 
+                    // 1. Mouse is not hidden in linux
+                    glfwSetInputMode(m_Window->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                    SetDisableInput(false);
+                    SetShowMyWindow(false);
+                }
+                ImGui::SameLine();
+                ImGui::PopStyleVar(2);
+                ImGui::PopStyleColor(3);
+                
+                // Style and exit button styling
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.0f, 0.0f, 1.0f));
+                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.5f));
+                if (ImGui::Button("Exit", ImVec2(button_size.x,button_size.y)))
+                {
+                    Exit();
+                    return;
+                }
+                ImGui::PopStyleVar(2);
+                ImGui::PopStyleColor(3);
+
+                ImGui::End();
+            }
     
         // ===================================================
         // Right Panel: Scene Settings
         // ===================================================
-        if (m_ShowMyWindow)
-        {
-            float panel_width = 300.0f;
             // Get the main viewport's work area
             const ImGuiViewport* viewport = ImGui::GetMainViewport();
             // Set position: right side of the viewport (work area) and at the top

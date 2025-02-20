@@ -26,3 +26,10 @@ add_subdirectory(src)
 
 # Add subdirectory for tests
 add_subdirectory(test)
+
+
+# Get the name of the top-level project directory
+get_filename_component(PROJECT_DIR_NAME ${CMAKE_SOURCE_DIR} NAME)
+
+# Ensure the directory name is passed as a string literal
+target_compile_definitions(isaac_graphics_engine PUBLIC PROJECT_DIR_NAME=\"${PROJECT_DIR_NAME}\")

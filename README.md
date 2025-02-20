@@ -4,7 +4,7 @@
 
 
 <div align="center">
-    <img src="https://github.com/MatanIsaac/IsaacGraphicsEngine/blob/main/Picute1.png" alt="Isaac-Graphics-Engine">
+    <img src="https://github.com/MatanIsaac/IsaacGraphicsEngine/blob/main/Picture1.png" alt="Isaac-Graphics-Engine">
 </div>
 
 This project is a simple graphics engine created as a side project during my pursuit of a Computer Science degree.                            

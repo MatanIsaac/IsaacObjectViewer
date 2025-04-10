@@ -1,46 +1,51 @@
 #include "Window.h"
+#include <SDL3/SDL_video.h>
 
 namespace isaacGraphicsEngine 
 {
 
     Window::Window(const char *title, int width, int height, bool fullscreen)
     {
-        if (!glfwInit()) 
+        SDL_InitFlags init_flags = SDL_INIT_VIDEO;
+        if (!SDL_Init(init_flags)) 
         {
-            throw std::runtime_error("Failed to initialize GLFW");
+            throw std::runtime_error("Failed to initialize SDL.");
         }
         
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-          
-        m_PrimaryMonitor = glfwGetPrimaryMonitor();
-        
-        if(!fullscreen)
-            m_Window = glfwCreateWindow(width, height, title, nullptr, nullptr);
-        else
-            m_Window = glfwCreateWindow(width, height, title, m_PrimaryMonitor, nullptr);
-    
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+
+        // Create window with graphics context
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+        SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
+        m_Window = SDL_CreateWindow(title, width, height, window_flags);
         if (!m_Window) 
         {
-            glfwTerminate();
-            throw std::runtime_error("Failed to create GLFW window");
+            throw std::runtime_error("Failed to Create an SDL Window.");
         }
+        SDL_SetWindowFullscreen(m_Window,fullscreen);          
        
-        const GLFWvidmode* mode = glfwGetVideoMode(m_PrimaryMonitor);
-        // Putting it in the centre
-        glfwSetWindowPos(m_Window, mode->width/6, mode->height/6);
-        
+        m_GL_Context = SDL_GL_CreateContext(m_Window);
+        if (m_GL_Context == nullptr)
+        {
+            throw std::runtime_error("Failed to create SDL_GL_CreateContext.");
+        }
 
-        glfwMakeContextCurrent(m_Window);
-        glfwSwapInterval(0); 
+        SDL_SetWindowPosition(m_Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        SDL_GL_MakeCurrent(m_Window, m_GL_Context);
+        SDL_GL_SetSwapInterval(1); // Enable vsync
+        SDL_ShowWindow(m_Window);
     }
 
     Window::~Window() 
     {
-        glfwDestroyWindow(m_Window);
-        glfwTerminate();
+        SDL_GL_DestroyContext(m_GL_Context);
+        SDL_DestroyWindow(m_Window);
+        m_Window = nullptr;
     }
-
 }

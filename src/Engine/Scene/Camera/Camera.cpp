@@ -8,11 +8,11 @@ namespace isaacGraphicsEngine
         m_MovementSpeed(DEFAULT_SPEED), 
         m_Zoom(DEFAULT_ZOOM)
     {
-        m_Position = position;
-        m_InitialPosition = position;
-        m_WorldUp  = up;
-        m_Yaw      = yaw;
-        m_Pitch    = pitch;
+        m_Position          = position;
+        m_InitialPosition   = position;
+        m_WorldUp           = up;
+        m_Yaw               = yaw;
+        m_Pitch             = pitch;
         UpdateVectors();
     }
 
@@ -23,11 +23,11 @@ namespace isaacGraphicsEngine
         m_MovementSpeed(DEFAULT_SPEED), 
         m_Zoom(DEFAULT_ZOOM)
     {
-        m_Position = glm::vec3(posX, posY, posZ);
-        m_InitialPosition = glm::vec3(posX, posY, posZ);
-        m_WorldUp  = glm::vec3(upX, upY, upZ);
-        m_Yaw      = yaw;
-        m_Pitch    = pitch;
+        m_Position          = glm::vec3(posX, posY, posZ);
+        m_InitialPosition   = glm::vec3(posX, posY, posZ);
+        m_WorldUp           = glm::vec3(upX, upY, upZ);
+        m_Yaw               = yaw;
+        m_Pitch             = pitch;
         UpdateVectors();
     }
 

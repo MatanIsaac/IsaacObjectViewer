@@ -6,7 +6,7 @@
 namespace isaacGraphicsEngine
 {
     Cylinder::Cylinder(const glm::vec3& position) 
-        : m_Position(position), m_Color(DEFAULT_COLOR), m_Scale(glm::vec3(1.0f))
+        : m_Position(position), m_Scale(glm::vec3(1.0f)), m_Color(DEFAULT_COLOR)
     {
         // Generate cylinder data
         std::vector<float> vertices;

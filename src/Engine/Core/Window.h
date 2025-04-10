@@ -1,6 +1,5 @@
 #pragma once
 #include "Utility/config.h"
-#include "Engine/Scene/Camera/Camera.h"
 
 namespace isaacGraphicsEngine
 {
@@ -10,13 +9,12 @@ namespace isaacGraphicsEngine
         Window(const char *title, int width, int height, bool fullscreen = false);
         ~Window();
 
-        GLFWwindow* GetGLFWwindow() {return m_Window; };
+        SDL_Window*     GetSDLWindow()      { return m_Window; }
+        SDL_GLContext   GetGLContext()      { return m_GL_Context; }
+        const char*     GetGLSLVersion()    { return glsl_version; }
     private:
-        GLFWwindow *m_Window;
-        GLFWmonitor *m_PrimaryMonitor = nullptr;
+        SDL_Window*     m_Window;
+        SDL_GLContext   m_GL_Context;
+        const char* glsl_version = "#version 330";
     };
-
-    
-
-
 }

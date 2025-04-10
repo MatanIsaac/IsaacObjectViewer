@@ -3,7 +3,7 @@
 
 namespace isaacGraphicsEngine
 {
-    void Mouse::ProcessMovement(Camera* camera, float xoffset, float yoffset, GLboolean constrainPitch)
+    void Mouse::ProcessMotion(Camera* camera, float xoffset, float yoffset, bool constrainPitch)
     {
         xoffset *= m_Sensitivity;
         yoffset *= m_Sensitivity;
@@ -25,7 +25,7 @@ namespace isaacGraphicsEngine
     }
 
     
-    void Mouse::ProcessScroll(float yoffset, Camera* camera)
+    void Mouse::ProcessZoom(float yoffset, Camera* camera)
     {
         camera->AddZoom(-yoffset);
         if (camera->GetZoom() < 1.0f)

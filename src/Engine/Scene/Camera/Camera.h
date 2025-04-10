@@ -18,7 +18,7 @@ public:
     // Default camera values
     static constexpr float DEFAULT_YAW         = -90.0f;
     static constexpr float DEFAULT_PITCH       = 0.0f;
-    static constexpr float DEFAULT_SPEED       = 2.5f;
+    static constexpr float DEFAULT_SPEED       = 5.0f;
     static constexpr float DEFAULT_ZOOM        = 45.0f;
 
     // constructor with vectors
@@ -43,15 +43,6 @@ public:
     // processes input received from any keyboard-like input system. Accepts input parameter in the
     // form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard(CameraMovement direction, float deltaTime);
-
-    // processes input received from a mouse input system. Expects the offset value in both the x
-    // and y direction.
-    //void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
-    void ProcessCameraMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
-
-    // processes input received from a mouse scroll-wheel event. Only requires input on the vertical
-    // wheel-axis
-    void ProcessMouseScroll(float yoffset, Camera* camera);
 
     const float&     GetPitch() { return m_Zoom; }
     const float&     GetYaw() { return m_Zoom; }

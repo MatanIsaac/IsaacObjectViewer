@@ -6,7 +6,7 @@
 namespace isaacGraphicsEngine
 {
     Sphere::Sphere(const glm::vec3& position) 
-        : m_Position(position), m_Color(DEFAULT_COLOR), m_Scale(glm::vec3(1.0f))
+        : m_Position(position), m_Scale(glm::vec3(1.0f)), m_Color(DEFAULT_COLOR)
     {
         // Adjust these parameters as needed for detail
         float radius = 0.5f;
@@ -70,7 +70,7 @@ namespace isaacGraphicsEngine
         vertices.clear();
         indices.clear();
 
-        float x, y, z, xy;            // vertex position
+        float x, y, z;            // vertex position
         float nx, ny, nz, lengthInv = 1.0f / radius; // normal
         float sectorStep = 2 * glm::pi<float>() / sectorCount;
         float stackStep = glm::pi<float>() / stackCount;

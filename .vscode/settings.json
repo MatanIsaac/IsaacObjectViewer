@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.txt": "cmake",
         "functional": "cpp",
         "any": "cpp",
         "array": "cpp",
@@ -77,6 +78,7 @@
         "variant": "cpp",
         "regex": "cpp",
         "cassert": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "cfenv": "cpp"
     }
 }

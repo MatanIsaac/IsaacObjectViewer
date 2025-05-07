@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "Utility/Log.hpp"
 
 namespace isaacGraphicsEngine
 {
@@ -57,5 +58,20 @@ namespace isaacGraphicsEngine
             m_Front, m_WorldUp));  // normalize the vectors, because their length gets closer to 0 the
                                 // more you look up or down which results in slower movement.
         m_Up = glm::normalize(glm::cross(m_Right, m_Front));
+    }
+
+    void Camera::Update(float dt)
+    {
+        SDL_PumpEvents();
+        
+        const bool* keys = SDL_GetKeyboardState(nullptr);        
+        if (keys[SDL_SCANCODE_W]) 
+            ProcessKeyboard(FORWARD, dt);
+        if (keys[SDL_SCANCODE_S]) 
+            ProcessKeyboard(BACKWARD, dt);
+        if (keys[SDL_SCANCODE_A]) 
+            ProcessKeyboard(LEFT, dt);
+        if (keys[SDL_SCANCODE_D]) 
+            ProcessKeyboard(RIGHT, dt);
     }
 }

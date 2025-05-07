@@ -5,13 +5,16 @@ namespace isaacGraphicsEngine
 {
     void Mouse::ProcessMotion(Camera* camera, float xoffset, float yoffset, bool constrainPitch)
     {
+        // scale the raw mouse deltas by your sensitivity setting
         xoffset *= m_Sensitivity;
         yoffset *= m_Sensitivity;
 
+        // apply them to the camera's yaw and pitch angles
         camera->AddYaw(xoffset);
         camera->AddPitch(yoffset);
 
         // make sure that when pitch is out of bounds, screen doesn't get flipped
+        // clamp pitch to [-89°, +89°] to avoid gimbal-lock singularity
         if (constrainPitch)
         {
             if (camera->GetPitch() > 89.0f)

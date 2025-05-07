@@ -55,7 +55,6 @@ namespace isaacGraphicsEngine
                 m_FPS = 1.0f / m_DeltaTime;
             
             SDL_GL_SwapWindow(m_Window->GetSDLWindow());
-            SDL_PumpEvents(); 
         }
         Clean();
     }
@@ -120,18 +119,25 @@ namespace isaacGraphicsEngine
                 m_IsRunning = false;
             }
 
-            if(event.key.key == SDLK_ESCAPE)
+            if(event.type == SDL_EVENT_KEY_DOWN)
             {
-                m_DisableInput = true;
-                SDL_ShowCursor();
-                SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),false);
+                switch(event.key.key)
+                {
+                    case SDLK_ESCAPE:
+                        m_DisableInput = true;
+                        SDL_ShowCursor();
+                        SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),false);
+                        break;
+                    case SDLK_BACKSPACE:
+                        m_DisableInput = false;
+                        SDL_HideCursor();
+                        SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),true);
+                        break;
+                    default:
+                        break;       
+                }
             }
-            if(event.key.key == SDLK_BACKSPACE)
-            {
-                m_DisableInput = false;
-                SDL_HideCursor();
-                SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),true);
-            }
+            
             if(!m_DisableInput)
             {            
                 if(event.type == SDL_EVENT_MOUSE_MOTION)
@@ -139,7 +145,7 @@ namespace isaacGraphicsEngine
                     float xoffset = static_cast<float>(event.motion.xrel);
                     float yoffset = static_cast<float>(event.motion.yrel); 
 
-                    MouseRef.ProcessMotion(m_Camera, xoffset, -yoffset, false);
+                    MouseRef.ProcessMotion(m_Camera, xoffset, -yoffset);
                 }
 
                 if(event.type == SDL_EVENT_MOUSE_WHEEL)
@@ -148,15 +154,6 @@ namespace isaacGraphicsEngine
 
                     MouseRef.ProcessZoom(yoffset,m_Camera);
                 }
-
-                if(event.key.key == SDLK_W)
-                m_Camera->ProcessKeyboard(FORWARD, m_DeltaTime);
-                if(event.key.key == SDLK_S)
-                m_Camera->ProcessKeyboard(BACKWARD, m_DeltaTime);
-                if(event.key.key == SDLK_A)
-                m_Camera->ProcessKeyboard(LEFT, m_DeltaTime);
-                if(event.key.key == SDLK_D)
-                m_Camera->ProcessKeyboard(RIGHT, m_DeltaTime);
             }
         }
     }
@@ -166,11 +163,7 @@ namespace isaacGraphicsEngine
     {
 
         LOG_INFO("DeltaTime: {0}, FPS: {1}",dt,m_FPS);
-        /*
-            TODO: 
-            if mouse is in scene view box, and not in play mode, 
-            and right mouse button is down, allow mouse look around input.
-        */
+        m_Camera->Update(dt);
     }
 
     // @brief renders all of the engine textures, sounds and objects.

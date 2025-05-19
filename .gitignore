@@ -14,28 +14,34 @@
 *.pdb
 *.ilk
 
-# Compiled Dynamic libraries
+# Compiled Dynamic libraries - ignore globally except in dependencies
+*.dll
+!dependencies/**/*.dll
+
 *.so
 *.dylib
-*.dll
 
-# Fortran module files
-*.mod
-*.smod
+# Compiled Static libraries - ignore globally except in dependencies
+*.a
+!dependencies/**/*.a
 
-# Compiled Static libraries
 *.lai
 *.la
-*.a
 *.lib
 
-# Executables
+# Executables - ignore globally
 *.exe
 *.out
 *.app
 
-# Build directories
-build/
+# Build directories - ignore, but keep dependencies/bin
+/build/
+
+# Dependencies: explicitly keep this folder and everything inside it
+!dependencies/
+!dependencies/bin/
+!dependencies/bin/**
+!dependencies/**
 
 # VSCode settings
 .vscode/

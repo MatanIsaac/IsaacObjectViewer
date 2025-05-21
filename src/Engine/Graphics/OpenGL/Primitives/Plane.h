@@ -9,7 +9,7 @@
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     class Plane
     {

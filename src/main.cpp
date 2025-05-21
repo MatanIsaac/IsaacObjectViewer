@@ -1,7 +1,7 @@
 #include "Engine/Core/Engine.h"
 #include <SDL3/SDL_main.h>
 
-using namespace isaacGraphicsEngine;
+using namespace isaacObjectLoader;
 
 int main(int argc, char* argv[])
 {   

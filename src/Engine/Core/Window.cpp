@@ -1,7 +1,7 @@
 #include "Window.h"
 #include <SDL3/SDL_video.h>
 
-namespace isaacGraphicsEngine 
+namespace isaacObjectLoader 
 {
 
     Window::Window(const char *title, int width, int height, bool fullscreen)
@@ -39,6 +39,7 @@ namespace isaacGraphicsEngine
         SDL_SetWindowPosition(m_Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
         SDL_GL_MakeCurrent(m_Window, m_GL_Context);
         SDL_GL_SetSwapInterval(1); // Enable vsync
+        SDL_SetWindowPosition(m_Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
         SDL_ShowWindow(m_Window);
     }
 

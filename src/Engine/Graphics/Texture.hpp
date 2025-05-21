@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     struct Texture
     {

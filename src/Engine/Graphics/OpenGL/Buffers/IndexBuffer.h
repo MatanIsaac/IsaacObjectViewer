@@ -1,5 +1,5 @@
 #pragma once
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
 class IndexBuffer
 {

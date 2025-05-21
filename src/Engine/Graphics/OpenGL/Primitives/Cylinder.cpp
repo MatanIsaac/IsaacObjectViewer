@@ -3,7 +3,7 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     Cylinder::Cylinder(const glm::vec3& position) 
         : m_Position(position), m_Scale(glm::vec3(1.0f)), m_Color(DEFAULT_COLOR)

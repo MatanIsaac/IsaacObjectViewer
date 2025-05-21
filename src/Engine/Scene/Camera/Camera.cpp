@@ -1,7 +1,7 @@
 #include "Camera.h"
 #include "Utility/Log.hpp"
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
         : 

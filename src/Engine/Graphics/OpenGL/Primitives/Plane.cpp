@@ -1,7 +1,7 @@
 #include "Plane.h"
 
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     Plane::Plane(const glm::vec3& position) 
         : m_Position(position)

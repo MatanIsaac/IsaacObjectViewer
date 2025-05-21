@@ -3,8 +3,9 @@
 #include "Utility/ColorMacros.h"
 #include "Utility/Log.hpp"
 #include "Mouse.h"
+#include "../UI/ImGuiLayer.h"
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     inline Mouse& MouseRef = Mouse::GetInstance();
     Engine *Engine::s_Instance = nullptr;
@@ -29,6 +30,9 @@ namespace isaacGraphicsEngine
     void Engine::Run(bool fullscreen)
     {
         assert(Init("Isaac's Graphics Engine", SCREEN_WIDTH, SCREEN_HEIGHT, fullscreen));
+        
+        ImGuiLayer imgui;
+        imgui.Init(m_Window->GetSDLWindow(),m_Window->GetGLContext());
 
         const float targetFrameTime = 1.0f / 60.0f; // Target frame time for 60 FPS
         while (m_IsRunning)
@@ -36,6 +40,11 @@ namespace isaacGraphicsEngine
             // per-frame time logic
             // --------------------
             float frameStartTime = static_cast<float>(SDL_GetTicks()) / 1000.0f;
+            
+            // Rendering Correctly
+
+            imgui.Begin();
+            imgui.DrawUI();
             
             // input
             ProcessInput();
@@ -54,6 +63,7 @@ namespace isaacGraphicsEngine
             if (m_DeltaTime > 0.0f)
                 m_FPS = 1.0f / m_DeltaTime;
             
+            imgui.End();
             SDL_GL_SwapWindow(m_Window->GetSDLWindow());
         }
         Clean();
@@ -114,6 +124,8 @@ namespace isaacGraphicsEngine
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
+            ImGui_ImplSDL3_ProcessEvent(&event);
+
             if(event.type == SDL_EVENT_QUIT)
             {
                 m_IsRunning = false;
@@ -162,7 +174,7 @@ namespace isaacGraphicsEngine
     void Engine::Update(float dt) 
     {
 
-        LOG_INFO("DeltaTime: {0}, FPS: {1}",dt,m_FPS);
+        //LOG_INFO("DeltaTime: {0}, FPS: {1}",dt,m_FPS);
         m_Camera->Update(dt);
     }
 

@@ -6,6 +6,7 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/src/",
                 "${workspaceFolder}/dependencies/**",
+                "${workspaceFolder}/dependencies/imgui",
                 "${workspaceFolder}/dependencies/SDL3/x86_64-w64-mingw32/include/**"
             ],
             "defines": [

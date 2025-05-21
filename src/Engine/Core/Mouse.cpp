@@ -1,7 +1,7 @@
 #include "Mouse.h"
 
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     void Mouse::ProcessMotion(Camera* camera, float xoffset, float yoffset, bool constrainPitch)
     {

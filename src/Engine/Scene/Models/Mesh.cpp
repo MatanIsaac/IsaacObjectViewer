@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     Mesh::Mesh(std::vector<Vertex> vertices,
                std::vector<unsigned int> indices,

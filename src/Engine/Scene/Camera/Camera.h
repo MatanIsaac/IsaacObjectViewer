@@ -2,7 +2,7 @@
 
 #include "Utility/config.h"
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     enum CameraMovement
     {

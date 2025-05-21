@@ -1,7 +1,7 @@
 #pragma once
 #include "Utility/config.h"
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     class Window 
     {

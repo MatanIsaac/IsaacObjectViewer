@@ -1,6 +1,6 @@
 #include "VertexBufferLayout.h"
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
 
     VertexBufferLayout::VertexBufferLayout()

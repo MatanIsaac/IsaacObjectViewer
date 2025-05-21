@@ -2,7 +2,7 @@
 #include "VertexBuffer.h"
 #include "VertexBufferLayout.h"
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
 class VertexArray
 {

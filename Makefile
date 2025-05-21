@@ -1,4 +1,16 @@
 CXX = g++
+
+IMGUI_DIR = dependencies/imgui
+IMGUI_BACKEND = $(IMGUI_DIR)/backends
+IMGUI_SRC = \
+	$(IMGUI_DIR)/imgui.cpp \
+	$(IMGUI_DIR)/imgui_draw.cpp \
+	$(IMGUI_DIR)/imgui_tables.cpp \
+	$(IMGUI_DIR)/imgui_widgets.cpp \
+	$(IMGUI_DIR)/imgui_demo.cpp \
+	$(IMGUI_BACKEND)/imgui_impl_sdl3.cpp \
+	$(IMGUI_BACKEND)/imgui_impl_opengl3.cpp
+
 EXE =
 COPY_DLL = 
 ifeq ($(OS),Windows_NT)
@@ -17,11 +29,12 @@ INCLUDE = \
 	-Idependencies/SDL3/x86_64-w64-mingw32/include \
 	-Idependencies/spdlog/include \
 	-Idependencies \
-	-Isrc
+	-Isrc \
+	-I$(IMGUI_DIR) -I$(IMGUI_BACKEND)
 
 CXXFLAGS = -std=c++17 -g -Wall -Wextra $(INCLUDE)
 GLAD_SRC = dependencies/glad/src/glad.c
-SOURCES := $(wildcard src/*.cpp src/**/*.cpp src/**/**/*.cpp src/**/**/**/*.cpp src/**/**/**/**/*.cpp) $(GLAD_SRC)
+SOURCES := $(wildcard src/*.cpp src/**/*.cpp src/**/**/*.cpp src/**/**/**/*.cpp src/**/**/**/**/*.cpp) $(GLAD_SRC) $(IMGUI_SRC)
 OBJS := $(SOURCES:.cpp=.o)
 OBJS := $(OBJS:.c=.o)
 

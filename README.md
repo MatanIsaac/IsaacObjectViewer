@@ -69,20 +69,18 @@ Alternatively, execute the binaries directly from the build directory:
 ## <div align="center"> 📁 Project Structure </div>  
 
 
-    Isaac-Graphics-Engine/
-    ├── CMakeLists.txt          # Top-level CMake configuration
+    Isaac-Object-Viewer/
     ├── dependencies/           # External libraries and dependencies
-    │   ├── assimp/
     │   ├── glad/
-    │   ├── glfw/
+    │   ├── glm/
+    │   ├── imgui/
+    │   ├── SDL3/
     │   ├── spdlog/
-    │   ├── googletest/
     │   ├── stb_image.h
+    │   ├── tiny_obj_loader.h
     ├── src/                    # Source files
-    │   ├── CMakeLists.txt      # src CMake configuration
     │   ├── main.cpp            # Main entry point of the application
     │   ├── Engine/             # Engine components
-    │   │   ├── CMakeLists.txt      # Engine CMake configuration
     │   │   ├── Core/           # Core engine systems
     │   │   ├── Graphics/       # Graphics-related components
     │   │   │   ├── OpenGL/
@@ -98,10 +96,8 @@ Alternatively, execute the binaries directly from the build directory:
     │   │   ├── Models/
     │   │   ├── Shaders/
     │   │   └── Textures/
-    │   └── Utility/            # Utility functions and tools
-    │   │   │   ├── CMakeLists.txt      # Utility CMake configuration
-    └── test/                   # Test files
-        ├── CMakeLists.txt      # CMake configuration for tests
+    ├── └── Utility/            # Utility functions and tools
+
 
 
 ## <div align="center"> 🤝 Contributing </div>

@@ -12,7 +12,7 @@
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
 
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     class Engine
     {
@@ -49,18 +49,31 @@ namespace isaacGraphicsEngine
         bool LoadResources();
 
         Camera *GetCamera() { return m_Camera; }
+        
+        SDL_Window* GetSDLWindow() 
+        { return m_Window->GetSDLWindow(); }
 
         bool GetDisableInput() { return m_DisableInput; }
         bool GetKeyPressed() { return m_KeyPressed; }
         void SetDisableInput(bool disable) { m_DisableInput = disable; }
         void SetKeyPressed(bool pressed) { m_KeyPressed = pressed; }
         
-    private:
-        Engine();
+        float GetFPS() { return m_FPS; }
+        glm::vec3& GetBackgroundColor() { return m_BackgroundColor; }
+        void SetBackgroundColor(glm::vec3 newColor) { m_BackgroundColor = newColor; }
 
+        Light* GetLight() { return m_Light; }
 
         // Cube stuff
         //-----------------------------------------------------------------------
+        
+        Cube* GetCube(size_t index)
+        {
+            if (index < m_Cubes.size())
+                return m_Cubes[index];
+            return nullptr;
+        }
+
         inline void AddCube(const glm::vec3& position = {1.0f, 1.0f, 1.0f})
         {
             m_Cubes.push_back(new Cube(position));
@@ -84,7 +97,9 @@ namespace isaacGraphicsEngine
         void AddCubes(int addAmount, float minRange = -20.0f, float maxRange = 20.0f);
         size_t GetCubeCount() const { return m_Cubes.size();}
         void PrintSize() { std::cout << "Number of cubes: " << m_Cubes.size() << std::endl; }
-     
+    private:
+        Engine();
+        
     private:
         static Engine* s_Instance;
         Window* m_Window;

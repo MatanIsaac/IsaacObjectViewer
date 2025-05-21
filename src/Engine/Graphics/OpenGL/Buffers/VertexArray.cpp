@@ -1,7 +1,7 @@
 #include "VertexArray.h"
 #include "Utility/GLErrorManager.h"
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
 VertexArray::VertexArray() { GLCall(glGenVertexArrays(1, &m_RendererID)); }
 VertexArray::~VertexArray() { GLCall(glDeleteVertexArrays(1, &m_RendererID)); }

@@ -4,7 +4,7 @@
 #include "Utility/config.h"  
 #include "Utility/Log.hpp"
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     Light::Light(const glm::vec3& position, const glm::vec3& color)
         : m_Color(color), m_Cube(position), m_SpecularIntensity(0.5f)

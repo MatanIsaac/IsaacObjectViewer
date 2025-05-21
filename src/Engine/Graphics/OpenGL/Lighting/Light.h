@@ -8,7 +8,7 @@
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
 #include "Utility/config.h"  // for GetProjectRoot()
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     class Light
     {

@@ -1,6 +1,6 @@
 #include "Cube.h"
 
-namespace isaacGraphicsEngine
+namespace isaacObjectLoader
 {
     Cube::Cube(const glm::vec3& position)
         : m_Position(position)

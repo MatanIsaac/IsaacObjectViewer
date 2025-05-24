@@ -64,6 +64,10 @@ namespace isaacObjectLoader
 
         Light* GetLight() { return m_Light; }
 
+
+        void EnableMouseMode();
+        void EnableFreeCameraMode();
+        
         // Cube stuff
         //-----------------------------------------------------------------------
         

@@ -29,7 +29,7 @@ namespace isaacObjectLoader
 
     void Engine::Run(bool fullscreen)
     {
-        assert(Init("Isaac's Graphics Engine", SCREEN_WIDTH, SCREEN_HEIGHT, fullscreen));
+        assert(Init("Isaac's 3D Object Loader", SCREEN_WIDTH, SCREEN_HEIGHT, fullscreen));
         
         ImGuiLayer imgui;
         imgui.Init(m_Window->GetSDLWindow(),m_Window->GetGLContext());
@@ -78,8 +78,9 @@ namespace isaacObjectLoader
 
         m_Window = new Window(title,width,height,fullscreen);
 
-        SDL_HideCursor();
-        SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),true);
+        m_DisableInput = true;
+        SDL_ShowCursor();
+        SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),false);
 
         // Initialize glad
         //----------------------------------------------------------------------------------------
@@ -110,8 +111,6 @@ namespace isaacObjectLoader
         m_BackgroundColor = glm::vec4(0.75f, 0.75f, 0.75f, 1.0f);
 
         m_Camera = new Camera(glm::vec3(0.0f, 2.0f, 5.0f));
-
-        m_DisableInput = false;
         
         m_IsRunning = true;
 
@@ -175,7 +174,8 @@ namespace isaacObjectLoader
     {
 
         //LOG_INFO("DeltaTime: {0}, FPS: {1}",dt,m_FPS);
-        m_Camera->Update(dt);
+        if(!m_DisableInput)
+            m_Camera->Update(dt);
     }
 
     // @brief renders all of the engine textures, sounds and objects.
@@ -247,6 +247,20 @@ namespace isaacObjectLoader
         }
     }    
 
+    void Engine::EnableMouseMode()
+    {
+        m_DisableInput = true;
+        SDL_ShowCursor();
+        SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),false);
+    }
+    
+    void Engine::EnableFreeCameraMode()
+    {
+        m_DisableInput = false;
+        SDL_HideCursor();
+        SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),true);
+    }
+        
 
 
 } // namespace isaacGraphicsEngine

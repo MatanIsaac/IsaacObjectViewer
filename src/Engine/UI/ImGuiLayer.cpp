@@ -41,6 +41,7 @@ namespace isaacObjectLoader
         ImGui_ImplSDL3_InitForOpenGL(window, gl_context);
         ImGui_ImplOpenGL3_Init("#version 330 core");
         
+        LoadFont();
     }
     
     void ImGuiLayer::Begin()
@@ -120,24 +121,25 @@ namespace isaacObjectLoader
         float cursorX = (display_w - totalButtonWidth) * 0.5f;
         ImGui::SetCursorPosX(cursorX);
         
-        // Play Button
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.1f, 0.8f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 0.6f, 1.0f));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.5f));
-        if (ImGui::Button("Play", ImVec2(button_size.x,button_size.y)))
+        // draw the button with a little ▼ glyph so it *looks* like a dropdown
+        if (ImGui::Button(u8"Modes \uf0d7"))
+            ImGui::OpenPopup("modes_popup");         // toggle the popup
+
+        if (ImGui::BeginPopup("modes_popup"))
         {
-            // TOFIX: 
-            // 1. Mouse is not hidden in linux
-            //glfwSetInputMode(m_Window->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            //SetDisableInput(false);
-            //SetShowMyWindow(false);
+            if (ImGui::MenuItem("Mouse mode"))       // behaves like a <li>
+            {
+                engine->EnableMouseMode();
+            }
+
+            if (ImGui::MenuItem("Free camera mode"))
+            {
+                engine->EnableFreeCameraMode();
+            }
+
+            ImGui::EndPopup();
         }
-        ImGui::SameLine();
-        ImGui::PopStyleVar(2);
-        ImGui::PopStyleColor(3);
-        
+
         // Style and exit button styling
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
@@ -298,4 +300,30 @@ namespace isaacObjectLoader
         ImGui::End();
         ImGui::Render();
     }
+
+    void ImGuiLayer::LoadFont()
+    {
+        ImGuiIO& io = ImGui::GetIO();
+
+        ImFontConfig cfg{};
+        cfg.PixelSnapH = true;
+
+        std::string path = GetProjectRoot() +
+                        "/src/Resources/FiraCodeNerdFontMono-Regular.ttf";
+        
+        static const ImWchar puaRanges[] = {
+            0x0020, 0x00FF,   // keep your ASCII
+            0xE000, 0xF8FF,   // all PUA (where Nerd-Font patches in icons)
+            0
+        };
+
+        ImFont* nerd = io.Fonts->AddFontFromFileTTF(
+            path.c_str(), 16.0f, &cfg, puaRanges
+        );
+        io.FontDefault = nerd;
+        ImGui_ImplOpenGL3_DestroyFontsTexture();
+        ImGui_ImplOpenGL3_CreateFontsTexture();
+    }
+
+
 }

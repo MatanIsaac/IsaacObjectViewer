@@ -28,7 +28,7 @@ namespace isaacObjectLoader
         void SetSpecularIntensity(float newSpecularIntensity) { m_SpecularIntensity = newSpecularIntensity; }
         void SetPosition(const glm::vec3& position) { m_Cube.SetPosition(position); }
         void SetColor(const glm::vec3& color) { m_Color = color; }
-
+        Cube* GetCube() { return &m_Cube; }
     private:
         glm::vec3 m_Color;
         Cube m_Cube;

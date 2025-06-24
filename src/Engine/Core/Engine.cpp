@@ -4,10 +4,11 @@
 #include "Utility/Log.hpp"
 #include "Mouse.h"
 #include "../UI/ImGuiLayer.h"
+#include <utility>
 
 namespace isaacObjectLoader
 {
-    inline Mouse& MouseRef = Mouse::GetInstance();
+    inline Mouse* MouseRef = Mouse::GetInstance();
     Engine *Engine::s_Instance = nullptr;
 
     Engine::Engine()
@@ -19,8 +20,11 @@ namespace isaacObjectLoader
           m_Cubes({}), 
           m_Cylinder(nullptr),
           m_Light(nullptr),
+          m_Line(nullptr),
           m_Camera(nullptr),
-          m_DisableInput(false),
+          m_SelectedPrimitive(nullptr),
+          m_MouseModeEnabled(true),
+          m_FreeCameraModeEnabled(false),
           m_KeyPressed(false),
           m_IsRunning(false)
     {
@@ -78,7 +82,7 @@ namespace isaacObjectLoader
 
         m_Window = new Window(title,width,height,fullscreen);
 
-        m_DisableInput = true;
+        m_MouseModeEnabled = true;
         SDL_ShowCursor();
         SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),false);
 
@@ -96,21 +100,35 @@ namespace isaacObjectLoader
         const glm::vec3 plane_pos = {5.f,1.f,1.f};
         const glm::vec3 sphere_pos = {-2.5f,1.f,1.f};
         m_Sphere    = new Sphere(sphere_pos);
+        m_Sphere->SetScale({3.f,3.f,3.f});
         m_Plane     = new Plane(plane_pos);
+        m_Plane->SetScale({5.f,5.f,5.f});
         m_Cylinder  = new Cylinder();
+        m_Line      = new Line({2.f,2.f,2.f},{0.f,0.f,0.f}); 
+
         m_Light     = new Light({1.2f, 1.0f, 2.0f},{1.0f, 1.0f, 1.0f});
+        m_Primitives.push_back(m_Sphere);
+        m_Primitives.push_back(m_Plane);
+        m_Primitives.push_back(m_Cylinder);
+        m_Primitives.push_back(m_Light->GetCube());
 
         std::string colors_vs  = "src/Resources/Shaders/colors.vs"; 
         std::string colors_fs  = "src/Resources/Shaders/colors.fs"; 
         ConvertSeparators(colors_vs);
         ConvertSeparators(colors_fs);
+        
 
         m_lightingShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
         m_lightingShader->Bind();
                                         
         m_BackgroundColor = glm::vec4(0.75f, 0.75f, 0.75f, 1.0f);
 
+        int display_w, display_h;
+        SDL_GetWindowSizeInPixels(m_Window->GetSDLWindow(), &display_w, &display_h);
+
         m_Camera = new Camera(glm::vec3(0.0f, 2.0f, 5.0f));
+        m_Camera->SetProjection(m_Camera->GetZoom(),(float)display_w / (float)display_h, 0.1f,100.0f);
+        
         
         m_IsRunning = true;
 
@@ -125,6 +143,9 @@ namespace isaacObjectLoader
         {
             ImGui_ImplSDL3_ProcessEvent(&event);
 
+            std::pair<float,float> mouseState;
+            SDL_GetMouseState(&mouseState.first, &mouseState.second);
+
             if(event.type == SDL_EVENT_QUIT)
             {
                 m_IsRunning = false;
@@ -135,12 +156,14 @@ namespace isaacObjectLoader
                 switch(event.key.key)
                 {
                     case SDLK_ESCAPE:
-                        m_DisableInput = true;
+                        m_MouseModeEnabled = true;
+                        m_FreeCameraModeEnabled = false;
                         SDL_ShowCursor();
                         SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),false);
                         break;
                     case SDLK_BACKSPACE:
-                        m_DisableInput = false;
+                        m_MouseModeEnabled = false;
+                        m_FreeCameraModeEnabled = true;
                         SDL_HideCursor();
                         SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),true);
                         break;
@@ -149,21 +172,33 @@ namespace isaacObjectLoader
                 }
             }
             
-            if(!m_DisableInput)
+            if(m_FreeCameraModeEnabled)
             {            
                 if(event.type == SDL_EVENT_MOUSE_MOTION)
                 {
                     float xoffset = static_cast<float>(event.motion.xrel);
                     float yoffset = static_cast<float>(event.motion.yrel); 
 
-                    MouseRef.ProcessMotion(m_Camera, xoffset, -yoffset);
+                    MouseRef->ProcessMotion(m_Camera, xoffset, -yoffset);
                 }
 
                 if(event.type == SDL_EVENT_MOUSE_WHEEL)
                 {
                     float yoffset = static_cast<float>(event.wheel.y);
 
-                    MouseRef.ProcessZoom(yoffset,m_Camera);
+                    MouseRef->ProcessZoom(yoffset,m_Camera);
+                }
+            }
+            
+            if(m_MouseModeEnabled)
+            {
+                if(event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+                {
+                    
+                    if(event.button.button == SDL_BUTTON_LEFT)
+                    {
+                        MouseRef->ProcessMouseClick(mouseState.first,mouseState.second, m_Camera);
+                    }
                 }
             }
         }
@@ -174,7 +209,7 @@ namespace isaacObjectLoader
     {
 
         //LOG_INFO("DeltaTime: {0}, FPS: {1}",dt,m_FPS);
-        if(!m_DisableInput)
+        if(!m_MouseModeEnabled)
             m_Camera->Update(dt);
     }
 
@@ -195,17 +230,14 @@ namespace isaacObjectLoader
         m_lightingShader->setVec3("viewPos", m_Camera->GetPosition());
                 
         glm::mat4 view = m_Camera->GetViewMatrix(); // VIEW
-        glm::mat4 projection = glm::perspective(glm::radians(m_Camera->GetZoom()), // PROJECTION
-                                                (float)display_w / (float)display_h,
-                                                0.1f,
-                                                100.0f);
+        glm::mat4 projection = m_Camera->GetProjectionMatrix(); 
                                                 
         // Render Primitives
         //------------------------------------------------------------------------------------
         m_Sphere->Render(m_Renderer, *m_lightingShader, view, projection);
         m_Plane->Render(m_Renderer, *m_lightingShader, view, projection);
         m_Cylinder->Render(m_Renderer, *m_lightingShader, view, projection);
-        
+        m_Line->Render(view, projection,display_w, display_h);
         for (auto& cube : m_Cubes)
         {
             cube->Render(m_Renderer,*m_lightingShader, view, projection);
@@ -220,7 +252,7 @@ namespace isaacObjectLoader
     // @brief cleans all of the engine resources.
     void Engine::Clean()
     {
-
+        ClearPrimitives();
         ClearCubes();
         delete m_Sphere;
         delete m_Plane;
@@ -244,19 +276,22 @@ namespace isaacObjectLoader
             glm::vec3 randomPosition(randomX, randomY, randomZ);
             Cube* newCube = new Cube(randomPosition);
             m_Cubes.push_back(newCube);
+            m_Primitives.push_back(newCube);
         }
     }    
 
     void Engine::EnableMouseMode()
     {
-        m_DisableInput = true;
+        m_MouseModeEnabled = true;
+        m_FreeCameraModeEnabled = false;
         SDL_ShowCursor();
         SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),false);
     }
     
     void Engine::EnableFreeCameraMode()
     {
-        m_DisableInput = false;
+        m_MouseModeEnabled = false;
+        m_FreeCameraModeEnabled = true;
         SDL_HideCursor();
         SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),true);
     }

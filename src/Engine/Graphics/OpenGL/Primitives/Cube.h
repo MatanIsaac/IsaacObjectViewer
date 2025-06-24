@@ -9,39 +9,48 @@
 #include "Engine/Graphics/OpenGL/Buffers/VertexBufferLayout.h"
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
+#include "IPrimitive.h"
 
 namespace isaacObjectLoader
 {
-    class Cube
+    class Cube : public IPrimitive
     {
     public:
         Cube(const glm::vec3& position = {1.0f, 1.0f, 1.0f});
-        ~Cube();
+        ~Cube() override;
 
         void Update();
         void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection);
 
-        glm::vec3& GetPosition() { return m_Position; }
-        glm::vec3& GetRotation() { return m_Rotation; }
-        glm::vec3& GetScale() { return m_Scale; }
+        virtual glm::vec3& GetPosition() override { return m_Position; }
+        virtual glm::vec3& GetRotation() override { return m_Rotation; }
+        virtual glm::vec3& GetScale() override { return m_Scale; }
         glm::vec3& GetColor() { return m_Color; }
         glm::mat4 GetModelMatrix() const;
 
         void ResetPosition() { m_Position = DEFAULT_POSITION; }
-        void SetPosition(const glm::vec3& newPosition) { m_Position = newPosition; }
+        void ResetRotation() { m_Rotation = DEFAULT_ROTATION; }
+        void ResetScale() { m_Scale = DEFAULT_SCALE; }
+        void SetPosition(const glm::vec3& newPosition) override { m_Position = newPosition; }
+        void SetRotation(const glm::vec3& rotation) override;
+        void SetScale(const glm::vec3& scale) override;
         void SetColor(const glm::vec3& newColor) { m_Color = newColor; }
-        void SetScale(const glm::vec3& scale);
-        void SetRotation(const glm::vec3& rotation);
 
         inline const VertexArray &GetCubeVA() const { return *m_VertexArray; }
         inline const VertexBuffer &GetCubeVB() const { return *m_VertexBuffer; }
         inline const IndexBuffer &GetCubeIB() const { return *m_IndexBuffer; }
         inline int GetIndexCount() const { return m_IndicesCount; }
 
-    private:
-        const glm::vec3 DEFAULT_POSITION = {1.0f, 1.0f, 1.0f};
-        const glm::vec3 DEFAULT_COLOR = {1.0f, 0.5f, 0.31f};
+        bool IntersectRay(const Ray& ray, float* outDist) const override
+        {
+            glm::vec3 halfScale = m_Scale * 0.5f;
+            glm::vec3 boxMin = m_Position - halfScale;
+            glm::vec3 boxMax = m_Position + halfScale;
+            return RayIntersectsAABB(ray, boxMin, boxMax, outDist);
+        }
 
+
+    private:
         glm::vec3 m_Position;
         glm::vec3 m_Rotation;
         glm::vec3 m_Scale;

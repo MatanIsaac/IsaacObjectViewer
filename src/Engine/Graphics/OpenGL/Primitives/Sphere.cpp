@@ -50,9 +50,7 @@ namespace isaacObjectLoader
     void Sphere::Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection)
     {        
         // Build the model matrix using the current position and scale.
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, m_Position);
-        model = glm::scale(model, m_Scale);
+        glm::mat4 model = GetModelMatrix();
 
         // Set uniform values for the shader.
         shader.setMat4("model", model);
@@ -135,5 +133,16 @@ namespace isaacObjectLoader
 
         // Return the number of vertices (each vertex consists of 6 floats: 3 for position, 3 for normal)
         return static_cast<int>(vertices.size() / 6);
+    }
+
+    glm::mat4 Sphere::GetModelMatrix() const
+    {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, m_Position);
+        model = glm::rotate(model, glm::radians(m_Rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(m_Rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(m_Rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, m_Scale);
+        return model;
     }
 }

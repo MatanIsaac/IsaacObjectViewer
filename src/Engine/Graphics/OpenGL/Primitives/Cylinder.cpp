@@ -47,9 +47,7 @@ namespace isaacObjectLoader
     void Cylinder::Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection)
     {        
         // Build the model matrix: translate and scale as needed.
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, m_Position);
-        model = glm::scale(model, m_Scale);
+        glm::mat4 model = GetModelMatrix();
 
         // Set uniform values
         shader.setMat4("model", model);
@@ -232,4 +230,14 @@ namespace isaacObjectLoader
         return static_cast<int>(vertices.size() / 6);
     }
 
+    glm::mat4 Cylinder::GetModelMatrix() const
+    {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, m_Position);
+        model = glm::rotate(model, glm::radians(m_Rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(m_Rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(m_Rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, m_Scale);
+        return model;
+    }
 }

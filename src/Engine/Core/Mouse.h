@@ -1,15 +1,19 @@
 #pragma once
 #include "Engine/Scene/Camera/Camera.h"
+#include "Utility/config.h"
 
 namespace isaacObjectLoader
 {
     class Mouse
     {
     public:
-        static Mouse& GetInstance()
+        static Mouse* GetInstance()
         {
-            static Mouse instance;
-            return instance;
+            if(s_Instance == nullptr)
+            {
+                s_Instance = new Mouse();
+            }
+            return s_Instance;
         }   
 
         bool    &GetFirstMouse()    { return m_FirstMouse; }
@@ -21,8 +25,8 @@ namespace isaacObjectLoader
         void    ResetSensitivity()  { m_Sensitivity = DEFAULT_SENSITIVITY; }
 
         void ProcessMotion(Camera* camera,float xoffset, float yoffset, bool constrainPitch = true);
-
         void ProcessZoom(float yoffset, Camera* camera);
+        void ProcessMouseClick(float mouseX, float mouseY, Camera* camera);
     private:
         Mouse()
             : 

@@ -230,12 +230,12 @@ namespace isaacObjectLoader
 
             if (ImGui::CollapsingHeader("Mouse Settings"))
             {
-                auto& mouse = Mouse::GetInstance();
+                auto* mouse = Mouse::GetInstance();
                 ImGui::Text("Mouse Sensitivity");
-                ImGui::DragFloat("##Mouse Sensitivity", &mouse.GetSensitivity(), 0.01f, 0.01f, 5.0f, "%.4f");
+                ImGui::DragFloat("##Mouse Sensitivity", &mouse->GetSensitivity(), 0.01f, 0.01f, 5.0f, "%.4f");
                 if (ImGui::Button("Reset Mouse Sensitivity"))
                 {
-                    mouse.ResetSensitivity();
+                    mouse->ResetSensitivity();
                     ImGui::SetTooltip("Reset mouse sensitivity.");
                 }
             }

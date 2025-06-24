@@ -10,23 +10,31 @@
 #include "Engine/Graphics/OpenGL/Buffers/VertexBufferLayout.h"
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
+#include "IPrimitive.h"
 
 namespace isaacObjectLoader
 {
-    class Cylinder
+    class Cylinder : public IPrimitive
     {
     public:
         Cylinder(const glm::vec3& position = {1.0f, 1.0f, 1.0f});
-        ~Cylinder();
+        ~Cylinder() override;
 
         void Update();
         void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection);
 
-        glm::vec3& GetPosition() { return m_Position; }
+        virtual glm::vec3& GetPosition() override { return m_Position; }
+        virtual glm::vec3& GetRotation() override { return m_Rotation; }
+        virtual glm::vec3& GetScale() override { return m_Scale; }
         glm::vec3& GetColor()    { return m_Color; }
+        glm::mat4 GetModelMatrix() const;
 
         void ResetPosition() { m_Position = DEFAULT_POSITION; }
-        void SetPosition(const glm::vec3& newPosition) { m_Position = newPosition; }
+        void ResetRotation() { m_Rotation = DEFAULT_ROTATION; }
+        void ResetScale() { m_Scale = DEFAULT_SCALE; }
+        void SetPosition(const glm::vec3& newPosition) override { m_Position = newPosition; }
+        void SetRotation(const glm::vec3& newRotation) override { m_Rotation = newRotation; }
+        void SetScale(const glm::vec3& newScale) override { m_Scale = newScale; }
         void SetColor(const glm::vec3& newColor) { m_Color = newColor; }
 
         inline const VertexArray& GetVertexArray() const { return *m_VertexArray; }
@@ -34,11 +42,85 @@ namespace isaacObjectLoader
         inline unsigned int GetVertexCount() const { return m_VertexCount; }
         inline unsigned int GetIndexCount() const { return m_IndexCount; }
 
+        bool IntersectRay(const Ray& ray, float* outDistance) const override
+        {
+            // 1. Inverse-transform the ray to object (local) space
+            glm::mat4 invModel = glm::inverse(GetModelMatrix());
+            glm::vec3 localOrigin = glm::vec3(invModel * glm::vec4(ray.GetOrigin(), 1.0f));
+            glm::vec3 localDir = glm::normalize(glm::vec3(invModel * glm::vec4(ray.GetDirection(), 0.0f)));
+
+            // 2. Side intersection: infinite cylinder along Z axis, radius 0.5, height 1 (-0.5 to +0.5)
+            float a = localDir.x * localDir.x + localDir.y * localDir.y;
+            float b = 2.0f * (localOrigin.x * localDir.x + localOrigin.y * localDir.y);
+            float c = localOrigin.x * localOrigin.x + localOrigin.y * localOrigin.y - 0.25f; // (0.5f^2)
+
+            float discriminant = b * b - 4 * a * c;
+            float tSide = -1.0f;
+
+            // Hit side?
+            if (discriminant >= 0.0f && fabs(a) > 1e-6f)
+            {
+                float sqrtDisc = sqrt(discriminant);
+                float t1 = (-b - sqrtDisc) / (2.0f * a);
+                float t2 = (-b + sqrtDisc) / (2.0f * a);
+
+                // We want the nearest positive t where the hit is within the caps
+                for (float tCandidate : {t1, t2})
+                {
+                    if (tCandidate > 0.0f)
+                    {
+                        float z = localOrigin.z + tCandidate * localDir.z;
+                        if (z >= -0.5f && z <= 0.5f)
+                        {
+                            tSide = tCandidate;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 3. Cap intersection
+            float tCap = -1.0f;
+            for (float zCap : {-0.5f, 0.5f})
+            {
+                if (fabs(localDir.z) > 1e-6f)
+                {
+                    float t = (zCap - localOrigin.z) / localDir.z;
+                    if (t > 0.0f)
+                    {
+                        float x = localOrigin.x + t * localDir.x;
+                        float y = localOrigin.y + t * localDir.y;
+                        if (x * x + y * y <= 0.25f)
+                        {
+                            if (tCap < 0.0f || t < tCap)
+                                tCap = t;
+                        }
+                    }
+                }
+            }
+
+            // 4. Pick the nearest positive t (side or cap)
+            float tFinal = -1.0f;
+            if (tSide > 0.0f && tCap > 0.0f)
+                tFinal = std::min(tSide, tCap);
+            else if (tSide > 0.0f)
+                tFinal = tSide;
+            else if (tCap > 0.0f)
+                tFinal = tCap;
+
+            if (tFinal > 0.0f)
+            {
+                if (outDistance) *outDistance = tFinal;
+                return true;
+            }
+            return false;
+        }
+
+
     private:
-        const glm::vec3 DEFAULT_POSITION = {1.0f, 1.0f, 1.0f};
-        const glm::vec3 DEFAULT_COLOR = {1.0f, 0.5f, 0.31f};
 
         glm::vec3 m_Position;
+        glm::vec3 m_Rotation;
         glm::vec3 m_Scale;
         glm::vec3 m_Color;
 

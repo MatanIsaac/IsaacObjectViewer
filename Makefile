@@ -30,6 +30,11 @@ INCLUDE = \
 	-Idependencies/spdlog/include \
 	-Idependencies \
 	-Isrc \
+	-Isrc/Engine \
+	-Isrc/Engine/Core \
+	-Isrc/Engine/Graphics \
+	-Isrc/Engine/Scene \
+	-Isrc/Engine/UI \
 	-I$(IMGUI_DIR) -I$(IMGUI_BACKEND)
 
 CXXFLAGS = -std=c++17 -g -Wall -Wextra $(INCLUDE)

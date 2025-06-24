@@ -5,6 +5,11 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/src/",
+                "${workspaceFolder}/src/Engine",
+                "${workspaceFolder}/src/Engine/Core",
+                "${workspaceFolder}/src/Engine/Graphics",
+                "${workspaceFolder}/src/Engine/Scene",
+                "${workspaceFolder}/src/Engine/UI",
                 "${workspaceFolder}/dependencies/**",
                 "${workspaceFolder}/dependencies/imgui",
                 "${workspaceFolder}/dependencies/SDL3/x86_64-w64-mingw32/include/**"

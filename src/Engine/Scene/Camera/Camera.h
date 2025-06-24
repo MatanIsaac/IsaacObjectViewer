@@ -39,14 +39,21 @@ namespace isaacObjectLoader
 
         // returns the view matrix calculated using Euler Angles and the LookAt Matrix
         glm::mat4 GetViewMatrix() { return glm::lookAt(m_Position, m_Position + m_Front, m_Up); }
-
+        
+        void SetProjection(float fov, float aspect, float nearPlane, float farPlane) 
+        {
+            m_Projection = glm::perspective(glm::radians(fov), aspect, nearPlane, farPlane);
+        }
+        
+        const glm::mat4& GetProjectionMatrix() const { return m_Projection; }
+        
         // processes input received from any keyboard-like input system. Accepts input parameter in the
         // form of camera defined ENUM (to abstract it from windowing systems)
         void ProcessKeyboard(CameraMovement direction, float deltaTime);
 
         const float&     GetPitch() { return m_Pitch; }
         const float&     GetYaw() { return m_Yaw; }
-        float&     GetZoom() { return m_Zoom; }
+        float&     GetZoom() { return m_Zoom; } 
         float&     GetSpeed() { return m_MovementSpeed; }
         const glm::vec3& GetPosition() { return m_Position; }
 
@@ -71,6 +78,7 @@ namespace isaacObjectLoader
         void Update(float dt);
     private:
         // camera Attributes
+        glm::mat4 m_Projection;
         glm::vec3 m_InitialPosition;
         glm::vec3 m_Position;
         glm::vec3 m_Front;
@@ -83,8 +91,6 @@ namespace isaacObjectLoader
         // camera options
         float m_MovementSpeed;
         float m_Zoom;
-
-
     };
 
 }

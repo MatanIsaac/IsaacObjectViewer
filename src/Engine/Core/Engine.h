@@ -3,14 +3,15 @@
 #include "Utility/config.h"
 #include "Window.h"
 #include "Engine/Scene/Camera/Camera.h"
+#include "../Graphics/OpenGL/Primitives/IPrimitive.h"
 #include "Engine/Graphics/OpenGL/Primitives/Sphere.h"
 #include "Engine/Graphics/OpenGL/Primitives/Plane.h"
 #include "Engine/Graphics/OpenGL/Primitives/Cube.h"
 #include "Engine/Graphics/OpenGL/Primitives/Cylinder.h"
+#include "Engine/Graphics/OpenGL/Primitives/Line.h"
 #include "Engine/Graphics/OpenGL/Lighting/Light.h"
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
-
 
 namespace isaacObjectLoader
 {
@@ -53,9 +54,9 @@ namespace isaacObjectLoader
         SDL_Window* GetSDLWindow() 
         { return m_Window->GetSDLWindow(); }
 
-        bool GetDisableInput() { return m_DisableInput; }
+        bool GetDisableInput() { return m_MouseModeEnabled; }
         bool GetKeyPressed() { return m_KeyPressed; }
-        void SetDisableInput(bool disable) { m_DisableInput = disable; }
+        void SetDisableInput(bool disable) { m_MouseModeEnabled = disable; }
         void SetKeyPressed(bool pressed) { m_KeyPressed = pressed; }
         
         float GetFPS() { return m_FPS; }
@@ -63,7 +64,6 @@ namespace isaacObjectLoader
         void SetBackgroundColor(glm::vec3 newColor) { m_BackgroundColor = newColor; }
 
         Light* GetLight() { return m_Light; }
-
 
         void EnableMouseMode();
         void EnableFreeCameraMode();
@@ -81,6 +81,7 @@ namespace isaacObjectLoader
         inline void AddCube(const glm::vec3& position = {1.0f, 1.0f, 1.0f})
         {
             m_Cubes.push_back(new Cube(position));
+            m_Primitives.push_back(new Cube(position));
         }
         inline void RemoveCube(size_t index)
         {
@@ -94,13 +95,32 @@ namespace isaacObjectLoader
         {
             for (auto cube : m_Cubes)
             {
-                delete cube;
+                if(cube != nullptr)
+                    delete cube;
             }
             m_Cubes.clear();
         }
+        std::vector<Cube*>& GetCubes() { return m_Cubes; }
         void AddCubes(int addAmount, float minRange = -20.0f, float maxRange = 20.0f);
         size_t GetCubeCount() const { return m_Cubes.size();}
         void PrintSize() { std::cout << "Number of cubes: " << m_Cubes.size() << std::endl; }
+        //-----------------------------------------------------------------------
+
+        // Primitives
+        //-----------------------------------------------------------------------
+        std::vector<IPrimitive*>& GetPrimitives() { return m_Primitives; }
+        IPrimitive* GetSelectedPrimitive() { return m_SelectedPrimitive; }
+        void SetSelectedPrimitive(IPrimitive* primitive) { m_SelectedPrimitive = primitive; }
+        inline void ClearPrimitives()
+        {
+            for (auto prim : m_Primitives)
+            {
+                if(prim != nullptr)
+                    delete prim;
+            }
+            m_Primitives.clear();
+        }
+        //-----------------------------------------------------------------------
     private:
         Engine();
         
@@ -115,12 +135,17 @@ namespace isaacObjectLoader
         std::vector<Cube*> m_Cubes;
         Cylinder* m_Cylinder;
         Light* m_Light;
-        
+        Line* m_Line;
         Camera* m_Camera;
         
+
+        IPrimitive* m_SelectedPrimitive;
+        std::vector<IPrimitive*> m_Primitives;
+
         Renderer m_Renderer;
 
-        bool m_DisableInput;
+        bool m_MouseModeEnabled;
+        bool m_FreeCameraModeEnabled;
         bool m_KeyPressed;
         bool m_IsRunning;
 

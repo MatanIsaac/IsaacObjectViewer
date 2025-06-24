@@ -1,8 +1,12 @@
 #include "Mouse.h"
-
+#include "Ray.h"
+#include "Engine.h"
+#include "../Graphics/OpenGL/Primitives/IPrimitive.h"
 
 namespace isaacObjectLoader
 {
+    Mouse *Mouse::s_Instance = nullptr;
+
     void Mouse::ProcessMotion(Camera* camera, float xoffset, float yoffset, bool constrainPitch)
     {
         // scale the raw mouse deltas by your sensitivity setting
@@ -35,5 +39,35 @@ namespace isaacObjectLoader
             camera->SetZoom(1.0f);
         if (camera->GetZoom() > 45.0f)
             camera->SetZoom(45.0f);
+    }
+
+    void Mouse::ProcessMouseClick(float mouseX, float mouseY, Camera* camera)
+    {   
+        Ray pickingRay = Ray::ScreenPointToWorldRay(mouseX, mouseY, 
+                                                    SCREEN_WIDTH, SCREEN_HEIGHT, 
+                                                    camera->GetViewMatrix(), camera->GetProjectionMatrix());
+
+        auto* engine = Engine::GetInstance();
+       
+        IPrimitive* selected = nullptr;
+        float minDist = std::numeric_limits<float>::max();
+            
+        for(auto* prim : engine->GetPrimitives())
+        {
+            float dist;
+            if (prim->IntersectRay(pickingRay, &dist) && dist < minDist)
+            {
+                minDist = dist;
+                selected = prim;
+            }
+        }
+        // Mark selected
+        engine->SetSelectedPrimitive(selected);
+        
+        if (selected)
+        {
+            auto pos = selected->GetPosition();
+            std::cout << "Selected a primitive at: " << '(' << pos.x << ',' << pos.y << ',' << pos.z << ')' << std::endl;
+        }
     }
 }

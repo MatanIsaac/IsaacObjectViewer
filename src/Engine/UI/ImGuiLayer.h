@@ -22,12 +22,12 @@ namespace isaacObjectLoader
         void DrawUI();
     private:
         void DrawTopPanel(Engine* engine);    
-        void DrawRightPanel(Engine* engine);    
+        void DrawRightPanel(Engine* engine);
+        void DrawSceneHierarchyPanel(Engine* engine);    
         void LoadFont();
     private:
         SDL_Window* m_Window = nullptr;
         void* m_GLContext = nullptr;
-        float m_PanelWidth = 320.0f;
 
     };
 }

@@ -3,11 +3,11 @@
 #include "Utility/config.h"
 #include "Window.h"
 #include "Engine/Scene/Camera/Camera.h"
-#include "../Graphics/OpenGL/Primitives/IPrimitive.h"
-#include "Engine/Graphics/OpenGL/Primitives/Sphere.h"
-#include "Engine/Graphics/OpenGL/Primitives/Plane.h"
-#include "Engine/Graphics/OpenGL/Primitives/Cube.h"
-#include "Engine/Graphics/OpenGL/Primitives/Cylinder.h"
+#include "Scene/ISceneObject.h"
+#include "Graphics/OpenGL/Primitives/Sphere.h"
+#include "Graphics/OpenGL/Primitives/Plane.h"
+#include "Graphics/OpenGL/Primitives/Cube.h"
+#include "Graphics/OpenGL/Primitives/Cylinder.h"
 #include "Engine/Graphics/OpenGL/Primitives/Line.h"
 #include "Engine/Graphics/OpenGL/Lighting/Light.h"
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
@@ -81,7 +81,7 @@ namespace isaacObjectLoader
         inline void AddCube(const glm::vec3& position = {1.0f, 1.0f, 1.0f})
         {
             m_Cubes.push_back(new Cube(position));
-            m_Primitives.push_back(new Cube(position));
+            m_SceneObjects.push_back(new Cube(position));
         }
         inline void RemoveCube(size_t index)
         {
@@ -108,17 +108,17 @@ namespace isaacObjectLoader
 
         // Primitives
         //-----------------------------------------------------------------------
-        std::vector<IPrimitive*>& GetPrimitives() { return m_Primitives; }
-        IPrimitive* GetSelectedPrimitive() { return m_SelectedPrimitive; }
-        void SetSelectedPrimitive(IPrimitive* primitive) { m_SelectedPrimitive = primitive; }
-        inline void ClearPrimitives()
+        std::vector<ISceneObject*>& GetSceneObjects() { return m_SceneObjects; }
+        ISceneObject* GetSelectedObject() { return m_SelectedObject; }
+        void SetSelectedObject(ISceneObject* obj) { m_SelectedObject = obj; }
+        inline void ClearSceneObjects()
         {
-            for (auto prim : m_Primitives)
+            for (auto obj : m_SceneObjects)
             {
-                if(prim != nullptr)
-                    delete prim;
+                if(obj != nullptr)
+                    delete obj;
             }
-            m_Primitives.clear();
+            m_SceneObjects.clear();
         }
         //-----------------------------------------------------------------------
     private:
@@ -130,17 +130,12 @@ namespace isaacObjectLoader
         Shader* m_Shader;
         Shader* m_lightingShader;
         
-        Sphere* m_Sphere;
-        Plane* m_Plane;
         std::vector<Cube*> m_Cubes;
-        Cylinder* m_Cylinder;
         Light* m_Light;
-        Line* m_Line;
         Camera* m_Camera;
         
-
-        IPrimitive* m_SelectedPrimitive;
-        std::vector<IPrimitive*> m_Primitives;
+        ISceneObject* m_SelectedObject;
+        std::vector<ISceneObject*> m_SceneObjects;
 
         Renderer m_Renderer;
 

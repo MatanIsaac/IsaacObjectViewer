@@ -15,14 +15,10 @@ namespace isaacObjectLoader
         : m_Window(nullptr),
           m_Shader(nullptr),
           m_lightingShader(nullptr),
-          m_Sphere(nullptr),
-          m_Plane(nullptr),
           m_Cubes({}), 
-          m_Cylinder(nullptr),
           m_Light(nullptr),
-          m_Line(nullptr),
           m_Camera(nullptr),
-          m_SelectedPrimitive(nullptr),
+          m_SelectedObject(nullptr),
           m_MouseModeEnabled(true),
           m_FreeCameraModeEnabled(false),
           m_KeyPressed(false),
@@ -96,21 +92,10 @@ namespace isaacObjectLoader
         //----------------------------------------------------------------------------------------
 
         glEnable(GL_DEPTH_TEST); // Enable depth testing
-	
-        const glm::vec3 plane_pos = {5.f,1.f,1.f};
-        const glm::vec3 sphere_pos = {-2.5f,1.f,1.f};
-        m_Sphere    = new Sphere(sphere_pos);
-        m_Sphere->SetScale({3.f,3.f,3.f});
-        m_Plane     = new Plane(plane_pos);
-        m_Plane->SetScale({5.f,5.f,5.f});
-        m_Cylinder  = new Cylinder();
-        m_Line      = new Line({2.f,2.f,2.f},{0.f,0.f,0.f}); 
 
         m_Light     = new Light({1.2f, 1.0f, 2.0f},{1.0f, 1.0f, 1.0f});
-        m_Primitives.push_back(m_Sphere);
-        m_Primitives.push_back(m_Plane);
-        m_Primitives.push_back(m_Cylinder);
-        m_Primitives.push_back(m_Light->GetCube());
+
+        m_SceneObjects.push_back(m_Light->GetSceneObject());
 
         std::string colors_vs  = "src/Resources/Shaders/colors.vs"; 
         std::string colors_fs  = "src/Resources/Shaders/colors.fs"; 
@@ -141,7 +126,8 @@ namespace isaacObjectLoader
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            ImGui_ImplSDL3_ProcessEvent(&event);
+            if(!m_FreeCameraModeEnabled)
+                ImGui_ImplSDL3_ProcessEvent(&event);
 
             std::pair<float,float> mouseState;
             SDL_GetMouseState(&mouseState.first, &mouseState.second);
@@ -234,10 +220,6 @@ namespace isaacObjectLoader
                                                 
         // Render Primitives
         //------------------------------------------------------------------------------------
-        m_Sphere->Render(m_Renderer, *m_lightingShader, view, projection);
-        m_Plane->Render(m_Renderer, *m_lightingShader, view, projection);
-        m_Cylinder->Render(m_Renderer, *m_lightingShader, view, projection);
-        m_Line->Render(view, projection,display_w, display_h);
         for (auto& cube : m_Cubes)
         {
             cube->Render(m_Renderer,*m_lightingShader, view, projection);
@@ -252,11 +234,8 @@ namespace isaacObjectLoader
     // @brief cleans all of the engine resources.
     void Engine::Clean()
     {
-        ClearPrimitives();
+        ClearSceneObjects();
         ClearCubes();
-        delete m_Sphere;
-        delete m_Plane;
-        delete m_Cylinder;
         delete m_Shader;
         delete m_Window;
         SDL_Quit();
@@ -276,7 +255,7 @@ namespace isaacObjectLoader
             glm::vec3 randomPosition(randomX, randomY, randomZ);
             Cube* newCube = new Cube(randomPosition);
             m_Cubes.push_back(newCube);
-            m_Primitives.push_back(newCube);
+            m_SceneObjects.push_back(newCube);
         }
     }    
 

@@ -10,11 +10,11 @@
 #include "Engine/Graphics/OpenGL/Buffers/VertexBufferLayout.h"
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
-#include "IPrimitive.h"
+#include "Scene/ISceneObject.h"
 
 namespace isaacObjectLoader
 {
-    class Sphere : public IPrimitive
+    class Sphere : public ISceneObject
     {
     public:
         // The default position is left as before.
@@ -23,6 +23,10 @@ namespace isaacObjectLoader
 
         void Update();
         void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection);
+
+        virtual std::size_t GetID() const { return m_ID; }
+        virtual const std::string& GetName() const override { return m_Name; };
+        virtual void SetName(const std::string& newName) override { m_Name = newName; }
 
         virtual glm::vec3& GetPosition() override { return m_Position; }
         virtual glm::vec3& GetRotation() override { return m_Rotation; }
@@ -65,6 +69,9 @@ namespace isaacObjectLoader
 
 
     private:
+        std::size_t m_ID;
+        std::string m_Name; 
+
         glm::vec3 m_Position;
         glm::vec3 m_Rotation;
         glm::vec3 m_Scale;

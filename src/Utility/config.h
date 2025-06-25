@@ -17,8 +17,8 @@
 
 // Constants
 constexpr double PI = 3.14159265358979323846;
-constexpr int SCREEN_WIDTH = 1280;
-constexpr int SCREEN_HEIGHT = 780;
+constexpr int SCREEN_WIDTH = 1600;
+constexpr int SCREEN_HEIGHT = 900;
 
 #include <glad/glad.h>
 

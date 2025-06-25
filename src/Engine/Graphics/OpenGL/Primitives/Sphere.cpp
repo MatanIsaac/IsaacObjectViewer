@@ -6,7 +6,12 @@
 namespace isaacObjectLoader
 {
     Sphere::Sphere(const glm::vec3& position) 
-        : m_Position(position), m_Scale(glm::vec3(1.0f)), m_Color(DEFAULT_COLOR)
+        : m_ID(ISceneObject::GenerateUniqueID())
+        , m_Name("Sphere_" + std::to_string(m_ID))
+        , m_Position(position)
+        , m_Scale(glm::vec3(1.0f))
+        , m_Color(DEFAULT_COLOR)
+        
     {
         // Adjust these parameters as needed for detail
         float radius = 0.5f;

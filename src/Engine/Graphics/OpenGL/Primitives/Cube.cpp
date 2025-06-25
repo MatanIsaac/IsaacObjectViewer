@@ -3,7 +3,9 @@
 namespace isaacObjectLoader
 {
     Cube::Cube(const glm::vec3& position)
-        : m_Position(position)
+        : m_ID(ISceneObject::GenerateUniqueID())
+        , m_Name("Cube_" + std::to_string(m_ID))
+        , m_Position(position)
     {
         // Set index count for our cube (36 indices)
         m_IndicesCount = 36;

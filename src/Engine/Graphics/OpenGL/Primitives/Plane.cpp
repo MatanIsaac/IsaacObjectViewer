@@ -4,7 +4,9 @@
 namespace isaacObjectLoader
 {
     Plane::Plane(const glm::vec3& position) 
-        : m_Position(position)
+        : m_ID(ISceneObject::GenerateUniqueID())
+        , m_Name("Plane_" + std::to_string(m_ID)) 
+        , m_Position(position)
     {
         // Initialize vertex count for indexed drawing
         m_VertexCount = m_IndicesCount;

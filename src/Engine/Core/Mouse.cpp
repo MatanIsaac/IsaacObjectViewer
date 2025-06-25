@@ -1,7 +1,7 @@
 #include "Mouse.h"
 #include "Ray.h"
 #include "Engine.h"
-#include "../Graphics/OpenGL/Primitives/IPrimitive.h"
+#include "Scene/ISceneObject.h"
 
 namespace isaacObjectLoader
 {
@@ -47,27 +47,26 @@ namespace isaacObjectLoader
                                                     SCREEN_WIDTH, SCREEN_HEIGHT, 
                                                     camera->GetViewMatrix(), camera->GetProjectionMatrix());
 
-        auto* engine = Engine::GetInstance();
+        auto* engine = Engine::GetInstance(); 
        
-        IPrimitive* selected = nullptr;
+        ISceneObject* selected = nullptr;
         float minDist = std::numeric_limits<float>::max();
             
-        for(auto* prim : engine->GetPrimitives())
+        for(auto* obj : engine->GetSceneObjects())
         {
             float dist;
-            if (prim->IntersectRay(pickingRay, &dist) && dist < minDist)
+            if (obj->IntersectRay(pickingRay, &dist) && dist < minDist)
             {
                 minDist = dist;
-                selected = prim;
+                selected = obj;
             }
         }
-        // Mark selected
-        engine->SetSelectedPrimitive(selected);
         
         if (selected)
         {
+            engine->SetSelectedObject(selected); // Mark selected
             auto pos = selected->GetPosition();
-            std::cout << "Selected a primitive at: " << '(' << pos.x << ',' << pos.y << ',' << pos.z << ')' << std::endl;
+            std::cout << "Selected an object at: " << '(' << pos.x << ',' << pos.y << ',' << pos.z << ')' << std::endl;
         }
     }
 }

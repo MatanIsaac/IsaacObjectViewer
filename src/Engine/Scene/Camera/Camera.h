@@ -40,9 +40,9 @@ namespace isaacObjectLoader
         // returns the view matrix calculated using Euler Angles and the LookAt Matrix
         glm::mat4 GetViewMatrix() { return glm::lookAt(m_Position, m_Position + m_Front, m_Up); }
         
-        void SetProjection(float fov, float aspect, float nearPlane, float farPlane) 
+        void SetProjection(float aspect, float nearPlane, float farPlane) 
         {
-            m_Projection = glm::perspective(glm::radians(fov), aspect, nearPlane, farPlane);
+            m_Projection = glm::perspective(glm::radians(m_Zoom), aspect, nearPlane, farPlane);
         }
         
         const glm::mat4& GetProjectionMatrix() const { return m_Projection; }

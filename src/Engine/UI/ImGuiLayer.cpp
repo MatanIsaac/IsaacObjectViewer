@@ -121,28 +121,24 @@ namespace isaacObjectLoader
             ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
             ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->Size);
 
-            // Split right sidebar (fixed width)
             ImGuiID right_id, main_id;
-            float rightPanelWidth = 300.0f; // or whatever you want
+            float rightPanelWidth = 350.0f; 
             ImGui::DockBuilderSplitNode(
                 dockspace_id, ImGuiDir_Right,
-                rightPanelWidth / ImGui::GetMainViewport()->Size.x, // fractional ratio
+                rightPanelWidth / ImGui::GetMainViewport()->Size.x, 
                 &right_id, &main_id);
 
-            // Split main area into top bar and viewport
             ImGuiID top_id, viewport_id;
-            float topPanelHeight = 40.0f; // px, match your panel height
+            float topPanelHeight = 40.0f; 
             ImGui::DockBuilderSplitNode(
                 main_id, ImGuiDir_Up,
                 topPanelHeight / ImGui::GetMainViewport()->Size.y,
                 &top_id, &viewport_id);
 
-            // Split right sidebar vertically for two panels
             ImGuiID sceneHierarchy_id, sceneSettings_id;
             ImGui::DockBuilderSplitNode(
                 right_id, ImGuiDir_Up, 0.25f, &sceneHierarchy_id, &sceneSettings_id);
 
-            // Dock windows
             ImGui::DockBuilderDockWindow("Engine Controls", top_id);
             ImGui::DockBuilderDockWindow("Viewport", viewport_id);
             ImGui::DockBuilderDockWindow("Scene Hierarchy Panel", sceneHierarchy_id);
@@ -151,10 +147,9 @@ namespace isaacObjectLoader
             ImGui::DockBuilderFinish(dockspace_id);
         }
 
-
         DrawTopPanel(engine);
-        DrawRightPanel(engine);
         DrawSceneHierarchyPanel(engine);
+        DrawRightPanel(engine);
         
         ImGui::Render();
     }
@@ -164,7 +159,61 @@ namespace isaacObjectLoader
         // ===================================================
         // Top Control Panel 
         // ===================================================
-    
+        
+        if (ImGui::BeginMainMenuBar())
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New")) { /* New file action */ }
+                if (ImGui::MenuItem("Open...")) { /* Open file action */ }
+                if (ImGui::MenuItem("Save")) { /* Save file action */ }
+                ImGui::Separator();
+                if (ImGui::MenuItem("Exit")) 
+                { 
+                    
+                }
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Add"))
+            {
+                if (ImGui::BeginMenu("Primitive Objects")) 
+                {
+                    if (ImGui::MenuItem("Cube"))   
+                    {
+                        engine->AddSceneObject(ObjectType::Cube);
+                    }
+                    if (ImGui::MenuItem("Sphere")) 
+                    {
+                        engine->AddSceneObject(ObjectType::Sphere);
+                    }
+                    if (ImGui::MenuItem("Cylinder")) 
+                    { 
+                        engine->AddSceneObject(ObjectType::Cylinder);
+                    }
+                    if (ImGui::MenuItem("Plane")) 
+                    { 
+                        engine->AddSceneObject(ObjectType::Plane);
+                    }
+                    
+                    ImGui::EndMenu();
+                }
+                
+                if (ImGui::BeginMenu("Lights")) 
+                {
+                    if (ImGui::MenuItem("Basic Sphere Light"))   
+                    {
+                        engine->AddSceneObject(ObjectType::Light);
+                    }
+                    ImGui::EndMenu();
+                }
+                
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMainMenuBar();
+        }
+
         ImGuiWindowClass window_class;
         window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoTabBar;
         ImGui::SetNextWindowClass(&window_class);
@@ -201,25 +250,11 @@ namespace isaacObjectLoader
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.0f, 0.0f, 1.0f));
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.5f));
-        /*
-        bool shouldExit = false;
-        if (ImGui::Button("Exit", ImVec2(button_size.x,button_size.y)))
-        {
-            shouldExit = true;
-        }
-        */
         ImGui::PopStyleVar(2);
         ImGui::PopStyleColor(3);
 
         ImGui::End();
 
-        /*
-        if (shouldExit)
-        {
-            engine->Exit();
-            return;
-        }
-        */
     }
 
     void ImGuiLayer::DrawRightPanel(Engine* engine)
@@ -227,6 +262,10 @@ namespace isaacObjectLoader
         // ===================================================
         // Right Panel: Scene Settings
         // ===================================================
+
+        int display_w, display_h;
+        SDL_GetWindowSizeInPixels(engine->GetSDLWindow(), &display_w, &display_h);
+
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove;
         
             ImGui::Begin("Scene Settings", nullptr, windowFlags);
@@ -244,9 +283,31 @@ namespace isaacObjectLoader
                 ImGui::SetTooltip("Reset background color to default.");
             }
         }
+        
+        ImGui::Separator();
 
         if (ImGui::CollapsingHeader("Camera Settings"))
         {
+            auto camera = engine->GetCamera();
+            
+            if (ImGui::BeginTable("TransformTable", 2)) 
+            {                
+                ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+                ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::Text("Position");
+                ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Position", (float *)&camera->GetPosition(), 0.01f);
+                            
+                ImGui::EndTable();
+            }
+            
+            if (ImGui::Button("Reset Camera Position"))
+            {
+                engine->GetCamera()->ResetPosition();
+                ImGui::SetTooltip("Reset camera to default position.");
+            }
+
             ImGui::Text("Camera Movement Speed");
             ImGui::DragFloat("##Camera Movement Speed", &engine->GetCamera()->GetSpeed(), 0.01f, 0.1f, 10.0f, "%.2f");
             if (ImGui::Button("Reset Camera Speed"))
@@ -254,22 +315,22 @@ namespace isaacObjectLoader
                 engine->GetCamera()->ResetSpeed();
                 ImGui::SetTooltip("Reset camera speed to initial value.");
             }
-            ImGui::SameLine();
-            if (ImGui::Button("Reset Camera Position"))
-            {
-                engine->GetCamera()->ResetPosition();
-                ImGui::SetTooltip("Reset camera to default position.");
-            }
 
             ImGui::Text("Camera Zoom");
-            ImGui::DragFloat("##Camera Zoom", &engine->GetCamera()->GetZoom(), 0.1f, 1.0f, 45.0f, "%.2f");
+            if(ImGui::DragFloat("##Camera Zoom", &engine->GetCamera()->GetZoom(), 0.1f, 1.0f, 90.0f, "%.2f"))
+            {
+                engine->GetCamera()->SetProjection((float)display_w / (float)display_h, 0.1f,100.0f);
+            }
             if (ImGui::Button("Reset Camera Zoom"))
             {
-                engine->GetCamera()->SetPosition(glm::vec3(0.0f, 0.0f, 3.0f));
+                engine->GetCamera()->SetZoom(engine->GetCamera()->DEFAULT_ZOOM);
+                engine->GetCamera()->SetProjection((float)display_w / (float)display_h, 0.1f,100.0f);
                 ImGui::SetTooltip("Reset camera zoom to default (45.f).");
             }
         }
-
+        
+        ImGui::Separator();
+        
         if (ImGui::CollapsingHeader("Mouse Settings"))
         {
             auto* mouse = Mouse::GetInstance();
@@ -282,79 +343,37 @@ namespace isaacObjectLoader
             }
         }
 
-        if (ImGui::CollapsingHeader("Cube Settings"))
+        ImGui::Separator();
+        
+        if(selected)
         {
-            ImGui::Text("Cube Count: %zu", engine->GetCubeCount());
-            static float cubePosition[3] = {0.0f, 0.0f, 0.0f};
-            ImGui::Text("Position");
-            ImGui::InputFloat3("##Position", cubePosition);
-            if (ImGui::Button("Add Cube at Position"))
-            {
-                engine->AddCube(glm::vec3(cubePosition[0], cubePosition[1], cubePosition[2]));
-            }
-            static int addAmount = 1;
-            ImGui::Text("Add Amount");
-            ImGui::InputInt("##Add Amount", &addAmount);
-            addAmount = std::max(1, addAmount);
-            if (ImGui::Button("Add Multiple Cubes"))
-            {
-                engine->AddCubes(addAmount);
-            }
-            if (ImGui::Button("Remove All Cubes"))
-            {
-                engine->ClearCubes();
-            }
-            if (ImGui::CollapsingHeader("Active Cubes"))
-            {
-                for (size_t i = 0; i < engine->GetCubeCount(); ++i)
+            if (ImGui::CollapsingHeader("Settings",ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Leaf))
+            {    
+                if (ImGui::CollapsingHeader("Transform"))
                 {
-                    ImGui::PushID(static_cast<int>(i));
-                    ImGui::Text("Cube %zu", i + 1);
-                    ImGui::Text("Position");
-                    glm::vec3& position = engine->GetCube(i)->GetPosition();
-                    if (ImGui::DragFloat3("##Position", &position[0], 0.1f, -1000.0f, 1000.0f))
-                    {
-                        engine->GetCube(i)->SetPosition(position);
-                    }
-                    if (ImGui::Button("Remove Cube"))
-                    {
-                        engine->RemoveCube(i);
-                        ImGui::PopID();
-                        break;
-                    }
-                    ImGui::Separator();
-                    ImGui::PopID();
-                }
-            }
-        }
+                    if (ImGui::BeginTable("TransformTable", 2)) 
+                    {                
+                        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+                        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-        if (ImGui::CollapsingHeader("Light Settings"))
-        {    
-            if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_Leaf))
-            {
-                if (ImGui::BeginTable("TransformTable", 2)) 
-                {                
-                    ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-                    ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0); ImGui::Text("Position");
-                    ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Light Position", (float *)&engine->GetLight()->GetPosition(), 0.01f);
-                    
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0); ImGui::Text("Rotation");
-                    ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Light Rotation", (float *)&engine->GetLight()->GetRotation(), 0.01f);
-                    
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0); ImGui::Text("Scale");
-                    ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Light Scale", (float *)&engine->GetLight()->GetScale(), 0.01f);
-                    
-                    ImGui::EndTable();
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0); ImGui::Text("Position");
+                        ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Position", (float *)&selected->GetPosition(), 0.01f);
+                        
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0); ImGui::Text("Rotation");
+                        ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Rotation", (float *)&selected->GetRotation(), 0.01f);
+                        
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0); ImGui::Text("Scale");
+                        ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Scale", (float *)&selected->GetScale(), 0.01f);
+                        
+                        ImGui::EndTable();
+                    }
                 }
+                DrawSettings(engine, selected);
+                  
             }
-            ImGui::ColorEdit3("Color", (float *)&engine->GetLight()->GetColor(), ImGuiColorEditFlags_NoLabel);
-            ImGui::Text("Specular Intensity");
-            ImGui::DragFloat("##Specular Intensity", &engine->GetLight()->GetSpecularIntensity(), 0.01f);
         }
 
         ImGui::End();
@@ -369,9 +388,56 @@ namespace isaacObjectLoader
 
         ImGui::Begin("Scene Hierarchy Panel", nullptr, windowFlags);
                     
-        ImGui::Text("FPS: %.4f", engine->GetFPS());
+        auto sceneObjects = engine->GetSceneObjects();
+        selected = engine->GetSelectedObject();
 
+        for (size_t i = 0; i < sceneObjects.size(); ++i) 
+        {
+            ISceneObject* obj = sceneObjects[i];
+            ImGui::PushID(obj->GetID());                        // push a unique ID for this object (e.g., index)
+            bool isSelected = (obj == selected);
+            std::string label = "##" + obj->GetName();
+            if (ImGui::Selectable(label.c_str(), isSelected,ImGuiSelectableFlags_AllowDoubleClick)) 
+            { 
+                engine->SetSelectedObject(obj);
+            }
+            // draw the actual object name as text next to the selectable
+            ImGui::SameLine();
+            ImGui::TextUnformatted(obj->GetName().c_str());
+            ImGui::PopID();
+        }
         ImGui::End();
+    }
+
+    void ImGuiLayer::DrawSettings(Engine* engine, ISceneObject* selected)
+    {
+        if(selected->GetType() == ObjectType::Light)
+        {
+            auto* light = dynamic_cast<Light*>(selected);
+
+            ImGui::Text("Light Color");
+            ImGui::ColorEdit3("Color", (float *)&light->GetColor(), ImGuiColorEditFlags_NoLabel);
+            ImGui::Text("Specular Intensity");
+            ImGui::DragFloat("##Specular Intensity", &light->GetSpecularIntensity(), 0.01f);
+        }
+
+        static std::string lastName;
+        static char buffer[256] = {};
+
+        if (selected && selected->GetName() != lastName)
+        {
+            memset(buffer, 0, sizeof(buffer));
+            strncpy(buffer, selected->GetName().c_str(), sizeof(buffer) - 1);
+            lastName = selected->GetName();
+        }
+
+        ImGui::Text("Name");
+        // Now buffer persists across frames, and you don't lose changes!
+        if(ImGui::InputText("##SelectedName", buffer, sizeof(buffer)))
+        {
+            selected->SetName(std::string(buffer));
+            lastName = buffer;
+        }       
     }
 
     void ImGuiLayer::LoadFont()

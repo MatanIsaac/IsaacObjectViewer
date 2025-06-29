@@ -3,12 +3,12 @@
 #include <memory>
 #include "Utility/config.h"
 
-#include "Engine/Graphics/OpenGL/Buffers/IndexBuffer.h"
-#include "Engine/Graphics/OpenGL/Buffers/VertexArray.h"
-#include "Engine/Graphics/OpenGL/Buffers/VertexBuffer.h"
-#include "Engine/Graphics/OpenGL/Buffers/VertexBufferLayout.h"
-#include "Engine/Graphics/OpenGL/Shaders/Shader.h"
-#include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
+#include "Graphics/OpenGL/Buffers/IndexBuffer.h"
+#include "Graphics/OpenGL/Buffers/VertexArray.h"
+#include "Graphics/OpenGL/Buffers/VertexBuffer.h"
+#include "Graphics/OpenGL/Buffers/VertexBufferLayout.h"
+#include "Graphics/OpenGL/Shaders/Shader.h"
+#include "Graphics/OpenGL/Renderer/Renderer.h"
 #include "ISceneObject.h"
 
 namespace isaacObjectLoader
@@ -16,15 +16,16 @@ namespace isaacObjectLoader
     class Cube : public ISceneObject
     {
     public:
-        Cube(const glm::vec3& position = {1.0f, 1.0f, 1.0f});
+        Cube(const glm::vec3& position = DEFAULT_POSITION);
         ~Cube() override;
 
         void Update();
-        void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection);
+        virtual void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection) override;
         
         virtual std::size_t GetID() const { return m_ID; }
         virtual const std::string& GetName() const override { return m_Name; };
         virtual void SetName(const std::string& newName) override { m_Name = newName; }
+        virtual ObjectType GetType() const { return ObjectType::Cube; }
 
         virtual glm::vec3& GetPosition() override { return m_Position; }
         virtual glm::vec3& GetRotation() override { return m_Rotation; }
@@ -40,10 +41,10 @@ namespace isaacObjectLoader
         void SetScale(const glm::vec3& scale) override;
         void SetColor(const glm::vec3& newColor) { m_Color = newColor; }
 
-        inline const VertexArray &GetCubeVA() const { return *m_VertexArray; }
-        inline const VertexBuffer &GetCubeVB() const { return *m_VertexBuffer; }
-        inline const IndexBuffer &GetCubeIB() const { return *m_IndexBuffer; }
-        inline int GetIndexCount() const { return m_IndicesCount; }
+        virtual inline const VertexArray    &GetVertexArray()   const override { return *m_VertexArray; }
+        virtual inline const VertexBuffer   &GetVertexBuffer()  const override { return *m_VertexBuffer; }
+        virtual inline const IndexBuffer    &GetIndexBuffer()   const override { return *m_IndexBuffer; }
+        virtual inline unsigned int         GetIndexCount()     const override { return m_IndicesCount; }
 
         bool IntersectRay(const Ray& ray, float* outDist) const override
         {
@@ -53,6 +54,11 @@ namespace isaacObjectLoader
             return RayIntersectsAABB(ray, boxMin, boxMax, outDist);
         }
 
+        virtual inline std::size_t GenerateUniqueID() override
+        {
+            static std::size_t cubeID = 0;
+            return ++cubeID;
+        }
 
     private:
         std::size_t m_ID;

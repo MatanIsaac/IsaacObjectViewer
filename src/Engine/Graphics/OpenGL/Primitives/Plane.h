@@ -15,15 +15,16 @@ namespace isaacObjectLoader
     class Plane : public ISceneObject
     {
     public:
-        Plane(const glm::vec3& position = {1.0f, 1.0f, 1.0f});
+        Plane(const glm::vec3& position = DEFAULT_POSITION);
         ~Plane() override;
 
         void Update();
-        void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection);
-
+        virtual void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection) override;
+        
         virtual std::size_t GetID() const { return m_ID; }
         virtual const std::string& GetName() const override { return m_Name; };
         virtual void SetName(const std::string& newName) override { m_Name = newName; }
+        virtual ObjectType GetType() const { return ObjectType::Plane; }
 
         virtual glm::vec3& GetPosition() override { return m_Position; }
         virtual glm::vec3& GetRotation() override { return m_Rotation; }
@@ -39,9 +40,10 @@ namespace isaacObjectLoader
         virtual void SetScale(const glm::vec3& scale) override;
         void SetColor(const glm::vec3& newColor) { m_Color = newColor; }
 
-        inline const VertexArray &GetPlaneVA() const { return *m_VertexArray; }
-        inline const VertexBuffer &GetPlaneVB() const { return *m_VertexBuffer; }
-        inline const IndexBuffer &GetPlaneIB() const { return *m_IndexBuffer; }
+        virtual inline const VertexArray    &GetVertexArray()   const override { return *m_VertexArray; }
+        virtual inline const VertexBuffer   &GetVertexBuffer()  const override { return *m_VertexBuffer; }
+        virtual inline const IndexBuffer    &GetIndexBuffer()   const override { return *m_IndexBuffer; }
+        virtual unsigned inline int         GetIndexCount()     const override { return m_IndicesCount; }
         inline int GetVertexCount() const { return m_VertexCount; }
 
         bool IntersectRay(const Ray& ray, float* outDistance) const override
@@ -77,7 +79,11 @@ namespace isaacObjectLoader
             return true;
         }
 
-
+        virtual inline std::size_t GenerateUniqueID() override
+        {
+            static std::size_t currentID = 0;
+            return ++currentID;
+        }
 
     private:
         std::size_t m_ID;

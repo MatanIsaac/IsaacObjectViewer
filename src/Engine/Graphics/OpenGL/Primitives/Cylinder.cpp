@@ -6,7 +6,7 @@
 namespace isaacObjectLoader
 {
     Cylinder::Cylinder(const glm::vec3& position) 
-        : m_ID(ISceneObject::GenerateUniqueID())
+        : m_ID(GenerateUniqueID())
         , m_Name("Cylinder_" + std::to_string(m_ID))
         , m_Position(position)
         , m_Scale(glm::vec3(1.0f))
@@ -54,6 +54,7 @@ namespace isaacObjectLoader
         glm::mat4 model = GetModelMatrix();
 
         // Set uniform values
+        shader.Bind();
         shader.setMat4("model", model);
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);

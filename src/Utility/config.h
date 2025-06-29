@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <algorithm>
 
 // GLM library
 #include <glm/glm.hpp>

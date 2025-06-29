@@ -7,8 +7,12 @@
 namespace isaacObjectLoader
 {
     Light::Light(const glm::vec3& position, const glm::vec3& color)
-        : m_Color(color), m_Sphere(position), m_SpecularIntensity(0.5f)
+        : m_Color(color)
+        , m_Sphere(position)
+        , m_SpecularIntensity(0.5f)
     {
+        m_ID = GenerateUniqueID();
+        m_Name = "Light_" + std::to_string(m_ID);
         // Scale down the cube representation for the light.
         m_Sphere.SetScale(glm::vec3(0.2f));
         m_Sphere.SetColor(color);
@@ -37,7 +41,7 @@ namespace isaacObjectLoader
         // Update light logic (for example, animate the light position) if needed.
     }
 
-    void Light::Render(const Renderer& renderer, Shader& sceneShader, const glm::mat4& view, const glm::mat4& projection)
+    void Light::Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection)
     {
         // First, update and bind the internal light cube shader.
         m_Shader->Bind();
@@ -48,10 +52,10 @@ namespace isaacObjectLoader
 
         // Then update the scene shader with the light properties so that the scene objects
         // can use the light’s color, position, and specular intensity.
-        sceneShader.Bind();
-        sceneShader.setVec3("lightColor", m_Color);
-        sceneShader.setVec3("lightPos", m_Sphere.GetPosition());
-        sceneShader.setFloat("specularIntensity", m_SpecularIntensity);
+        shader.Bind();
+        shader.setVec3("lightColor", m_Color);
+        shader.setVec3("lightPos", m_Sphere.GetPosition());
+        shader.setFloat("specularIntensity", m_SpecularIntensity);
 
         // Render the light cube using indexed drawing.
         renderer.Render(m_Sphere.GetVertexArray(), m_Sphere.GetIndexBuffer(), *m_Shader);

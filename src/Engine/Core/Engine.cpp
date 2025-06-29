@@ -15,8 +15,6 @@ namespace isaacObjectLoader
         : m_Window(nullptr),
           m_Shader(nullptr),
           m_lightingShader(nullptr),
-          m_Cubes({}), 
-          m_Light(nullptr),
           m_Camera(nullptr),
           m_SelectedObject(nullptr),
           m_MouseModeEnabled(true),
@@ -93,16 +91,11 @@ namespace isaacObjectLoader
 
         glEnable(GL_DEPTH_TEST); // Enable depth testing
 
-        m_Light     = new Light({1.2f, 1.0f, 2.0f},{1.0f, 1.0f, 1.0f});
-
-        m_SceneObjects.push_back(m_Light->GetSceneObject());
-
-        std::string colors_vs  = "src/Resources/Shaders/colors.vs"; 
-        std::string colors_fs  = "src/Resources/Shaders/colors.fs"; 
+        std::string colors_vs = "src/Resources/Shaders/colors.vs"; 
+        std::string colors_fs = "src/Resources/Shaders/colors.fs"; 
         ConvertSeparators(colors_vs);
         ConvertSeparators(colors_fs);
         
-
         m_lightingShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
         m_lightingShader->Bind();
                                         
@@ -112,7 +105,7 @@ namespace isaacObjectLoader
         SDL_GetWindowSizeInPixels(m_Window->GetSDLWindow(), &display_w, &display_h);
 
         m_Camera = new Camera(glm::vec3(0.0f, 2.0f, 5.0f));
-        m_Camera->SetProjection(m_Camera->GetZoom(),(float)display_w / (float)display_h, 0.1f,100.0f);
+        m_Camera->SetProjection((float)display_w / (float)display_h, 0.1f,100.0f);
         
         
         m_IsRunning = true;
@@ -147,7 +140,7 @@ namespace isaacObjectLoader
                         SDL_ShowCursor();
                         SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),false);
                         break;
-                    case SDLK_BACKSPACE:
+                    case SDLK_F4:
                         m_MouseModeEnabled = false;
                         m_FreeCameraModeEnabled = true;
                         SDL_HideCursor();
@@ -217,47 +210,28 @@ namespace isaacObjectLoader
                 
         glm::mat4 view = m_Camera->GetViewMatrix(); // VIEW
         glm::mat4 projection = m_Camera->GetProjectionMatrix(); 
-                                                
-        // Render Primitives
-        //------------------------------------------------------------------------------------
-        for (auto& cube : m_Cubes)
-        {
-            cube->Render(m_Renderer,*m_lightingShader, view, projection);
-        }
-        
-        //------------------------------------------------------------------------------------
 
-        // render light
-        m_Light->Render(m_Renderer,*m_lightingShader, view, projection);
+        for (auto& obj : m_SceneObjects)
+        {
+            obj->Render(m_Renderer, *m_lightingShader, view, projection); 
+        }
     }
 
     // @brief cleans all of the engine resources.
     void Engine::Clean()
     {
         ClearSceneObjects();
-        ClearCubes();
+        if(m_SelectedObject)
+            delete m_SelectedObject;
+        delete m_Camera;
         delete m_Shader;
+        delete m_lightingShader;
         delete m_Window;
         SDL_Quit();
     }
 
     // @brief loads up needed resources such as textures, sfx, music etc..
-    bool Engine::LoadResources() { return false; }
-
-    void Engine::AddCubes(int addAmount, float minRange, float maxRange)
-    {
-        for (int i = 0; i < addAmount; ++i)
-        {
-            float randomX = static_cast<float>(rand()) / RAND_MAX * (maxRange - minRange) + minRange;
-            float randomY = static_cast<float>(rand()) / RAND_MAX * (maxRange - minRange) + minRange;
-            float randomZ = static_cast<float>(rand()) / RAND_MAX * (maxRange - minRange) + minRange;
-
-            glm::vec3 randomPosition(randomX, randomY, randomZ);
-            Cube* newCube = new Cube(randomPosition);
-            m_Cubes.push_back(newCube);
-            m_SceneObjects.push_back(newCube);
-        }
-    }    
+    bool Engine::LoadResources() { return false; } 
 
     void Engine::EnableMouseMode()
     {

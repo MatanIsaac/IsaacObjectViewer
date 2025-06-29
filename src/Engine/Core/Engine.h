@@ -2,16 +2,16 @@
 
 #include "Utility/config.h"
 #include "Window.h"
-#include "Engine/Scene/Camera/Camera.h"
+#include "Scene/Camera/Camera.h"
 #include "Scene/ISceneObject.h"
 #include "Graphics/OpenGL/Primitives/Sphere.h"
 #include "Graphics/OpenGL/Primitives/Plane.h"
 #include "Graphics/OpenGL/Primitives/Cube.h"
 #include "Graphics/OpenGL/Primitives/Cylinder.h"
-#include "Engine/Graphics/OpenGL/Primitives/Line.h"
-#include "Engine/Graphics/OpenGL/Lighting/Light.h"
-#include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
-#include "Engine/Graphics/OpenGL/Shaders/Shader.h"
+#include "Graphics/OpenGL/Primitives/Line.h"
+#include "Graphics/OpenGL/Lighting/Light.h"
+#include "Graphics/OpenGL/Renderer/Renderer.h"
+#include "Graphics/OpenGL/Shaders/Shader.h"
 
 namespace isaacObjectLoader
 {
@@ -63,54 +63,57 @@ namespace isaacObjectLoader
         glm::vec3& GetBackgroundColor() { return m_BackgroundColor; }
         void SetBackgroundColor(glm::vec3 newColor) { m_BackgroundColor = newColor; }
 
-        Light* GetLight() { return m_Light; }
-
         void EnableMouseMode();
         void EnableFreeCameraMode();
         
-        // Cube stuff
+        // Scene Objects
         //-----------------------------------------------------------------------
         
-        Cube* GetCube(size_t index)
+        inline void AddSceneObject(ObjectType type,const glm::vec3& position = {0.0f, 0.0f, 0.0f})
         {
-            if (index < m_Cubes.size())
-                return m_Cubes[index];
-            return nullptr;
-        }
-
-        inline void AddCube(const glm::vec3& position = {1.0f, 1.0f, 1.0f})
-        {
-            m_Cubes.push_back(new Cube(position));
-            m_SceneObjects.push_back(new Cube(position));
-        }
-        inline void RemoveCube(size_t index)
-        {
-            if (index < m_Cubes.size())
+            ISceneObject* obj = nullptr;
+            switch(type)
             {
-                delete m_Cubes[index];
-                m_Cubes.erase(m_Cubes.begin() + index);
+                case ObjectType::Cube:
+                    obj = new Cube(position);
+                    break;
+                case ObjectType::Sphere:
+                    obj = new Sphere(position);
+                    break;
+                case ObjectType::Cylinder:
+                    obj = new Cylinder(position);
+                    break;
+                case ObjectType::Plane:
+                    obj = new Plane(position);
+                    break;
+                case ObjectType::Light:
+                    obj = new Light(position,{1.0f,1.0f,1.0f});
+                    break;
+                default:
+                    std::cout << "Object Type must be a: Cube/Sphere/Cylinder/Plane/Light\n";
+                    break;
             }
+            if(obj)
+                m_SceneObjects.push_back(obj);
         }
-        inline void ClearCubes()
+        
+        inline void RemoveSceneObject(ISceneObject* object)
         {
-            for (auto cube : m_Cubes)
-            {
-                if(cube != nullptr)
-                    delete cube;
-            }
-            m_Cubes.clear();
+            m_SceneObjects.erase(
+                std::remove_if(m_SceneObjects.begin(), m_SceneObjects.end(),
+                    [object](ISceneObject* obj)
+                    {
+                        if(obj && obj->GetID() == object->GetID())
+                        {
+                            delete obj;
+                            return true; 
+                        }
+                        return false;
+                    }),
+                    m_SceneObjects.end()
+                );
         }
-        std::vector<Cube*>& GetCubes() { return m_Cubes; }
-        void AddCubes(int addAmount, float minRange = -20.0f, float maxRange = 20.0f);
-        size_t GetCubeCount() const { return m_Cubes.size();}
-        void PrintSize() { std::cout << "Number of cubes: " << m_Cubes.size() << std::endl; }
-        //-----------------------------------------------------------------------
-
-        // Primitives
-        //-----------------------------------------------------------------------
-        std::vector<ISceneObject*>& GetSceneObjects() { return m_SceneObjects; }
-        ISceneObject* GetSelectedObject() { return m_SelectedObject; }
-        void SetSelectedObject(ISceneObject* obj) { m_SelectedObject = obj; }
+        
         inline void ClearSceneObjects()
         {
             for (auto obj : m_SceneObjects)
@@ -120,6 +123,10 @@ namespace isaacObjectLoader
             }
             m_SceneObjects.clear();
         }
+        std::vector<ISceneObject*>& GetSceneObjects() { return m_SceneObjects; }
+        ISceneObject* GetSelectedObject() { return m_SelectedObject; }
+        void SetSelectedObject(ISceneObject* obj) { m_SelectedObject = obj; }
+        
         //-----------------------------------------------------------------------
     private:
         Engine();
@@ -130,8 +137,6 @@ namespace isaacObjectLoader
         Shader* m_Shader;
         Shader* m_lightingShader;
         
-        std::vector<Cube*> m_Cubes;
-        Light* m_Light;
         Camera* m_Camera;
         
         ISceneObject* m_SelectedObject;

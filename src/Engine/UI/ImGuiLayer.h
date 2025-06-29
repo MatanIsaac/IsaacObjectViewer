@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Utility/config.h"
-
-
+#include "Scene/ISceneObject.h"
 
 namespace isaacObjectLoader
 {
@@ -24,10 +23,12 @@ namespace isaacObjectLoader
         void DrawTopPanel(Engine* engine);    
         void DrawRightPanel(Engine* engine);
         void DrawSceneHierarchyPanel(Engine* engine);    
+        void DrawSettings(Engine* engine, ISceneObject* selected);
         void LoadFont();
     private:
         SDL_Window* m_Window = nullptr;
         void* m_GLContext = nullptr;
+        ISceneObject* selected = nullptr;
 
     };
 }

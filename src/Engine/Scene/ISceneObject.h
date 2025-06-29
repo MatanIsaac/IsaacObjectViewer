@@ -3,9 +3,40 @@
 #include <glm/glm.hpp>
 #include <string>
 #include "Core/Ray.h"
+#include "Graphics/OpenGL/Buffers/IndexBuffer.h"
+#include "Graphics/OpenGL/Buffers/VertexArray.h"
+#include "Graphics/OpenGL/Buffers/VertexBuffer.h"
+#include "Graphics/OpenGL/Renderer/Renderer.h"
+#include "Graphics/OpenGL/Shaders/Shader.h"
 
 namespace isaacObjectLoader
 {
+     enum class ObjectType : int
+    {
+        Unknown = 0, // default value for uninitialized/legacy objects
+        Cube,
+        Sphere,
+        Cylinder,
+        Plane,
+        Light,
+        Count 
+    };
+
+    // ToString helper, for UI/debug/serialization
+    inline const char* ObjectTypeToString(ObjectType type)
+    {
+        switch (type)
+        {
+            case ObjectType::Cube:     return "Cube";
+            case ObjectType::Sphere:   return "Sphere";
+            case ObjectType::Cylinder: return "Cylinder";
+            case ObjectType::Plane:    return "Plane";
+            case ObjectType::Light:    return "Light";
+            case ObjectType::Unknown:  return "Unknown";
+            default:                   return "Invalid";
+        }
+    }
+
     class ISceneObject
     {
     public:
@@ -14,7 +45,8 @@ namespace isaacObjectLoader
         virtual std::size_t GetID() const = 0;
         virtual const std::string& GetName() const = 0;
         virtual void SetName(const std::string& name) = 0;
-
+        virtual ObjectType GetType() const = 0;
+        
         virtual glm::vec3& GetPosition() = 0;
         virtual glm::vec3& GetRotation() = 0;
         virtual glm::vec3& GetScale() = 0;
@@ -30,10 +62,13 @@ namespace isaacObjectLoader
         // returns true if hit and sets outdistance to the hit distance (if not null)
         virtual bool IntersectRay(const Ray& ray, float* outDistance) const = 0;
 
-        static inline std::size_t GenerateUniqueID()
-        {
-            static std::size_t currentID = 0;
-            return ++currentID;
-        }
+        virtual std::size_t GenerateUniqueID() = 0;
+
+        virtual inline const VertexArray    &GetVertexArray() const = 0;
+        virtual inline const VertexBuffer   &GetVertexBuffer() const = 0;
+        virtual inline const IndexBuffer    &GetIndexBuffer() const = 0;
+        virtual unsigned inline int         GetIndexCount() const = 0; 
+
+        virtual void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection) = 0;
     };
 }

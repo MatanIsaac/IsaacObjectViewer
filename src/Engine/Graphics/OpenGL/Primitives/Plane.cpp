@@ -4,7 +4,7 @@
 namespace isaacObjectLoader
 {
     Plane::Plane(const glm::vec3& position) 
-        : m_ID(ISceneObject::GenerateUniqueID())
+        : m_ID(GenerateUniqueID())
         , m_Name("Plane_" + std::to_string(m_ID)) 
         , m_Position(position)
     {
@@ -47,6 +47,7 @@ namespace isaacObjectLoader
         auto model = GetModelMatrix();
 
         // Bind the shader and set uniforms
+        shader.Bind();
         shader.setMat4("model", model);
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);

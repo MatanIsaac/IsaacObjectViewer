@@ -56,16 +56,6 @@ namespace isaacObjectLoader
         renderer.Render(*m_VertexArray, *m_IndexBuffer, shader);
     }
 
-    void Cube::SetScale(const glm::vec3& scale)
-    {
-        m_Scale = scale;
-    }
-
-    void Cube::SetRotation(const glm::vec3& rotation)
-    {
-        m_Rotation = rotation;
-    }
-
     glm::mat4 Cube::GetModelMatrix() const
     {
         glm::mat4 model = glm::mat4(1.0f);

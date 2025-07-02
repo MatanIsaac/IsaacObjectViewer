@@ -20,31 +20,31 @@ namespace isaacObjectLoader
         ~Cube() override;
 
         void Update();
-        virtual void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection) override;
-        
-        virtual std::size_t GetID() const { return m_ID; }
-        virtual const std::string& GetName() const override { return m_Name; };
-        virtual void SetName(const std::string& newName) override { m_Name = newName; }
-        virtual ObjectType GetType() const { return ObjectType::Cube; }
+        void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection) override;
+    
+        std::size_t GetID() const { return m_ID; }
+        const std::string& GetName() const override { return m_Name; };
+        void SetName(const std::string& newName) override { m_Name = newName; }
+        ObjectType GetType() const { return ObjectType::Cube; }
 
-        virtual glm::vec3& GetPosition() override { return m_Position; }
-        virtual glm::vec3& GetRotation() override { return m_Rotation; }
-        virtual glm::vec3& GetScale() override { return m_Scale; }
+        glm::vec3& GetPosition() override { return m_Position; }
+        glm::vec3& GetRotation() override { return m_Rotation; }
+        glm::vec3& GetScale() override { return m_Scale; }
         glm::vec3& GetColor() { return m_Color; }
         glm::mat4 GetModelMatrix() const;
 
         void ResetPosition() { m_Position = DEFAULT_POSITION; }
         void ResetRotation() { m_Rotation = DEFAULT_ROTATION; }
         void ResetScale() { m_Scale = DEFAULT_SCALE; }
-        void SetPosition(const glm::vec3& newPosition) override { m_Position = newPosition; }
-        void SetRotation(const glm::vec3& rotation) override;
-        void SetScale(const glm::vec3& scale) override;
-        void SetColor(const glm::vec3& newColor) { m_Color = newColor; }
+        inline void SetPosition(const glm::vec3& newPosition) override { m_Position = newPosition; }
+        inline void SetRotation(const glm::vec3& rotation) override { m_Rotation = rotation; }
+        inline void SetScale(const glm::vec3& scale) override { m_Scale = scale; }
+        inline void SetColor(const glm::vec3& newColor) { m_Color = newColor; }
 
-        virtual inline const VertexArray    &GetVertexArray()   const override { return *m_VertexArray; }
-        virtual inline const VertexBuffer   &GetVertexBuffer()  const override { return *m_VertexBuffer; }
-        virtual inline const IndexBuffer    &GetIndexBuffer()   const override { return *m_IndexBuffer; }
-        virtual inline unsigned int         GetIndexCount()     const override { return m_IndicesCount; }
+        inline const VertexArray    &GetVertexArray()   const override { return *m_VertexArray; }
+        inline const VertexBuffer   &GetVertexBuffer()  const override { return *m_VertexBuffer; }
+        inline const IndexBuffer    &GetIndexBuffer()   const override { return *m_IndexBuffer; }
+        inline unsigned int         GetIndexCount()     const override { return m_IndicesCount; }
 
         bool IntersectRay(const Ray& ray, float* outDist) const override
         {
@@ -54,7 +54,7 @@ namespace isaacObjectLoader
             return RayIntersectsAABB(ray, boxMin, boxMax, outDist);
         }
 
-        virtual inline std::size_t GenerateUniqueID() override
+        inline std::size_t GenerateUniqueID() override
         {
             static std::size_t cubeID = 0;
             return ++cubeID;

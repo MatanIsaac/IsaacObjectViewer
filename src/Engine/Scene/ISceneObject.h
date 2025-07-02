@@ -18,24 +18,10 @@ namespace isaacObjectLoader
         Sphere,
         Cylinder,
         Plane,
+        Circle,
         Light,
         Count 
     };
-
-    // ToString helper, for UI/debug/serialization
-    inline const char* ObjectTypeToString(ObjectType type)
-    {
-        switch (type)
-        {
-            case ObjectType::Cube:     return "Cube";
-            case ObjectType::Sphere:   return "Sphere";
-            case ObjectType::Cylinder: return "Cylinder";
-            case ObjectType::Plane:    return "Plane";
-            case ObjectType::Light:    return "Light";
-            case ObjectType::Unknown:  return "Unknown";
-            default:                   return "Invalid";
-        }
-    }
 
     class ISceneObject
     {

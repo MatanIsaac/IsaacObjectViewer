@@ -195,6 +195,10 @@ namespace isaacObjectLoader
                     { 
                         engine->AddSceneObject(ObjectType::Plane);
                     }
+                    if (ImGui::MenuItem("Circle")) 
+                    { 
+                        engine->AddSceneObject(ObjectType::Circle);
+                    }
                     
                     ImGui::EndMenu();
                 }

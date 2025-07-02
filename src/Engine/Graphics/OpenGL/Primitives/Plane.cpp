@@ -58,16 +58,6 @@ namespace isaacObjectLoader
         /*renderer.Render(*m_VertexArray, m_VertexCount, shader); */
     }
 
-    void Plane::SetScale(const glm::vec3& scale)
-    {
-        m_Scale = scale;
-    }
-
-    void Plane::SetRotation(const glm::vec3& rotation)
-    {
-        m_Rotation = rotation;
-    }
-
     glm::mat4 Plane::GetModelMatrix() const
     {
         glm::mat4 model = glm::mat4(1.0f);

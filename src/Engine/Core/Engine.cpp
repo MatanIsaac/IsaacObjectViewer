@@ -90,7 +90,9 @@ namespace isaacObjectLoader
         //----------------------------------------------------------------------------------------
 
         glEnable(GL_DEPTH_TEST); // Enable depth testing
-
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        
         std::string colors_vs = "src/Resources/Shaders/colors.vs"; 
         std::string colors_fs = "src/Resources/Shaders/colors.fs"; 
         ConvertSeparators(colors_vs);
@@ -99,7 +101,7 @@ namespace isaacObjectLoader
         m_lightingShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
         m_lightingShader->Bind();
                                         
-        m_BackgroundColor = glm::vec4(0.75f, 0.75f, 0.75f, 1.0f);
+        m_BackgroundColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         int display_w, display_h;
         SDL_GetWindowSizeInPixels(m_Window->GetSDLWindow(), &display_w, &display_h);

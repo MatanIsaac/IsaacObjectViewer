@@ -1,7 +1,7 @@
 #include "Shader.h"
 #include "Utility/Log.hpp"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
 
     Shader::Shader(const char *vertexPath, const char *fragmentPath)

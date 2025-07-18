@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Utility/config.h"
 #include <memory>
 #include <vector>
 #include <glm/glm.hpp>
-#include "Utility/config.h"
 #include "Engine/Graphics/OpenGL/Buffers/IndexBuffer.h"
 #include "Engine/Graphics/OpenGL/Buffers/VertexArray.h"
 #include "Engine/Graphics/OpenGL/Buffers/VertexBuffer.h"
@@ -12,7 +12,7 @@
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
 #include "Scene/ISceneObject.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     class Sphere : public ISceneObject
     {
@@ -22,7 +22,7 @@ namespace isaacObjectLoader
         ~Sphere() override;
 
         void Update();
-        void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection) override;
+        void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader = nullptr) override;
         
         std::size_t GetID() const { return m_ID; }
         const std::string& GetName() const override { return m_Name; };
@@ -33,7 +33,7 @@ namespace isaacObjectLoader
         glm::vec3& GetRotation() override { return m_Rotation; }
         glm::vec3& GetScale() override { return m_Scale; }
         glm::vec3& GetColor()    { return m_Color; }
-        glm::mat4 GetModelMatrix() const;
+        virtual glm::mat4 GetModelMatrix() const override;
 
         void ResetPosition() { m_Position = DEFAULT_POSITION; }
         void ResetRotation() { m_Rotation = DEFAULT_ROTATION; }

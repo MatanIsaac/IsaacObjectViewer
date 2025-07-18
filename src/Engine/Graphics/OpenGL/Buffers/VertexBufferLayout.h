@@ -2,7 +2,7 @@
 #include "Utility/config.h"
 #include "Utility/GLErrorManager.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
 
 struct VertexBufferElement

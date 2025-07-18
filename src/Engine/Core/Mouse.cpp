@@ -2,8 +2,9 @@
 #include "Ray.h"
 #include "Engine.h"
 #include "Scene/ISceneObject.h"
+#include "Utility/Log.hpp"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     Mouse *Mouse::s_Instance = nullptr;
 
@@ -66,7 +67,8 @@ namespace isaacObjectLoader
         {
             engine->SetSelectedObject(selected); // Mark selected
             auto pos = selected->GetPosition();
-            std::cout << "Selected an object at: " << '(' << pos.x << ',' << pos.y << ',' << pos.z << ')' << std::endl;
+            //std::cout << "Selected an object at: " << '(' << pos.x << ',' << pos.y << ',' << pos.z << ')' << std::endl;
+            LOG_INFO("Selected an object at ({},{},{})",pos.x,pos.y,pos.z);
         }
     }
 }

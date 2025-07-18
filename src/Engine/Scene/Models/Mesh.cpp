@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     Mesh::Mesh(std::vector<Vertex> vertices,
                std::vector<unsigned int> indices,

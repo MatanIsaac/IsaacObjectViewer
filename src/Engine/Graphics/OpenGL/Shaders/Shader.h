@@ -3,7 +3,7 @@
 #include "Utility/config.h"
 #include "Utility/GLErrorManager.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
 
 class Shader
@@ -57,10 +57,7 @@ private:
             if (!success)
             {
                 GLCall(glGetShaderInfoLog(shader, 1024, NULL, infoLog));
-                std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n"
-                          << infoLog
-                          << "\n -- --------------------------------------------------- -- "
-                          << std::endl;
+                LOG_ERROR("ERROR::SHADER_COMPILATION_ERROR of type: {}\n{}\n---------------------------------------------------------",type,infoLog);
             }
         }
         else
@@ -69,10 +66,7 @@ private:
             if (!success)
             {
                 GLCall(glGetProgramInfoLog(shader, 1024, NULL, infoLog));
-                std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n"
-                          << infoLog
-                          << "\n -- --------------------------------------------------- -- "
-                          << std::endl;
+                LOG_ERROR("ERROR::PROGRAM_LINKING_ERROR of type: {}\n{}\n---------------------------------------------------------",type,infoLog);
             }
         }
     }

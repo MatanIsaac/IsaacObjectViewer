@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <iostream>
+#include "Utility/Log.hpp"
 
 #ifdef _WIN32
     // MSVC only: Use '__debugbreak()' for debugging
@@ -24,32 +25,30 @@ inline bool GLLogCall(const char* function, const char* file, int line)
 {
     while (GLenum error = glGetError())
     {
-        std::cout << "[OpenGL Error] (" << error << "): " << function << " " << file << ":" << line
-                  << std::endl;
-
+        LOG_INFO("[OpenGL Error] ({}): {} {}:{}",error,function,file,line);
         switch (error)
         {
             case GL_INVALID_ENUM:
-                std::cout << "GL_INVALID_ENUM\n";
+                LOG_INFO("GL_INVALID_ENUM\n");
                 break;
             case GL_INVALID_VALUE:
-                std::cout << "GL_INVALID_VALUE\n";
+                LOG_INFO("GL_INVALID_VALUE\n");
                 break;
             case GL_INVALID_OPERATION:
-                std::cout << "GL_INVALID_OPERATION\n";
+                LOG_INFO("GL_INVALID_OPERATION\n");
                 break;
             case GL_INVALID_FRAMEBUFFER_OPERATION:
-                std::cout << "GL_INVALID_FRAMEBUFFER_OPERATION\n";
+                LOG_INFO("GL_INVALID_FRAMEBUFFER_OPERATION\n");
                 break;
             case GL_OUT_OF_MEMORY:
-                std::cout << "GL_OUT_OF_MEMORY\n";
+                LOG_INFO("GL_OUT_OF_MEMORY\n");
                 break;
-            // case GL_STACK_UNDERFLOW: std::cout << "GL_STACK_UNDERFLOW\n";
+            // case GL_STACK_UNDERFLOW: LOG_INFO("GL_STACK_UNDERFLOW\n");
             //	break;
-            // case GL_STACK_OVERFLOW: std::cout << "GL_STACK_OVERFLOW\n";
+            // case GL_STACK_OVERFLOW: LOG_INFO("GL_STACK_OVERFLOW\n");
             //	break;
             default:
-                std::cout << "ERROR DEFAULT\n";
+                LOG_INFO("ERROR DEFAULT\n");
                 break;
         }
         return false;

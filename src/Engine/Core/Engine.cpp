@@ -6,7 +6,7 @@
 #include "../UI/ImGuiLayer.h"
 #include <utility>
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     inline Mouse* MouseRef = Mouse::GetInstance();
     Engine *Engine::s_Instance = nullptr;
@@ -197,15 +197,13 @@ namespace isaacObjectLoader
     // @brief renders all of the engine textures, sounds and objects.
     void Engine::Render()
     {
-        // Rendering
+        
         int display_w, display_h;
         SDL_GetWindowSizeInPixels(m_Window->GetSDLWindow(), &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
 
-        // render
         glClearColor(m_BackgroundColor.x, m_BackgroundColor.y, m_BackgroundColor.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
         m_lightingShader->Bind();
         m_lightingShader->setVec3("viewPos", m_Camera->GetPosition());
@@ -213,9 +211,11 @@ namespace isaacObjectLoader
         glm::mat4 view = m_Camera->GetViewMatrix(); // VIEW
         glm::mat4 projection = m_Camera->GetProjectionMatrix(); 
 
+        SendAllLightsToShader();
+
         for (auto& obj : m_SceneObjects)
         {
-            obj->Render(m_Renderer, *m_lightingShader, view, projection); 
+            obj->Render(m_Renderer, view, projection, m_lightingShader); 
         }
     }
 
@@ -251,6 +251,19 @@ namespace isaacObjectLoader
         SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),true);
     }
         
+    void Engine::SendAllLightsToShader()
+    {
+        // ---- MULTIPLE LIGHTS: Gather and Send Uniforms ----
+        int numLights = std::min(int(m_LightObjects.size()),MAX_LIGHTS);
 
+        for (int i = 0; i < numLights; ++i) 
+        {
+            m_lightingShader->setVec3("lights[" + std::to_string(i) + "].position", m_LightObjects[i]->GetPosition());
+            m_lightingShader->setVec3("lights[" + std::to_string(i) + "].color", m_LightObjects[i]->GetColor());
+            m_lightingShader->setFloat("lights[" + std::to_string(i) + "].specular", m_LightObjects[i]->GetSpecularIntensity());
+        }
+        m_lightingShader->setInt("numLights", numLights);
+        // ----------------------------------------------------
+    }
 
 } // namespace isaacGraphicsEngine

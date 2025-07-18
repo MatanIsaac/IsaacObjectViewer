@@ -9,7 +9,7 @@
 #include "Engine/Graphics/Texture.hpp"
 
 #define MAX_BONE_INFLUENCE 4
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     /**
      * @brief a collection of data that represent a single point

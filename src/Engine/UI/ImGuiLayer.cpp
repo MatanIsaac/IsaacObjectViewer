@@ -1,15 +1,14 @@
 #include "ImGuiLayer.h"
 #include "../Core/Engine.h" // so we can access engine state like m_Camera, m_Light, etc.
 #include "../Core/Mouse.h"
-#include <imgui_internal.h>
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
  
  
     ImGuiLayer::ImGuiLayer()
     {
-        
+        m_GizmoOperation = ImGuizmo::TRANSLATE;
     }
 
     ImGuiLayer::~ImGuiLayer()
@@ -52,6 +51,7 @@ namespace isaacObjectLoader
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
+        ImGuizmo::BeginFrame();
     }
     
     void ImGuiLayer::End()
@@ -151,6 +151,8 @@ namespace isaacObjectLoader
         DrawSceneHierarchyPanel(engine);
         DrawRightPanel(engine);
         
+        DrawGizmos(engine, m_GizmoOperation);
+        
         ImGui::Render();
     }
 
@@ -195,10 +197,6 @@ namespace isaacObjectLoader
                     { 
                         engine->AddSceneObject(ObjectType::Plane);
                     }
-                    if (ImGui::MenuItem("Circle")) 
-                    { 
-                        engine->AddSceneObject(ObjectType::Circle);
-                    }
                     
                     ImGui::EndMenu();
                 }
@@ -229,22 +227,30 @@ namespace isaacObjectLoader
         
         ImGui::Begin("Engine Controls", nullptr, topPanelFlags);
         
+        
+        ImGui::Text("Gizmo Mode:");
+
+        ImGui::SameLine();
+        ImGui::RadioButton("Translate", &m_GizmoOperation, ImGuizmo::TRANSLATE); ImGui::SameLine();
+        ImGui::RadioButton("Rotate", &m_GizmoOperation, ImGuizmo::ROTATE); ImGui::SameLine();
+        ImGui::RadioButton("Scale", &m_GizmoOperation, ImGuizmo::SCALE);
+        ImGui::SameLine();
         // draw the button with a little ▼ glyph
         if (ImGui::Button(u8"Modes \uf0d7"))
-            ImGui::OpenPopup("modes_popup");         // toggle the popup
-
+        ImGui::OpenPopup("modes_popup");         // toggle the popup
+        
         if (ImGui::BeginPopup("modes_popup"))
         {
-            if (ImGui::MenuItem("Mouse mode"))       // behaves like a <li>
+            if (ImGui::MenuItem("Mouse mode"))       
             {
                 engine->EnableMouseMode();
             }
-
+            
             if (ImGui::MenuItem("Free camera mode"))
             {
                 engine->EnableFreeCameraMode();
             }
-
+            
             ImGui::EndPopup();
         }
 
@@ -327,7 +333,7 @@ namespace isaacObjectLoader
             }
             if (ImGui::Button("Reset Camera Zoom"))
             {
-                engine->GetCamera()->SetZoom(engine->GetCamera()->DEFAULT_ZOOM);
+                engine->GetCamera()->SetZoom(engine->GetCamera()->DEFAULT_CAMERA_ZOOM);
                 engine->GetCamera()->SetProjection((float)display_w / (float)display_h, 0.1f,100.0f);
                 ImGui::SetTooltip("Reset camera zoom to default (45.f).");
             }
@@ -464,9 +470,35 @@ namespace isaacObjectLoader
             path.c_str(), 16.0f, &cfg, puaRanges
         );
         io.FontDefault = nerd;
-        ImGui_ImplOpenGL3_DestroyFontsTexture();
-        ImGui_ImplOpenGL3_CreateFontsTexture();
     }
 
+    void ImGuiLayer::DrawGizmos(Engine* engine,int gizmoOperation)
+    {
+        // check if an object is selected
+        auto* selected = engine->GetSelectedObject();
+        if(!selected)
+            return;
+        
+        // Camera matrices
+        glm::mat4 view = engine->GetCamera()->GetViewMatrix();
+        glm::mat4 proj = engine->GetCamera()->GetProjectionMatrix();
 
+        // the transform to manipulate
+        glm::mat4 model = selected->GetModelMatrix();
+        ImGuizmo::OPERATION operation = (ImGuizmo::OPERATION)gizmoOperation;
+        static ImGuizmo::MODE mode = ImGuizmo::WORLD;
+
+        ImGui::Begin("MainDockSpaceHost");
+        ImGuizmo::SetDrawlist();
+        ImGuizmo::SetRect(ImGui::GetWindowPos().x,ImGui::GetWindowPos().y,
+            ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+
+        if(ImGuizmo::Manipulate(glm::value_ptr(view),glm::value_ptr(proj),
+            operation,mode,glm::value_ptr(model)))
+        {
+            // apply new transform to the selected object
+            selected->SetTransformFromMatrix(model);
+        }
+        ImGui::End();
+    }
 }

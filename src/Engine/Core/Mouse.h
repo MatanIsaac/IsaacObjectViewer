@@ -1,8 +1,8 @@
 #pragma once
-#include "Engine/Scene/Camera/Camera.h"
 #include "Utility/config.h"
+#include "Engine/Scene/Camera/Camera.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     class Mouse
     {

@@ -6,11 +6,17 @@
 #include "Graphics/OpenGL/Primitives/Sphere.h"
 #include "Graphics/OpenGL/Shaders/Shader.h"
 #include "Graphics/OpenGL/Renderer/Renderer.h"
-#include "Utility/config.h"  // for GetProjectRoot()
+#include "Utility/config.h"  
 #include "Scene/ISceneObject.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
+    struct LightInfo 
+    {
+        glm::vec3 position;
+        glm::vec3 color;
+    };
+
     class Light : public ISceneObject
     {
     public:
@@ -20,7 +26,7 @@ namespace isaacObjectLoader
         void Update();
         // The 'sceneShader' parameter is the shader used to render scene objects,
         // which we update with light properties.
-        virtual void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection) override;
+        virtual void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader = nullptr) override;
 
         virtual std::size_t GetID() const { return m_ID; }
         virtual const std::string& GetName() const override { return m_Name; };
@@ -32,6 +38,7 @@ namespace isaacObjectLoader
         glm::vec3& GetRotation() override { return m_Sphere.GetRotation(); }
         glm::vec3& GetScale() override { return m_Sphere.GetScale(); }
         glm::vec3& GetColor() { return m_Color; }
+        virtual glm::mat4 GetModelMatrix() const override { return m_Sphere.GetModelMatrix(); }
 
         void SetSpecularIntensity(float newSpecularIntensity) { m_SpecularIntensity = newSpecularIntensity; }
         void SetPosition(const glm::vec3& position) override { m_Sphere.SetPosition(position); }

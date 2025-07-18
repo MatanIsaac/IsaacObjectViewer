@@ -1,5 +1,5 @@
 #pragma once
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
 class IndexBuffer
 {

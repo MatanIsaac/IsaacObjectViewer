@@ -1,9 +1,9 @@
 
-#include "VertexBuffer.h"
 #include "Utility/config.h"
+#include "VertexBuffer.h"
 #include "Utility/GLErrorManager.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
 
 VertexBuffer::VertexBuffer(const void* data, unsigned int size)

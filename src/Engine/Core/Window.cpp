@@ -1,7 +1,7 @@
 #include "Window.h"
 #include <SDL3/SDL_video.h>
 
-namespace isaacObjectLoader 
+namespace isaacObjectViewer 
 {
 
     Window::Window(const char *title, int width, int height, bool fullscreen)

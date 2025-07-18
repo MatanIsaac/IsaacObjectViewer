@@ -16,6 +16,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+
 // Constants
 constexpr double PI = 3.14159265358979323846;
 constexpr int SCREEN_WIDTH = 1600;
@@ -28,6 +29,7 @@ constexpr int SCREEN_HEIGHT = 900;
 
 // ImGui core + backends
 #include "imgui.h"
+#include <imgui_internal.h>
 #include "backends/imgui_impl_sdl3.h"
 #include "backends/imgui_impl_opengl3.h"
 

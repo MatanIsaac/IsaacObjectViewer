@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
 #include "Utility/config.h"
+#include <memory>
 
 #include "Graphics/OpenGL/Buffers/IndexBuffer.h"
 #include "Graphics/OpenGL/Buffers/VertexArray.h"
@@ -11,7 +11,7 @@
 #include "Graphics/OpenGL/Renderer/Renderer.h"
 #include "ISceneObject.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     class Cube : public ISceneObject
     {
@@ -20,7 +20,7 @@ namespace isaacObjectLoader
         ~Cube() override;
 
         void Update();
-        void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection) override;
+        void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader = nullptr) override;
     
         std::size_t GetID() const { return m_ID; }
         const std::string& GetName() const override { return m_Name; };
@@ -31,7 +31,7 @@ namespace isaacObjectLoader
         glm::vec3& GetRotation() override { return m_Rotation; }
         glm::vec3& GetScale() override { return m_Scale; }
         glm::vec3& GetColor() { return m_Color; }
-        glm::mat4 GetModelMatrix() const;
+        virtual glm::mat4 GetModelMatrix() const override;
 
         void ResetPosition() { m_Position = DEFAULT_POSITION; }
         void ResetRotation() { m_Rotation = DEFAULT_ROTATION; }

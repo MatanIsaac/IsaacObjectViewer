@@ -1,6 +1,7 @@
 #include "Cube.h"
+#include "Utility/Log.hpp"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     Cube::Cube(const glm::vec3& position)
         : m_ID(GenerateUniqueID())
@@ -40,20 +41,26 @@ namespace isaacObjectLoader
         // (Update logic if necessary)
     }
 
-    void Cube::Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection)
+    void Cube::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader)
     {
+        if(shader == nullptr)
+        {
+            LOG_INFO("Can't Render shader parameters is null!");
+            return;
+        }
+        
         // Compute model matrix
         auto model = GetModelMatrix();
 
         // Bind shader and set uniforms
-        shader.Bind();
-        shader.setMat4("model", model);
-        shader.setMat4("view", view);
-        shader.setMat4("projection", projection);
-        shader.setVec3("objectColor", m_Color);
+        shader->Bind();
+        shader->setMat4("model", model);
+        shader->setMat4("view", view);
+        shader->setMat4("projection", projection);
+        shader->setVec3("objectColor", m_Color);
 
         // Render using indexed drawing:
-        renderer.Render(*m_VertexArray, *m_IndexBuffer, shader);
+        renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);
     }
 
     glm::mat4 Cube::GetModelMatrix() const

@@ -2,7 +2,7 @@
 
 #include "config.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
 // Regular Colors
 #define IMGUI_COLOR_BLACK ImVec4(0.0f, 0.0f, 0.0f, 1.0f)

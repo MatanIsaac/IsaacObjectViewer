@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utility/config.h"
+#include "Utility/Log.hpp"
 #include "Window.h"
 #include "Scene/Camera/Camera.h"
 #include "Scene/ISceneObject.h"
@@ -8,13 +9,11 @@
 #include "Graphics/OpenGL/Primitives/Plane.h"
 #include "Graphics/OpenGL/Primitives/Cube.h"
 #include "Graphics/OpenGL/Primitives/Cylinder.h"
-#include "Graphics/OpenGL/Primitives/Line.h"
-#include "Graphics/OpenGL/Primitives/Circle.h"
 #include "Graphics/OpenGL/Lighting/Light.h"
 #include "Graphics/OpenGL/Renderer/Renderer.h"
 #include "Graphics/OpenGL/Shaders/Shader.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     class Engine
     {
@@ -87,18 +86,19 @@ namespace isaacObjectLoader
                 case ObjectType::Plane:
                     obj = new Plane(position);
                     break;
-                case ObjectType::Circle:
-                    obj = new Circle(position);
-                    break;
                 case ObjectType::Light:
                     obj = new Light(position,{1.0f,1.0f,1.0f});
                     break;
                 default:
-                    std::cout << "Object Type must be a: Cube/Sphere/Cylinder/Plane/Light\n";
+                    LOG_INFO("Object Type must be a: Cube/Sphere/Cylinder/Plane/Light\n");
                     break;
             }
             if(obj)
+            {
                 m_SceneObjects.push_back(obj);
+                if (type == ObjectType::Light)
+                    m_LightObjects.push_back(static_cast<Light*>(obj));
+            }
         }
         
         inline void RemoveSceneObject(ISceneObject* object)
@@ -130,21 +130,13 @@ namespace isaacObjectLoader
         std::vector<ISceneObject*>& GetSceneObjects() { return m_SceneObjects; }
         std::vector<Light*> GetLightObjects()
         {
-            
-            for (auto obj : m_SceneObjects)
-            {
-                if(obj->GetType() == ObjectType::Light)
-                {
-                    auto* light = dynamic_cast<Light*>(obj);
-                    m_LightObjects.push_back(light);
-                }
-            }
             return m_LightObjects;
         }
 
         ISceneObject* GetSelectedObject() { return m_SelectedObject; }
         void SetSelectedObject(ISceneObject* obj) { m_SelectedObject = obj; }
         
+        void SendAllLightsToShader();
         //-----------------------------------------------------------------------
     private:
         Engine();
@@ -160,6 +152,7 @@ namespace isaacObjectLoader
         ISceneObject* m_SelectedObject;
         std::vector<ISceneObject*> m_SceneObjects;
         std::vector<Light*> m_LightObjects;
+        const int MAX_LIGHTS = 8;
 
         Renderer m_Renderer;
 

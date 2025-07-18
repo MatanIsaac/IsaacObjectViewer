@@ -1,6 +1,7 @@
 CXX = g++
 
 IMGUI_DIR = dependencies/imgui
+IMGUIZMO_DIR = dependencies/ImGuizmo
 IMGUI_BACKEND = $(IMGUI_DIR)/backends
 IMGUI_SRC = \
 	$(IMGUI_DIR)/imgui.cpp \
@@ -8,8 +9,9 @@ IMGUI_SRC = \
 	$(IMGUI_DIR)/imgui_tables.cpp \
 	$(IMGUI_DIR)/imgui_widgets.cpp \
 	$(IMGUI_DIR)/imgui_demo.cpp \
+	$(IMGUIZMO_DIR)/ImGuizmo.cpp \
 	$(IMGUI_BACKEND)/imgui_impl_sdl3.cpp \
-	$(IMGUI_BACKEND)/imgui_impl_opengl3.cpp
+	$(IMGUI_BACKEND)/imgui_impl_opengl3.cpp \
 
 EXE =
 COPY_DLL = 
@@ -35,9 +37,10 @@ INCLUDE = \
 	-Isrc/Engine/Graphics \
 	-Isrc/Engine/Scene \
 	-Isrc/Engine/UI \
-	-I$(IMGUI_DIR) -I$(IMGUI_BACKEND)
+	-I$(IMGUI_DIR) -I$(IMGUI_BACKEND) \
+	-I$(IMGUIZMO_DIR)
 
-CXXFLAGS = -std=c++17 -g -Wall -Wextra $(INCLUDE)
+CXXFLAGS = -std=c++17 -g -Wall -Wextra -DIMGUI_DEFINE_MATH_OPERATORS $(INCLUDE)
 GLAD_SRC = dependencies/glad/src/glad.c
 SOURCES := $(wildcard src/*.cpp src/**/*.cpp src/**/**/*.cpp src/**/**/**/*.cpp src/**/**/**/**/*.cpp) $(GLAD_SRC) $(IMGUI_SRC)
 OBJS := $(SOURCES:.cpp=.o)

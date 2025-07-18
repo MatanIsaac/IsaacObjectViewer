@@ -1,7 +1,7 @@
 #include "Engine/Core/Engine.h"
 #include <SDL3/SDL_main.h>
 
-using namespace isaacObjectLoader;
+using namespace isaacObjectViewer;
 
 int main(int argc, char* argv[])
 {   

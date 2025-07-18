@@ -2,7 +2,7 @@
 
 #include "Utility/config.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     enum CameraMovement
     {
@@ -16,16 +16,16 @@ namespace isaacObjectLoader
     {
     public:
         // Default camera values
-        static constexpr float DEFAULT_YAW         = -90.0f;
-        static constexpr float DEFAULT_PITCH       = 0.0f;
-        static constexpr float DEFAULT_SPEED       = 5.0f;
-        static constexpr float DEFAULT_ZOOM        = 45.0f;
+        static constexpr float DEFAULT_CAMERA_YAW         = -90.0f;
+        static constexpr float DEFAULT_CAMERA_PITCH       = 0.0f;
+        static constexpr float DEFAULT_CAMERA_SPEED       = 5.0f;
+        static constexpr float DEFAULT_CAMERA_ZOOM        = 45.0f;
 
         // constructor with vectors
         Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3 up       = glm::vec3(0.0f, 1.0f, 0.0f),
-            float     yaw      = DEFAULT_YAW,
-            float     pitch    = DEFAULT_PITCH);
+            float     yaw      = DEFAULT_CAMERA_YAW,
+            float     pitch    = DEFAULT_CAMERA_PITCH);
 
         // constructor with scalar values
         Camera(float posX,
@@ -57,7 +57,7 @@ namespace isaacObjectLoader
         float&     GetSpeed() { return m_MovementSpeed; }
         const glm::vec3& GetPosition() { return m_Position; }
 
-        void ResetSpeed() { m_MovementSpeed = DEFAULT_SPEED; }
+        void ResetSpeed() { m_MovementSpeed = DEFAULT_CAMERA_SPEED; }
         void ResetPosition() { m_Position = m_InitialPosition; }
         void SetSpeed(float newSpeed) { m_MovementSpeed = newSpeed; }
         void SetPosition(const glm::vec3& newPosition) { m_Position = newPosition; }

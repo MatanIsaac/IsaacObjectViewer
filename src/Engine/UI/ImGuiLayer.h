@@ -2,8 +2,8 @@
 
 #include "Utility/config.h"
 #include "Scene/ISceneObject.h"
-
-namespace isaacObjectLoader
+#include <ImGuizmo.h>
+namespace isaacObjectViewer
 {
     class Engine; 
 
@@ -25,10 +25,12 @@ namespace isaacObjectLoader
         void DrawSceneHierarchyPanel(Engine* engine);    
         void DrawSettings(Engine* engine, ISceneObject* selected);
         void LoadFont();
+        void DrawGizmos(Engine* engine,int gizmoOperation);
     private:
         SDL_Window* m_Window = nullptr;
         void* m_GLContext = nullptr;
         ISceneObject* selected = nullptr;
 
+        int m_GizmoOperation;
     };
 }

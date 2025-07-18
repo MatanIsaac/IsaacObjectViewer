@@ -1,7 +1,7 @@
 #include "Renderer.h"
 #include "Utility/GLErrorManager.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
 
 

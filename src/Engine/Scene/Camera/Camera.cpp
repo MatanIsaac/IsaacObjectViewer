@@ -1,13 +1,13 @@
 #include "Camera.h"
 #include "Utility/Log.hpp"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
         : 
         m_Front(glm::vec3(0.0f, 0.0f, -1.0f)), 
-        m_MovementSpeed(DEFAULT_SPEED), 
-        m_Zoom(DEFAULT_ZOOM)
+        m_MovementSpeed(DEFAULT_CAMERA_SPEED), 
+        m_Zoom(DEFAULT_CAMERA_ZOOM)
     {
         m_Position          = position;
         m_InitialPosition   = position;
@@ -21,8 +21,8 @@ namespace isaacObjectLoader
                     float upY, float upZ, float yaw, float pitch)
         : 
         m_Front(glm::vec3(0.0f, 0.0f, -1.0f)), 
-        m_MovementSpeed(DEFAULT_SPEED), 
-        m_Zoom(DEFAULT_ZOOM)
+        m_MovementSpeed(DEFAULT_CAMERA_SPEED), 
+        m_Zoom(DEFAULT_CAMERA_ZOOM)
     {
         m_Position          = glm::vec3(posX, posY, posZ);
         m_InitialPosition   = glm::vec3(posX, posY, posZ);

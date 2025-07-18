@@ -12,6 +12,7 @@
                 "${workspaceFolder}/src/Engine/UI",
                 "${workspaceFolder}/dependencies/**",
                 "${workspaceFolder}/dependencies/imgui",
+                "${workspaceFolder}/dependencies/imGuizmo",
                 "${workspaceFolder}/dependencies/SDL3/x86_64-w64-mingw32/include/**"
             ],
             "defines": [

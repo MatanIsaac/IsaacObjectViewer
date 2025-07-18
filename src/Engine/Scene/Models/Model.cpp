@@ -1,6 +1,6 @@
 #include "Model.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
 
 }

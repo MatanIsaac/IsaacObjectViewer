@@ -30,7 +30,7 @@
 #include <functional>
 #include <thread>
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     /**
      * @brief A Simple, Versatile <chrono> based Timer utility class for managing time intervals and

@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     struct Texture
     {

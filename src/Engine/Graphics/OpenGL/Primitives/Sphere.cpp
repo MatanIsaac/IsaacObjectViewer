@@ -2,8 +2,9 @@
 #include <cmath>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Utility/Log.hpp"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     Sphere::Sphere(const glm::vec3& position) 
         : m_ID(GenerateUniqueID())
@@ -52,20 +53,26 @@ namespace isaacObjectLoader
         // Update logic (animations, physics, etc.) goes here.
     }
 
-    void Sphere::Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection)
+    void Sphere::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader)
     {        
+        if(shader == nullptr)
+        {
+            LOG_INFO("Can't Render shader parameters is null!");
+            return;
+        }
+        
         // Build the model matrix using the current position and scale.
         glm::mat4 model = GetModelMatrix();
-
+        
         // Set uniform values for the shader.
-        shader.Bind();
-        shader.setMat4("model", model);
-        shader.setMat4("view", view);
-        shader.setMat4("projection", projection);
-        shader.setVec3("objectColor", m_Color);
+        shader->Bind();
+        shader->setMat4("model", model);
+        shader->setMat4("view", view);
+        shader->setMat4("projection", projection);
+        shader->setVec3("objectColor", m_Color);
         
         // Render using indexed drawing.
-        renderer.Render(*m_VertexArray, *m_IndexBuffer, shader);
+        renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);
     }
   
     int Sphere::GenerateSphere(float radius, int sectorCount, int stackCount,

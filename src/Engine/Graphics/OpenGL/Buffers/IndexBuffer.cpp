@@ -1,8 +1,8 @@
 
-#include "IndexBuffer.h"
 #include "Utility/config.h"
+#include "IndexBuffer.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
 
 IndexBuffer::IndexBuffer(const void* data, unsigned int count)

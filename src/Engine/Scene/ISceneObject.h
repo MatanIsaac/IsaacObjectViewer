@@ -1,6 +1,9 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/matrix_decompose.hpp>
+
 #include <string>
 #include "Core/Ray.h"
 #include "Graphics/OpenGL/Buffers/IndexBuffer.h"
@@ -9,7 +12,7 @@
 #include "Graphics/OpenGL/Renderer/Renderer.h"
 #include "Graphics/OpenGL/Shaders/Shader.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
      enum class ObjectType : int
     {
@@ -18,7 +21,6 @@ namespace isaacObjectLoader
         Sphere,
         Cylinder,
         Plane,
-        Circle,
         Light,
         Count 
     };
@@ -55,6 +57,22 @@ namespace isaacObjectLoader
         virtual inline const IndexBuffer    &GetIndexBuffer() const = 0;
         virtual unsigned inline int         GetIndexCount() const = 0; 
 
-        virtual void Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection) = 0;
+        virtual glm::mat4 GetModelMatrix() const = 0;
+
+        virtual void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader = nullptr) = 0;
+
+        void SetTransformFromMatrix(const glm::mat4& model)
+        {
+            glm::vec3 scale, translation, skew;
+            glm::vec4 perspective;
+            glm::quat orientation;
+
+            glm::decompose(model, scale, orientation, translation, skew, perspective);
+
+            SetPosition(translation);
+            SetScale(scale);
+            SetRotation(glm::eulerAngles(orientation)); 
+        }
+
     };
 }

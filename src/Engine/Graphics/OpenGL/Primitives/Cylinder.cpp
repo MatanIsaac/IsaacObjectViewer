@@ -2,8 +2,9 @@
 #include <cmath>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Utility/Log.hpp"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
     Cylinder::Cylinder(const glm::vec3& position) 
         : m_ID(GenerateUniqueID())
@@ -48,20 +49,26 @@ namespace isaacObjectLoader
         // Add update logic (animations, etc.) if necessary.
     }
 
-    void Cylinder::Render(const Renderer& renderer, Shader& shader, const glm::mat4& view, const glm::mat4& projection)
+    void Cylinder::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader)
     {        
+        if(shader == nullptr)
+        {
+            LOG_INFO("Can't Render shader parameters is null!");
+            return;
+        }
+
         // Build the model matrix: translate and scale as needed.
         glm::mat4 model = GetModelMatrix();
 
         // Set uniform values
-        shader.Bind();
-        shader.setMat4("model", model);
-        shader.setMat4("view", view);
-        shader.setMat4("projection", projection);
-        shader.setVec3("objectColor", m_Color);
+        shader->Bind();
+        shader->setMat4("model", model);
+        shader->setMat4("view", view);
+        shader->setMat4("projection", projection);
+        shader->setVec3("objectColor", m_Color);
         
         // Render using indexed drawing.
-        renderer.Render(*m_VertexArray, *m_IndexBuffer, shader);
+        renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);
     }
   
     int Cylinder::GenerateCylinder(float baseRadius, float topRadius, float height, int sectorCount,

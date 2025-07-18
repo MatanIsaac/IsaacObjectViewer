@@ -1,6 +1,6 @@
 #include "VertexBufferLayout.h"
 
-namespace isaacObjectLoader
+namespace isaacObjectViewer
 {
 
     VertexBufferLayout::VertexBufferLayout()

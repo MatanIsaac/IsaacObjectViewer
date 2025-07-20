@@ -35,18 +35,36 @@ namespace isaacObjectViewer
         
         float& GetSpecularIntensity() { return m_SpecularIntensity; }
         glm::vec3& GetPosition() override { return m_Sphere.GetPosition(); }
-        glm::vec3& GetRotation() override { return m_Sphere.GetRotation(); }
+        glm::vec3& GetRotation() override 
+        { 
+            static glm::vec3 zero = glm::vec3(0.0f); 
+            return zero; 
+        }
+        glm::quat& GetOrientation() override 
+        { 
+            static glm::quat identity = glm::quat(1.0f, 0, 0, 0); 
+            return identity;
+        }
         glm::vec3& GetScale() override { return m_Sphere.GetScale(); }
         glm::vec3& GetColor() { return m_Color; }
-        virtual glm::mat4 GetModelMatrix() const override { return m_Sphere.GetModelMatrix(); }
+        /*
+        glm::mat4 GetModelMatrix() 
+        { 
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), GetPosition());
+            model = glm::scale(model, GetScale());
+            return model;
+        }
+        */
 
         void SetSpecularIntensity(float newSpecularIntensity) { m_SpecularIntensity = newSpecularIntensity; }
         void SetPosition(const glm::vec3& position) override { m_Sphere.SetPosition(position); }
-        void SetRotation(const glm::vec3& rotation) override { m_Sphere.SetRotation(rotation); }
+        void SetRotation(const glm::vec3& rotation) override {}
+        void SetOrientation(const glm::quat& newOrientation) {}
+
         void SetScale(const glm::vec3& scale) override { m_Sphere.SetScale(scale); }
         void SetColor(const glm::vec3& color) { m_Color = color; }
         
-        bool IntersectRay(const Ray& ray, float* outDistance) const override { return m_Sphere.IntersectRay(ray, outDistance);}
+        bool IntersectRay(const Ray& ray, float* outDistance) override { return m_Sphere.IntersectRay(ray, outDistance);}
 
         virtual std::size_t GenerateUniqueID() override
         {

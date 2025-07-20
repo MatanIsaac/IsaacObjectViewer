@@ -3,7 +3,6 @@
 #include "Utility/ColorMacros.h"
 #include "Utility/Log.hpp"
 #include "Mouse.h"
-#include "../UI/ImGuiLayer.h"
 #include <utility>
 
 namespace isaacObjectViewer
@@ -29,8 +28,7 @@ namespace isaacObjectViewer
     {
         assert(Init("Isaac's 3D Object Loader", SCREEN_WIDTH, SCREEN_HEIGHT, fullscreen));
         
-        ImGuiLayer imgui;
-        imgui.Init(m_Window->GetSDLWindow(),m_Window->GetGLContext());
+        m_ImGuiLayer.Init(m_Window->GetSDLWindow(),m_Window->GetGLContext());
 
         const float targetFrameTime = 1.0f / 60.0f; // Target frame time for 60 FPS
         while (m_IsRunning)
@@ -41,8 +39,8 @@ namespace isaacObjectViewer
             
             // Rendering Correctly
 
-            imgui.Begin();
-            imgui.DrawUI();
+            m_ImGuiLayer.Begin();
+            m_ImGuiLayer.DrawUI();
             
             // input
             ProcessInput();
@@ -61,7 +59,7 @@ namespace isaacObjectViewer
             if (m_DeltaTime > 0.0f)
                 m_FPS = 1.0f / m_DeltaTime;
             
-            imgui.End();
+            m_ImGuiLayer.End();
             SDL_GL_SwapWindow(m_Window->GetSDLWindow());
         }
         Clean();
@@ -169,6 +167,7 @@ namespace isaacObjectViewer
 
                     MouseRef->ProcessZoom(yoffset,m_Camera);
                 }
+
             }
             
             if(m_MouseModeEnabled)
@@ -181,6 +180,23 @@ namespace isaacObjectViewer
                         MouseRef->ProcessMouseClick(mouseState.first,mouseState.second, m_Camera);
                     }
                 }
+                if(event.type == SDL_EVENT_KEY_DOWN)
+                {
+                    switch(event.key.key)
+                    {
+                        case SDLK_T:
+                            m_ImGuiLayer.SetGizmoOperation(GizmoMode::TRANSLATION);
+                            break;
+                        case SDLK_R:
+                            m_ImGuiLayer.SetGizmoOperation(GizmoMode::ROTATION);
+                            break;
+                        case SDLK_S:
+                            m_ImGuiLayer.SetGizmoOperation(GizmoMode::SCALE);
+                            break;
+                        default:
+                            break;    
+                    }
+                }    
             }
         }
     }

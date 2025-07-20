@@ -12,10 +12,11 @@
 #include <algorithm>
 
 // GLM library
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <glm/gtx/quaternion.hpp>
 
 // Constants
 constexpr double PI = 3.14159265358979323846;

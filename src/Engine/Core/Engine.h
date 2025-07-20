@@ -12,6 +12,7 @@
 #include "Graphics/OpenGL/Lighting/Light.h"
 #include "Graphics/OpenGL/Renderer/Renderer.h"
 #include "Graphics/OpenGL/Shaders/Shader.h"
+#include "../UI/ImGuiLayer.h"
 
 namespace isaacObjectViewer
 {
@@ -155,6 +156,8 @@ namespace isaacObjectViewer
         const int MAX_LIGHTS = 8;
 
         Renderer m_Renderer;
+
+        ImGuiLayer m_ImGuiLayer;
 
         bool m_MouseModeEnabled;
         bool m_FreeCameraModeEnabled;

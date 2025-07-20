@@ -3,9 +3,17 @@
 #include "Utility/config.h"
 #include "Scene/ISceneObject.h"
 #include <ImGuizmo.h>
+
 namespace isaacObjectViewer
 {
     class Engine; 
+
+    enum GizmoMode
+    {
+        TRANSLATION = ImGuizmo::TRANSLATE,
+        ROTATION = ImGuizmo::ROTATE,
+        SCALE = ImGuizmo::SCALE
+    };    
 
     class ImGuiLayer
     {
@@ -19,6 +27,8 @@ namespace isaacObjectViewer
         void Shutdown();
 
         void DrawUI();
+
+        void SetGizmoOperation(GizmoMode mode) { m_GizmoOperation = mode; }
     private:
         void DrawTopPanel(Engine* engine);    
         void DrawRightPanel(Engine* engine);

@@ -80,5 +80,6 @@
         "cassert": "cpp",
         "filesystem": "cpp",
         "cfenv": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "D:/GitSourceControl/IsaacObjectViewer/dependencies/glad"
 }

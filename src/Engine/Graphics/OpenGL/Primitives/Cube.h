@@ -29,15 +29,16 @@ namespace isaacObjectViewer
 
         glm::vec3& GetPosition() override { return m_Position; }
         glm::vec3& GetRotation() override { return m_Rotation; }
+        glm::quat& GetOrientation() override { return m_Orientation; }
         glm::vec3& GetScale() override { return m_Scale; }
         glm::vec3& GetColor() { return m_Color; }
-        virtual glm::mat4 GetModelMatrix() const override;
 
         void ResetPosition() { m_Position = DEFAULT_POSITION; }
         void ResetRotation() { m_Rotation = DEFAULT_ROTATION; }
         void ResetScale() { m_Scale = DEFAULT_SCALE; }
         inline void SetPosition(const glm::vec3& newPosition) override { m_Position = newPosition; }
         inline void SetRotation(const glm::vec3& rotation) override { m_Rotation = rotation; }
+        inline void SetOrientation(const glm::quat& newOrientation) override { m_Orientation = newOrientation; }
         inline void SetScale(const glm::vec3& scale) override { m_Scale = scale; }
         inline void SetColor(const glm::vec3& newColor) { m_Color = newColor; }
 
@@ -46,7 +47,7 @@ namespace isaacObjectViewer
         inline const IndexBuffer    &GetIndexBuffer()   const override { return *m_IndexBuffer; }
         inline unsigned int         GetIndexCount()     const override { return m_IndicesCount; }
 
-        bool IntersectRay(const Ray& ray, float* outDist) const override
+        bool IntersectRay(const Ray& ray, float* outDist) override
         {
             glm::vec3 halfScale = m_Scale * 0.5f;
             glm::vec3 boxMin = m_Position - halfScale;
@@ -68,6 +69,7 @@ namespace isaacObjectViewer
         glm::vec3 m_Rotation;
         glm::vec3 m_Scale;
         glm::vec3 m_Color;
+        glm::quat m_Orientation;
 
         std::unique_ptr<IndexBuffer> m_IndexBuffer;
         std::unique_ptr<VertexBuffer> m_VertexBuffer;

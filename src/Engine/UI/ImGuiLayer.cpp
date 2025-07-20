@@ -227,7 +227,6 @@ namespace isaacObjectViewer
         
         ImGui::Begin("Engine Controls", nullptr, topPanelFlags);
         
-        
         ImGui::Text("Gizmo Mode:");
 
         ImGui::SameLine();
@@ -372,7 +371,11 @@ namespace isaacObjectViewer
                         
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0); ImGui::Text("Rotation");
-                        ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Rotation", (float *)&selected->GetRotation(), 0.01f);
+                        ImGui::TableSetColumnIndex(1); 
+                        if(ImGui::DragFloat3("##Rotation", (float *)&selected->GetRotation(), 0.01f))
+                        {
+                            selected->SetOrientation(glm::quat(glm::radians(selected->GetRotation())));
+                        }
                         
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0); ImGui::Text("Scale");
@@ -486,7 +489,7 @@ namespace isaacObjectViewer
         // the transform to manipulate
         glm::mat4 model = selected->GetModelMatrix();
         ImGuizmo::OPERATION operation = (ImGuizmo::OPERATION)gizmoOperation;
-        static ImGuizmo::MODE mode = ImGuizmo::WORLD;
+        static ImGuizmo::MODE mode = ImGuizmo::LOCAL;
 
         ImGui::Begin("MainDockSpaceHost");
         ImGuizmo::SetDrawlist();

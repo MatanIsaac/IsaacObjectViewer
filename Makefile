@@ -16,11 +16,11 @@ IMGUI_SRC = \
 EXE =
 COPY_DLL = 
 ifeq ($(OS),Windows_NT)
-    EXE = ige.exe
+    EXE = iov.exe
     LDFLAGS = -Ldependencies/SDL3/x86_64-w64-mingw32/lib -lmingw32 -lSDL3 -lgdi32 -lopengl32 -limm32 -g
 	COPY_DLL = cp dependencies/SDL3/x86_64-w64-mingw32/bin/SDL3.dll .
 else
-    EXE = ige
+    EXE = iov
     LDFLAGS = -lSDL3 -lGL -ldl -lpthread -g
 	COPY_DLL = cp dependencies/SDL3/i686-w64-mingw32/bin/SDL3.dll .
 endif
@@ -61,3 +61,26 @@ $(EXE): $(OBJS)
 clean:
 	rm -f $(OBJS) $(EXE)
 
+# --------------------- GoogleTest ---------------------
+GTEST_DIR     = dependencies/googletest/googletest
+GTEST_SRC     = $(GTEST_DIR)/src/gtest-all.cc
+GTEST_HEADERS = -I$(GTEST_DIR) -I$(GTEST_DIR)/include
+
+TEST_SRCS     := $(wildcard tests/*.cpp)
+TEST_OBJS     := $(TEST_SRCS:.cpp=.o)
+TEST_BIN      := tests/test_runner
+
+TEST_CXXFLAGS = -std=c++17 -g -Wall -Wextra -DIMGUI_DEFINE_MATH_OPERATORS $(GTEST_HEADERS) $(INCLUDE)
+TEST_LDFLAGS  = $(LDFLAGS)
+
+tests: $(TEST_BIN)
+
+$(TEST_BIN): $(TEST_OBJS) $(OBJS) $(GTEST_SRC)
+	$(CXX) $(TEST_CXXFLAGS) $^ -o $@ $(TEST_LDFLAGS)
+
+tests/%.o: tests/%.cpp
+	$(CXX) $(TEST_CXXFLAGS) -c $< -o $@
+
+clean_tests:
+	rm -f $(TEST_OBJS) $(TEST_BIN)
+# --------------------- GoogleTest ---------------------

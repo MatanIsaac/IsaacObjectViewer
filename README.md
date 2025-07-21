@@ -4,7 +4,7 @@
 
 
 <div align="center">
-    <img src="https://github.com/MatanIsaac/IsaacGraphicsEngine/blob/main/Picture1.png" alt="Isaac-Graphics-Engine">
+    <img src="https://github.com/MatanIsaac/IsaacGraphicsEngine/blob/main/iov1.png" alt="Isaac-3D-Object-Viewer">
 </div>
 
 ---                                                                                                                                                                                                              
@@ -25,12 +25,11 @@ It aims to serve as:
 
 ## <div align="center"> ✨ Features </div>
 
-    CMake Build System: Simplify configuration, building, and dependency management.
-    GLFW: Seamless creation of windows, input handling, and OpenGL context management.
+    Single Makefile Build System: Handles configuration, building, and dependency management, as well as handling tests.
+    SDL3: Seamless creation of windows, input handling, and OpenGL context management.
     spdlog: Fast, header-only logging for high-performance output.
     Google Test (gtest): Integrated tests to help ensure code quality.
-    ImGui: Lightweight, in-app GUI library for creating tools, controls, and settings.
-
+    ImGui (including ImGuizmo): Lightweight, in-app GUI library for creating tools, controls, and settings.
 
 ## <div align="center"> 🛠️ Prerequisites </div>
 
@@ -38,7 +37,7 @@ Before getting started, make sure you have:
 
     C++ Compiler: Must support C++17 or later.
     CMake: Version 3.27 or higher is recommended.
-    OpenGL: Your graphics drivers should support OpenGL 3.3 or higher (with potential future support for DirectX or Vulkan).
+    OpenGL: Your graphics drivers should support OpenGL 4.6 or higher (with potential future support for DirectX or Vulkan).
 
 ## <div align="center"> 🚀 Getting Started </div>
 
@@ -63,8 +62,8 @@ Once built, you can start the application with:
 
 Alternatively, execute the binaries directly from the build directory:
 
-    Application: build/src/ige_exec
-    Tests: build/test/TemplateTest
+    Application: iov.exe
+    Tests: tests/test_runner.exe
 
 ## <div align="center"> 📁 Project Structure </div>  
 
@@ -73,7 +72,9 @@ Alternatively, execute the binaries directly from the build directory:
     ├── dependencies/           # External libraries and dependencies
     │   ├── glad/
     │   ├── glm/
+    │   ├── googletest/
     │   ├── imgui/
+    │   ├── ImGuizmo/
     │   ├── SDL3/
     │   ├── spdlog/
     │   ├── stb_image.h
@@ -97,7 +98,6 @@ Alternatively, execute the binaries directly from the build directory:
     │   │   ├── Shaders/
     │   │   └── Textures/
     ├── └── Utility/            # Utility functions and tools
-
 
 
 ## <div align="center"> 🤝 Contributing </div>

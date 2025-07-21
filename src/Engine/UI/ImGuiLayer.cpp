@@ -235,7 +235,7 @@ namespace isaacObjectViewer
         ImGui::RadioButton("Scale", &m_GizmoOperation, ImGuizmo::SCALE);
         ImGui::SameLine();
         // draw the button with a little ▼ glyph
-        if (ImGui::Button(u8"Modes \uf0d7"))
+        if (ImGui::Button(u8"View Modes \uf0d7"))
         ImGui::OpenPopup("modes_popup");         // toggle the popup
         
         if (ImGui::BeginPopup("modes_popup"))

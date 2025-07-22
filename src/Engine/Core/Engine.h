@@ -67,6 +67,8 @@ namespace isaacObjectViewer
         void EnableMouseMode();
         void EnableFreeCameraMode();
         
+        ImGuiLayer& GetImGuiLayer() { return m_ImGuiLayer; }
+
         // Scene Objects
         //-----------------------------------------------------------------------
         

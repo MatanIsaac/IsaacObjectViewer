@@ -17,7 +17,6 @@ uniform int numLights;
 
 uniform vec3 viewPos;
 uniform vec3 objectColor;
-uniform float specularIntensity;
 
 void main() 
 {
@@ -33,7 +32,7 @@ void main()
         // Specular
         vec3 reflectDir = reflect(-lightDir, normal);
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-        spec *= specularIntensity;
+        spec *= lights[i].specular;
 
         // Combine (ambient + diffuse + specular)
         vec3 ambient = 0.1 * lights[i].color;

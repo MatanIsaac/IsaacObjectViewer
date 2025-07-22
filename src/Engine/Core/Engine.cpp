@@ -167,15 +167,13 @@ namespace isaacObjectViewer
 
                     MouseRef->ProcessZoom(yoffset,m_Camera);
                 }
-
             }
             
             if(m_MouseModeEnabled)
             {
                 if(event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
                 {
-                    
-                    if(event.button.button == SDL_BUTTON_LEFT)
+                    if(!m_ImGuiLayer.isMouseOverGizmo() && event.button.button == SDL_BUTTON_LEFT)
                     {
                         MouseRef->ProcessMouseClick(mouseState.first,mouseState.second, m_Camera);
                     }
@@ -192,6 +190,13 @@ namespace isaacObjectViewer
                             break;
                         case SDLK_S:
                             m_ImGuiLayer.SetGizmoOperation(GizmoMode::SCALE);
+                            break;
+                        case SDLK_DELETE:
+                            if(m_SelectedObject)
+                            {
+                                RemoveSceneObject(m_SelectedObject);
+                                m_SelectedObject = nullptr;
+                            }
                             break;
                         default:
                             break;    

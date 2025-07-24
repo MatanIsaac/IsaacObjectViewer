@@ -106,19 +106,26 @@ namespace isaacObjectViewer
         
         inline void RemoveSceneObject(ISceneObject* object)
         {
-            m_SceneObjects.erase(
-                std::remove_if(m_SceneObjects.begin(), m_SceneObjects.end(),
-                    [object](ISceneObject* obj)
-                    {
-                        if(obj && obj->GetID() == object->GetID())
-                        {
-                            delete obj;
-                            return true; 
-                        }
-                        return false;
-                    }),
-                    m_SceneObjects.end()
-                );
+            if (!object) return;                     // safety first
+
+            if (m_SelectedObject == object)
+                m_SelectedObject = nullptr;
+            m_ImGuiLayer.ResetSelectedObject();
+
+            // If it’s a light, prune that list too
+            if (object->GetType() == ObjectType::Light)
+                m_LightObjects.erase(std::remove(m_LightObjects.begin(),
+                                                m_LightObjects.end(),
+                                                static_cast<Light*>(object)),
+                                    m_LightObjects.end());
+
+            // Remove pointer from the main list
+            m_SceneObjects.erase(std::remove(m_SceneObjects.begin(),
+                                            m_SceneObjects.end(),
+                                            object),
+                                m_SceneObjects.end());
+
+            delete object;                           // finally free the memory
         }
         
         inline void ClearSceneObjects()

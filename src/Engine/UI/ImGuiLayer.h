@@ -29,7 +29,7 @@ namespace isaacObjectViewer
         void DrawUI();
 
         void SetGizmoOperation(GizmoMode mode) { m_GizmoOperation = mode; }
-
+        void ResetSelectedObject() {  selected = nullptr; } 
         bool isMouseOverGizmo()
         {
             return ImGuizmo::IsOver((ImGuizmo::OPERATION)m_GizmoOperation);

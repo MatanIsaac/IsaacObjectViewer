@@ -408,7 +408,9 @@ namespace isaacObjectViewer
         {
             ISceneObject* obj = sceneObjects[i];
             ImGui::PushID(obj->GetID());                        // push a unique ID for this object (e.g., index)
-            bool isSelected = (obj == selected);
+            bool isSelected = false;
+            if(selected)
+                isSelected = (obj == selected);
             std::string label = "##" + obj->GetName();
             if (ImGui::Selectable(label.c_str(), isSelected,ImGuiSelectableFlags_AllowDoubleClick)) 
             { 
@@ -419,38 +421,42 @@ namespace isaacObjectViewer
             ImGui::TextUnformatted(obj->GetName().c_str());
             ImGui::PopID();
         }
+        
         ImGui::End();
     }
 
     void ImGuiLayer::DrawSettings(Engine* engine, ISceneObject* selected)
     {
-        if(selected->GetType() == ObjectType::Light)
+        if(selected)
         {
-            auto* light = dynamic_cast<Light*>(selected);
-
-            ImGui::Text("Light Color");
-            ImGui::ColorEdit3("Color", (float *)&light->GetColor(), ImGuiColorEditFlags_NoLabel);
-            ImGui::Text("Specular Intensity");
-            ImGui::DragFloat("##Specular Intensity", &light->GetSpecularIntensity(), 0.01f);
+            if(selected->GetType() == ObjectType::Light)
+            {
+                auto* light = dynamic_cast<Light*>(selected);
+                
+                ImGui::Text("Light Color");
+                ImGui::ColorEdit3("Color", (float *)&light->GetColor(), ImGuiColorEditFlags_NoLabel);
+                ImGui::Text("Specular Intensity");
+                ImGui::DragFloat("##Specular Intensity", &light->GetSpecularIntensity(), 0.01f);
+            }
+            
+            static std::string lastName;
+            static char buffer[256] = {};
+            
+            if (selected && selected->GetName() != lastName)
+            {
+                memset(buffer, 0, sizeof(buffer));
+                strncpy(buffer, selected->GetName().c_str(), sizeof(buffer) - 1);
+                lastName = selected->GetName();
+            }
+            
+            ImGui::Text("Name");
+            // Now buffer persists across frames, and you don't lose changes!
+            if(ImGui::InputText("##SelectedName", buffer, sizeof(buffer)))
+            {
+                selected->SetName(std::string(buffer));
+                lastName = buffer;
+            }
         }
-
-        static std::string lastName;
-        static char buffer[256] = {};
-
-        if (selected && selected->GetName() != lastName)
-        {
-            memset(buffer, 0, sizeof(buffer));
-            strncpy(buffer, selected->GetName().c_str(), sizeof(buffer) - 1);
-            lastName = selected->GetName();
-        }
-
-        ImGui::Text("Name");
-        // Now buffer persists across frames, and you don't lose changes!
-        if(ImGui::InputText("##SelectedName", buffer, sizeof(buffer)))
-        {
-            selected->SetName(std::string(buffer));
-            lastName = buffer;
-        }       
     }
 
     void ImGuiLayer::LoadFont()
@@ -479,29 +485,29 @@ namespace isaacObjectViewer
     {
         // check if an object is selected
         auto* selected = engine->GetSelectedObject();
-        if(!selected)
-            return;
-        
-        // Camera matrices
-        glm::mat4 view = engine->GetCamera()->GetViewMatrix();
-        glm::mat4 proj = engine->GetCamera()->GetProjectionMatrix();
-
-        // the transform to manipulate
-        glm::mat4 model = selected->GetModelMatrix();
-        ImGuizmo::OPERATION operation = (ImGuizmo::OPERATION)gizmoOperation;
-        static ImGuizmo::MODE mode = ImGuizmo::LOCAL;
-
-        ImGui::Begin("MainDockSpaceHost");
-        ImGuizmo::SetDrawlist();
-        ImGuizmo::SetRect(ImGui::GetWindowPos().x,ImGui::GetWindowPos().y,
-            ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
-
-        if(ImGuizmo::Manipulate(glm::value_ptr(view),glm::value_ptr(proj),
-            operation,mode,glm::value_ptr(model)))
+        if(selected)
         {
-            // apply new transform to the selected object
-            selected->SetTransformFromMatrix(model);
+            // Camera matrices
+            glm::mat4 view = engine->GetCamera()->GetViewMatrix();
+            glm::mat4 proj = engine->GetCamera()->GetProjectionMatrix();
+
+            // the transform to manipulate
+            glm::mat4 model = selected->GetModelMatrix();
+            ImGuizmo::OPERATION operation = (ImGuizmo::OPERATION)gizmoOperation;
+            static ImGuizmo::MODE mode = ImGuizmo::LOCAL;
+
+            ImGui::Begin("MainDockSpaceHost");
+            ImGuizmo::SetDrawlist();
+            ImGuizmo::SetRect(ImGui::GetWindowPos().x,ImGui::GetWindowPos().y,
+                ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+
+            if(ImGuizmo::Manipulate(glm::value_ptr(view),glm::value_ptr(proj),
+                operation,mode,glm::value_ptr(model)))
+            {
+                // apply new transform to the selected object
+                selected->SetTransformFromMatrix(model);
+            }
+            ImGui::End();
         }
-        ImGui::End();
     }
 }

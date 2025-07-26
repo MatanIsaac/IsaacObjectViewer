@@ -40,7 +40,7 @@ INCLUDE = \
 	-I$(IMGUI_DIR) -I$(IMGUI_BACKEND) \
 	-I$(IMGUIZMO_DIR)
 
-CXXFLAGS = -std=c++17 -g -Wall -Wextra -DIMGUI_DEFINE_MATH_OPERATORS $(INCLUDE)
+CXXFLAGS = -std=c++17 -g -Wall -DIMGUI_DEFINE_MATH_OPERATORS $(INCLUDE)
 GLAD_SRC = dependencies/glad/src/glad.c
 SOURCES := $(wildcard src/*.cpp src/**/*.cpp src/**/**/*.cpp src/**/**/**/*.cpp src/**/**/**/**/*.cpp) $(GLAD_SRC) $(IMGUI_SRC)
 OBJS := $(SOURCES:.cpp=.o)

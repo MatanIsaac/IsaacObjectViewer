@@ -9,6 +9,7 @@
 #include "Engine/Graphics/OpenGL/Shaders/Shader.h"
 #include "Engine/Graphics/OpenGL/Renderer/Renderer.h"
 #include "ISceneObject.h"
+#include "Texture.h"
 
 namespace isaacObjectViewer
 {
@@ -96,21 +97,23 @@ namespace isaacObjectViewer
         glm::vec3 m_Color;
         glm::quat m_Orientation;
 
+        std::shared_ptr<Texture> m_Texture;
+
         std::unique_ptr<IndexBuffer> m_IndexBuffer;
         std::unique_ptr<VertexBuffer> m_VertexBuffer;
         std::unique_ptr<VertexArray> m_VertexArray;
         int m_VertexCount;
-        static constexpr int m_FloatsPerVertex = 6;
+        static constexpr int m_FloatsPerVertex = 8;
         static constexpr int m_IndicesCount = 6;
     public:
         // Updated for 4 vertices (24 floats) for a simple quad
-        static constexpr float m_PlaneVertices[24] = 
+        static constexpr float m_PlaneVertices[32] = 
         { 
-            // positions            // normals 
-            -0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f, // bottom left
-             0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f, // bottom right
-             0.5f,  0.5f, 0.0f,      0.0f, 0.0f, 1.0f, // top right
-            -0.5f,  0.5f, 0.0f,      0.0f, 0.0f, 1.0f, // top left
+            // positions            // normals              // TexCoords
+            -0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f,      0.0f, 0.0f, // bottom left
+             0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f,      1.0f, 0.0f, // bottom right
+             0.5f,  0.5f, 0.0f,      0.0f, 0.0f, 1.0f,      1.0f, 1.0f, // top right
+            -0.5f,  0.5f, 0.0f,      0.0f, 0.0f, 1.0f,      0.0f, 1.0f, // top left
         };
 
         static constexpr unsigned int m_PlaneIndices[m_IndicesCount] =

@@ -10,6 +10,7 @@
 #include "Graphics/OpenGL/Shaders/Shader.h"
 #include "Graphics/OpenGL/Renderer/Renderer.h"
 #include "ISceneObject.h"
+#include "Texture.h"
 
 namespace isaacObjectViewer
 {
@@ -71,54 +72,56 @@ namespace isaacObjectViewer
         glm::vec3 m_Color;
         glm::quat m_Orientation;
 
+        std::shared_ptr<Texture> m_Texture;
+
         std::unique_ptr<IndexBuffer> m_IndexBuffer;
         std::unique_ptr<VertexBuffer> m_VertexBuffer;
         std::unique_ptr<VertexArray> m_VertexArray;
 
         int m_IndicesCount; // will be set to 36 (6 faces * 6 indices)
 
-        static constexpr int m_FloatsPerVertex = 6;
+        static constexpr int m_FloatsPerVertex = 8;
 
     public:
         // 24 vertices (4 per face) × 6 floats each = 144 floats.
         // Each vertex: position (x,y,z) then normal (x,y,z)
-        static constexpr float m_CubeVertices[144] = 
+        static constexpr float m_CubeVertices[192] = 
         {
             // Front face (z = -0.5, normal (0,0,-1))
-            -0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  // bottom-left
-             0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  // bottom-right
-             0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  // top-right
-            -0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  // top-left
+            -0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  0.0f, 0.0f, // bottom-left
+             0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  1.0f, 0.0f, // bottom-right
+             0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  1.0f, 1.0f, // top-right
+            -0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  0.0f, 1.0f, // top-left
 
             // Back face (z = 0.5, normal (0,0,1))
-            -0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  // bottom-left
-             0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  // bottom-right
-             0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  // top-right
-            -0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  // top-left
+            -0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  0.0f, 0.0f, // bottom-left
+             0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  1.0f, 0.0f, // bottom-right
+             0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  1.0f, 1.0f, // top-right
+            -0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  0.0f, 1.0f, // top-left
 
             // Left face (x = -0.5, normal (-1,0,0))
-            -0.5f, -0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  // bottom-left
-            -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  // bottom-right
-            -0.5f,  0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  // top-right
-            -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  // top-left
+            -0.5f, -0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom-left
+            -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, // bottom-right
+            -0.5f,  0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top-right
+            -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 1.0f, // top-left
 
             // Right face (x = 0.5, normal (1,0,0))
-             0.5f, -0.5f, -0.5f,   1.0f,  0.0f,  0.0f,  // bottom-left
-             0.5f, -0.5f,  0.5f,   1.0f,  0.0f,  0.0f,  // bottom-right
-             0.5f,  0.5f,  0.5f,   1.0f,  0.0f,  0.0f,  // top-right
-             0.5f,  0.5f, -0.5f,   1.0f,  0.0f,  0.0f,  // top-left
+             0.5f, -0.5f, -0.5f,   1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom-left
+             0.5f, -0.5f,  0.5f,   1.0f,  0.0f,  0.0f,  1.0f, 0.0f, // bottom-right
+             0.5f,  0.5f,  0.5f,   1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top-right
+             0.5f,  0.5f, -0.5f,   1.0f,  0.0f,  0.0f,  0.0f, 1.0f, // top-left
 
             // Bottom face (y = -0.5, normal (0,-1,0))
-            -0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,  // bottom-left
-             0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,  // bottom-right
-             0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,  // top-right
-            -0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,  // top-left
+            -0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,  0.0f, 0.0f, // bottom-left
+             0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,  1.0f, 0.0f, // bottom-right
+             0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,  1.0f, 1.0f, // top-right
+            -0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,  0.0f, 1.0f, // top-left
 
             // Top face (y = 0.5, normal (0,1,0))
-            -0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,  // bottom-left
-             0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,  // bottom-right
-             0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,  // top-right
-            -0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f   // top-left
+            -0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,  0.0f, 0.0f, // bottom-left
+             0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,  1.0f, 0.0f, // bottom-right
+             0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,  1.0f, 1.0f, // top-right
+            -0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,  0.0f, 1.0f // top-left
         };
 
         // For each face (4 vertices) we define two triangles: (0,1,2) and (2,3,0)

@@ -38,7 +38,7 @@ namespace isaacObjectViewer
         void DrawTopPanel(Engine* engine);    
         void DrawRightPanel(Engine* engine);
         void DrawSceneHierarchyPanel(Engine* engine);    
-        void DrawSettings(Engine* engine, ISceneObject* selected);
+        void DrawSettings(ISceneObject* selected);
         void LoadFont();
         void DrawGizmos(Engine* engine,int gizmoOperation);
     private:

@@ -384,7 +384,7 @@ namespace isaacObjectViewer
                         ImGui::EndTable();
                     }
                 }
-                DrawSettings(engine, selected);
+                DrawSettings(selected);
                   
             }
         }
@@ -425,7 +425,7 @@ namespace isaacObjectViewer
         ImGui::End();
     }
 
-    void ImGuiLayer::DrawSettings(Engine* engine, ISceneObject* selected)
+    void ImGuiLayer::DrawSettings(ISceneObject* selected)
     {
         if(selected)
         {

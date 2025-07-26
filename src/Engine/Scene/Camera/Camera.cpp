@@ -43,6 +43,10 @@ namespace isaacObjectViewer
             m_Position -= m_Right * velocity;
         if (direction == RIGHT)
             m_Position += m_Right * velocity;
+        if (direction == UP)
+            m_Position += m_Up * velocity;
+        if (direction == DOWN)
+            m_Position -= m_Up * velocity;
     }
 
     void Camera::UpdateVectors()
@@ -73,5 +77,9 @@ namespace isaacObjectViewer
             ProcessKeyboard(LEFT, dt);
         if (keys[SDL_SCANCODE_D]) 
             ProcessKeyboard(RIGHT, dt);
+        if (keys[SDL_SCANCODE_E]) 
+            ProcessKeyboard(UP, dt);
+        if (keys[SDL_SCANCODE_Q]) 
+            ProcessKeyboard(DOWN, dt);
     }
 }

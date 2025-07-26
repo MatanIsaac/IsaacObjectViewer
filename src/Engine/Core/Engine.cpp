@@ -4,6 +4,7 @@
 #include "Utility/Log.hpp"
 #include "Mouse.h"
 #include <utility>
+#include "Graphics/TextureManager.h"
 
 namespace isaacObjectViewer
 {
@@ -209,8 +210,6 @@ namespace isaacObjectViewer
     // @brief updates all of the engine dependencies, resources and objects.
     void Engine::Update(float dt) 
     {
-
-        //LOG_INFO("DeltaTime: {0}, FPS: {1}",dt,m_FPS);
         if(!m_MouseModeEnabled)
             m_Camera->Update(dt);
     }
@@ -243,6 +242,7 @@ namespace isaacObjectViewer
     // @brief cleans all of the engine resources.
     void Engine::Clean()
     {
+        TextureManager::UnloadAll();
         ClearSceneObjects();
         if(m_SelectedObject)
             delete m_SelectedObject;

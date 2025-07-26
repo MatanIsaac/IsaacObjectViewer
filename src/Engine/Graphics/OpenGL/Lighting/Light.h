@@ -11,12 +11,6 @@
 
 namespace isaacObjectViewer
 {
-    struct LightInfo 
-    {
-        glm::vec3 position;
-        glm::vec3 color;
-    };
-
     class Light : public ISceneObject
     {
     public:
@@ -47,14 +41,6 @@ namespace isaacObjectViewer
         }
         glm::vec3& GetScale() override { return m_Sphere.GetScale(); }
         glm::vec3& GetColor() { return m_Color; }
-        /*
-        glm::mat4 GetModelMatrix() 
-        { 
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), GetPosition());
-            model = glm::scale(model, GetScale());
-            return model;
-        }
-        */
 
         void SetSpecularIntensity(float newSpecularIntensity) { m_SpecularIntensity = newSpecularIntensity; }
         void SetPosition(const glm::vec3& position) override { m_Sphere.SetPosition(position); }

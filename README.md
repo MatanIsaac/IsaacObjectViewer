@@ -36,7 +36,6 @@ It aims to serve as:
 Before getting started, make sure you have:
 
     C++ Compiler: Must support C++17 or later.
-    CMake: Version 3.27 or higher is recommended.
     OpenGL: Your graphics drivers should support OpenGL 4.6 or higher (with potential future support for DirectX or Vulkan).
 
 ## <div align="center"> 🚀 Getting Started </div>
@@ -47,10 +46,12 @@ Before getting started, make sure you have:
     cd isaacGraphicsEngine
 
 ### Building the Project
-Build scripts simplify the entire process:
-  
-      Windows: Run build.bat
-      Linux:   Run build.sh
+Simply Run the command
+    
+    Make 
+To Build Tests run 
+    
+    make tests
 
 
 ### Running the Application
@@ -64,6 +65,38 @@ Alternatively, execute the binaries directly from the build directory:
 
     Application: iov.exe
     Tests: tests/test_runner.exe
+
+## <div align="center"> 🕹️ Usage Overview </div>
+
+The 3D Viewer runs in two distinct modes
+
+| Mode               | Enter Shortcut | Exit Shortcut | What It’s For                                          |
+|--------------------|----------------|---------------|--------------------------------------------------------|
+| **Mouse Mode**     | *(default)*    | `F4`          | Object selection, gizmo manipulation                   |
+| **Free Camera Mode** | `F4`          | `Esc`         | First-person navigation through the scene (WASDQE)     |
+
+---
+
+### Mouse Mode — Gizmo Shortcuts
+
+| Key | Action        |
+|-----|---------------|
+| `T` | **T**ranslate |
+| `R` | **R**otate    |
+| `S` | **S**cale     |
+
+---
+
+### Free Camera Mode — Movement Keys
+
+| Direction | Keys |
+|-----------|------|
+| Forward / Back | `W` / `S` |
+| Strafe Left / Right | `A` / `D` |
+| Ascend | `E` |
+| Descend | `Q` |
+
+---
 
 ## <div align="center"> 📁 Project Structure </div>  
 

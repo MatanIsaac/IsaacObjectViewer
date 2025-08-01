@@ -11,11 +11,11 @@
 
 namespace isaacObjectViewer
 {
-    class Light : public ISceneObject
+    class PointLight : public ISceneObject
     {
     public:
-        Light(const glm::vec3& position, const glm::vec3& color);
-        ~Light();
+        PointLight(const glm::vec3& position, const glm::vec3& color);
+        ~PointLight();
 
         void Update();
         // The 'sceneShader' parameter is the shader used to render scene objects,
@@ -25,15 +25,18 @@ namespace isaacObjectViewer
         virtual std::size_t GetID() const { return m_ID; }
         virtual const std::string& GetName() const override { return m_Name; };
         virtual void SetName(const std::string& newName) override { m_Name = newName; }
-        virtual ObjectType GetType() const { return ObjectType::Light; }
+        virtual ObjectType GetType() const { return ObjectType::PointLight; }
         
-        float& GetSpecularIntensity() { return m_SpecularIntensity; }
+        glm::vec3& GetAmbientIntensity() { return m_AmbientIntensity; }
+        glm::vec3& GetDiffuseIntensity() { return m_DiffuseIntensity; }
+        glm::vec3& GetSpecularIntensity() { return m_SpecularIntensity; }
         glm::vec3& GetPosition() override { return m_Sphere.GetPosition(); }
         glm::vec3& GetRotation() override 
         { 
             static glm::vec3 zero = glm::vec3(0.0f); 
             return zero; 
         }
+
         glm::quat& GetOrientation() override 
         { 
             static glm::quat identity = glm::quat(1.0f, 0, 0, 0); 
@@ -42,7 +45,9 @@ namespace isaacObjectViewer
         glm::vec3& GetScale() override { return m_Sphere.GetScale(); }
         glm::vec3& GetColor() { return m_Color; }
 
-        void SetSpecularIntensity(float newSpecularIntensity) { m_SpecularIntensity = newSpecularIntensity; }
+        void SetAmbientIntensity(const glm::vec3& newAmbientIntensity) { m_AmbientIntensity = newAmbientIntensity; }
+        void SetDiffuseIntensity(const glm::vec3& newDiffuseIntensity) { m_DiffuseIntensity = newDiffuseIntensity; }
+        void SetSpecularIntensity(const glm::vec3& newSpecularIntensity) { m_SpecularIntensity = newSpecularIntensity; }
         void SetPosition(const glm::vec3& position) override { m_Sphere.SetPosition(position); }
         void SetRotation(const glm::vec3& rotation) override {}
         void SetOrientation(const glm::quat& newOrientation) {}
@@ -68,7 +73,11 @@ namespace isaacObjectViewer
         
         glm::vec3 m_Color;
         Sphere m_Sphere;
-        float m_SpecularIntensity;
+
+        glm::vec3 m_AmbientIntensity;
+        glm::vec3 m_DiffuseIntensity;
+        glm::vec3 m_SpecularIntensity;
+        
         std::unique_ptr<Shader> m_Shader;
     };
 }

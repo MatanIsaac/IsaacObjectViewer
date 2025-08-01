@@ -10,6 +10,7 @@ namespace isaacObjectViewer
         : m_ID(GenerateUniqueID())
         , m_Name("Cylinder_" + std::to_string(m_ID))
         , m_Position(position)
+        , m_Rotation(DEFAULT_ROTATION)
         , m_Scale(glm::vec3(1.0f))
         , m_Color(DEFAULT_COLOR) 
     {
@@ -67,7 +68,7 @@ namespace isaacObjectViewer
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
         shader->setVec3("objectColor", m_Color);
-        shader->setBool("useTexture", false);
+        shader->setBool("useMaterial", false);
 
         // Render using indexed drawing.
         renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);

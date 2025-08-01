@@ -203,9 +203,9 @@ namespace isaacObjectViewer
                 
                 if (ImGui::BeginMenu("Lights")) 
                 {
-                    if (ImGui::MenuItem("Basic Sphere Light"))   
+                    if (ImGui::MenuItem("PointLight"))   
                     {
-                        engine->AddSceneObject(ObjectType::Light);
+                        engine->AddSceneObject(ObjectType::PointLight);
                     }
                     ImGui::EndMenu();
                 }
@@ -429,14 +429,21 @@ namespace isaacObjectViewer
     {
         if(selected)
         {
-            if(selected->GetType() == ObjectType::Light)
+            if(selected->GetType() == ObjectType::PointLight)
             {
-                auto* light = dynamic_cast<Light*>(selected);
+                auto* light = dynamic_cast<PointLight*>(selected);
                 
-                ImGui::Text("Light Color");
+                ImGui::Text("PointLight Color");
                 ImGui::ColorEdit3("Color", (float *)&light->GetColor(), ImGuiColorEditFlags_NoLabel);
+                
+                ImGui::Text("Ambient Intensity");
+                ImGui::DragFloat3("##Ambient Intensity", (float *)&light->GetAmbientIntensity(), 0.01f, 0.0f, 1.0f, "%.3f");
+
+                ImGui::Text("Diffuse Intensity");
+                ImGui::DragFloat3("##Diffuse Intensity", (float *)&light->GetDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.3f");
+
                 ImGui::Text("Specular Intensity");
-                ImGui::DragFloat("##Specular Intensity", &light->GetSpecularIntensity(), 0.01f);
+                ImGui::DragFloat3("##Specular Intensity", (float *)&light->GetSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.3f");
             }
             
             static std::string lastName;
@@ -466,8 +473,8 @@ namespace isaacObjectViewer
         ImFontConfig cfg{};
         cfg.PixelSnapH = true;
 
-        std::string path = GetProjectRoot() +
-                        "/src/Resources/FiraCodeNerdFontMono-Regular.ttf";
+        std::string path = GetProjectRootPath("/src/Resources/FiraCodeNerdFontMono-Regular.ttf");
+                        
         
         static const ImWchar puaRanges[] = {
             0x0020, 0x00FF,   // keep your ASCII

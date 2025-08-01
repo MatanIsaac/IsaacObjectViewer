@@ -9,14 +9,14 @@ namespace isaacObjectViewer
     class TextureManager 
     {
     public:
-        static std::shared_ptr<Texture> LoadTexture(const std::string& path, bool alpha);
+        static std::shared_ptr<Texture> LoadTexture(const std::string& path);
         static void UnloadTexture(const std::string& path);
         static void UnloadAll();
 
     private:
         TextureManager() { }
         static std::unordered_map<std::string, std::shared_ptr<Texture>> m_Textures;
-        static std::shared_ptr<Texture> LoadTextureFromFile(const std::string& path, bool alpha);
+        static std::shared_ptr<Texture> LoadTextureFromFile(const std::string& path);
 
     };
 

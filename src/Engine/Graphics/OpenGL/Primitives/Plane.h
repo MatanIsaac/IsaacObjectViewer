@@ -97,8 +97,9 @@ namespace isaacObjectViewer
         glm::vec3 m_Color;
         glm::quat m_Orientation;
 
-        std::shared_ptr<Texture> m_Texture;
-
+        std::shared_ptr<Texture> m_DiffuseTexture;
+        std::shared_ptr<Texture> m_SpecularTexture;
+        
         std::unique_ptr<IndexBuffer> m_IndexBuffer;
         std::unique_ptr<VertexBuffer> m_VertexBuffer;
         std::unique_ptr<VertexArray> m_VertexArray;

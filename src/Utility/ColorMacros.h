@@ -24,7 +24,7 @@ namespace isaacObjectViewer
 #define IMGUI_COLOR_TEAL ImVec4(0.0f / 255.0f, 121.0f / 255.0f, 107.0f / 255.0f, 1.0f)
 #define IMGUI_COLOR_DEEPORANGE ImVec4(244.0f / 255.0f, 81.0f / 255.0f, 30.0f / 255.0f, 1.0f)
 
-// Light Colors
+// PointLight Colors
 #define IMGUI_COLOR_LIGHTGREEN ImVec4(178.0f / 255.0f, 255.0f / 255.0f, 89.0f / 255.0f, 1.0f)
 #define IMGUI_COLOR_LIGHTBLUE ImVec4(173.0f / 255.0f, 216.0f / 255.0f, 230.0f / 255.0f, 1.0f)
 #define IMGUI_COLOR_LIGHTGREY ImVec4(211.0f / 255.0f, 211.0f / 255.0f, 211.0f / 255.0f, 1.0f)

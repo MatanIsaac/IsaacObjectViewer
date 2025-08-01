@@ -33,10 +33,11 @@ namespace isaacObjectViewer
         m_Rotation = glm::vec3(0.0f);
         m_Orientation = glm::quat(glm::radians(m_Rotation));
 
-        std::string path = "/src/Resources/Textures/awesomeface.png";
-        ConvertSeparators(path);
+        std::string diffuseMap = GetProjectRootPath("/src/Resources/Textures/container2.png");
+        std::string specularMap = GetProjectRootPath("/src/Resources/Textures/container2_specular.png");
         
-        m_Texture = TextureManager::LoadTexture(path,true);
+        m_DiffuseTexture = TextureManager::LoadTexture(diffuseMap);
+        m_SpecularTexture = TextureManager::LoadTexture(specularMap);
     }
 
     Plane::~Plane()
@@ -65,16 +66,22 @@ namespace isaacObjectViewer
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
         shader->setVec3("objectColor", m_Color);
-        shader->setInt("diffuseTexture", 0); // set sampler to use texture unit 0
-        if(m_Texture)
+        
+        shader->setBool("useMaterial", true);
+        shader->setInt("material.diffuse", 0);
+        shader->setInt("material.specular", 1);
+        if(m_DiffuseTexture)
         {
-            m_Texture->Bind();
-            shader->setBool("useTexture", true);
+            glActiveTexture(GL_TEXTURE0);
+            m_DiffuseTexture->Bind();
         }
-        else
+        
+        if(m_SpecularTexture)
         {
-            shader->setBool("useTexture", false);
+            glActiveTexture(GL_TEXTURE1);
+            m_SpecularTexture->Bind();
         }
+
 
         // indexed drawing
         renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader); 

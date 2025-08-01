@@ -40,6 +40,7 @@ constexpr int SCREEN_HEIGHT = 900;
     #define OS_SEPARATOR '/'
 #endif
 
-
-std::string GetProjectRoot();
-void ConvertSeparators(std::string& relative_path);
+namespace isaacObjectViewer
+{
+    std::string GetProjectRootPath(const std::string& relative_path);
+}

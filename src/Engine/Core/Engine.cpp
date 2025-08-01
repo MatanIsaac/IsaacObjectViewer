@@ -92,10 +92,8 @@ namespace isaacObjectViewer
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         
-        std::string colors_vs = "src/Resources/Shaders/colors.vs"; 
-        std::string colors_fs = "src/Resources/Shaders/colors.fs"; 
-        ConvertSeparators(colors_vs);
-        ConvertSeparators(colors_fs);
+        std::string colors_vs = GetProjectRootPath("src/Resources/Shaders/colors.vs"); 
+        std::string colors_fs = GetProjectRootPath("src/Resources/Shaders/colors.fs"); 
         
         m_lightingShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
         m_lightingShader->Bind();
@@ -227,11 +225,12 @@ namespace isaacObjectViewer
 
         m_lightingShader->Bind();
         m_lightingShader->setVec3("viewPos", m_Camera->GetPosition());
-                
+        
+        SendAllLightsToShader();
+
         glm::mat4 view = m_Camera->GetViewMatrix(); // VIEW
         glm::mat4 projection = m_Camera->GetProjectionMatrix(); 
 
-        SendAllLightsToShader();
 
         for (auto& obj : m_SceneObjects)
         {
@@ -274,16 +273,27 @@ namespace isaacObjectViewer
         
     void Engine::SendAllLightsToShader()
     {
+        m_lightingShader->setFloat("material.shininess", 32.0f);
         // ---- MULTIPLE LIGHTS: Gather and Send Uniforms ----
+        // directional light
+        m_lightingShader->setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+        m_lightingShader->setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+        m_lightingShader->setVec3("dirLight.diffuse", 0.2f, 0.2f, 0.2f);
+        m_lightingShader->setVec3("dirLight.specular", 0.7f, 0.7f, 0.7f);
+
         int numLights = std::min(int(m_LightObjects.size()),MAX_LIGHTS);
 
         for (int i = 0; i < numLights; ++i) 
         {
-            m_lightingShader->setVec3("lights[" + std::to_string(i) + "].position", m_LightObjects[i]->GetPosition());
-            m_lightingShader->setVec3("lights[" + std::to_string(i) + "].color", m_LightObjects[i]->GetColor());
-            m_lightingShader->setFloat("lights[" + std::to_string(i) + "].specular", m_LightObjects[i]->GetSpecularIntensity());
+            m_lightingShader->setVec3("point_lights[" + std::to_string(i) + "].position", m_LightObjects[i]->GetPosition());
+            m_lightingShader->setVec3("point_lights[" + std::to_string(i) + "].ambient", m_LightObjects[i]->GetAmbientIntensity());
+            m_lightingShader->setVec3("point_lights[" + std::to_string(i) + "].diffuse", m_LightObjects[i]->GetDiffuseIntensity());
+            m_lightingShader->setVec3("point_lights[" + std::to_string(i) + "].specular", m_LightObjects[i]->GetSpecularIntensity());
+            m_lightingShader->setFloat("point_lights["+ std::to_string(i) + "].constant", 1.0f);
+            m_lightingShader->setFloat("point_lights["+ std::to_string(i) + "].linear", 0.09f);
+            m_lightingShader->setFloat("point_lights["+ std::to_string(i) + "].quadratic", 0.032f);
         }
-        m_lightingShader->setInt("numLights", numLights);
+        m_lightingShader->setInt("numPointLights", numLights);
         // ----------------------------------------------------
     }
 

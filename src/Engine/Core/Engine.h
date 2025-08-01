@@ -9,7 +9,7 @@
 #include "Graphics/OpenGL/Primitives/Plane.h"
 #include "Graphics/OpenGL/Primitives/Cube.h"
 #include "Graphics/OpenGL/Primitives/Cylinder.h"
-#include "Graphics/OpenGL/Lighting/Light.h"
+#include "Graphics/OpenGL/Lighting/PointLight.h"
 #include "Graphics/OpenGL/Renderer/Renderer.h"
 #include "Graphics/OpenGL/Shaders/Shader.h"
 #include "../UI/ImGuiLayer.h"
@@ -89,18 +89,18 @@ namespace isaacObjectViewer
                 case ObjectType::Plane:
                     obj = new Plane(position);
                     break;
-                case ObjectType::Light:
-                    obj = new Light(position,{1.0f,1.0f,1.0f});
+                case ObjectType::PointLight:
+                    obj = new PointLight(position,{1.0f,1.0f,1.0f});
                     break;
                 default:
-                    LOG_INFO("Object Type must be a: Cube/Sphere/Cylinder/Plane/Light\n");
+                    LOG_INFO("Object Type must be a: Cube/Sphere/Cylinder/Plane/PointLight\n");
                     break;
             }
             if(obj)
             {
                 m_SceneObjects.push_back(obj);
-                if (type == ObjectType::Light)
-                    m_LightObjects.push_back(static_cast<Light*>(obj));
+                if (type == ObjectType::PointLight)
+                    m_LightObjects.push_back(static_cast<PointLight*>(obj));
             }
         }
         
@@ -113,10 +113,10 @@ namespace isaacObjectViewer
             m_ImGuiLayer.ResetSelectedObject();
 
             // If it’s a light, prune that list too
-            if (object->GetType() == ObjectType::Light)
+            if (object->GetType() == ObjectType::PointLight)
                 m_LightObjects.erase(std::remove(m_LightObjects.begin(),
                                                 m_LightObjects.end(),
-                                                static_cast<Light*>(object)),
+                                                static_cast<PointLight*>(object)),
                                     m_LightObjects.end());
 
             // Remove pointer from the main list
@@ -138,7 +138,7 @@ namespace isaacObjectViewer
             m_SceneObjects.clear();
         }
         std::vector<ISceneObject*>& GetSceneObjects() { return m_SceneObjects; }
-        std::vector<Light*> GetLightObjects()
+        std::vector<PointLight*> GetLightObjects()
         {
             return m_LightObjects;
         }
@@ -161,7 +161,7 @@ namespace isaacObjectViewer
         
         ISceneObject* m_SelectedObject;
         std::vector<ISceneObject*> m_SceneObjects;
-        std::vector<Light*> m_LightObjects;
+        std::vector<PointLight*> m_LightObjects;
         const int MAX_LIGHTS = 8;
 
         Renderer m_Renderer;

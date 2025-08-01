@@ -6,7 +6,7 @@ precision mediump float;
 
 out vec4 FragColor;
 
-in vec2 vTexCoord;
+in vec2 vTexCoords;
 
 uniform vec3 objectColor;
 
@@ -19,6 +19,6 @@ float circle(in vec2 _st, in float _radius){
 
 void main() {
 
-    float alpha = circle(vTexCoord, 0.1);
+    float alpha = circle(vTexCoords, 0.1);
     FragColor = vec4(objectColor, alpha);
 }

@@ -21,7 +21,7 @@ namespace isaacObjectViewer
         Sphere,
         Cylinder,
         Plane,
-        Light,
+        PointLight,
         Count 
     };
 

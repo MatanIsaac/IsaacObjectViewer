@@ -1,4 +1,4 @@
-#include "Light.h"
+#include "PointLight.h"
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Utility/config.h"  
@@ -6,10 +6,12 @@
 
 namespace isaacObjectViewer
 {
-    Light::Light(const glm::vec3& position, const glm::vec3& color)
+    PointLight::PointLight(const glm::vec3& position, const glm::vec3& color)
         : m_Color(color)
         , m_Sphere(position)
-        , m_SpecularIntensity(0.5f)
+        , m_AmbientIntensity({0.2f, 0.2f, 0.2f})
+        , m_DiffuseIntensity({0.4f, 0.4f, 0.4f})
+        , m_SpecularIntensity({0.5f, 0.5f, 0.5f})
     {
         m_ID = GenerateUniqueID();
         m_Name = "Light_" + std::to_string(m_ID);
@@ -18,10 +20,10 @@ namespace isaacObjectViewer
         m_Sphere.SetColor(color);
 
         // Build paths to the light cube shader files.
-        std::string lightCubeVS = "src/Resources/Shaders/light_cube.vs";
-        std::string lightCubeFS = "src/Resources/Shaders/light_cube.fs";
-        ConvertSeparators(lightCubeVS);
-        ConvertSeparators(lightCubeFS);
+        std::string lightCubeVS = GetProjectRootPath("src/Resources/Shaders/light_cube.vs");
+        std::string lightCubeFS = GetProjectRootPath("src/Resources/Shaders/light_cube.fs");
+        
+        GetProjectRootPath(lightCubeFS);
 
         // Create the shader using a unique pointer.
         m_Shader = std::make_unique<Shader>(lightCubeVS.c_str(), lightCubeFS.c_str());
@@ -31,17 +33,17 @@ namespace isaacObjectViewer
         }
     }
 
-    Light::~Light()
+    PointLight::~PointLight()
     {
         // Unique pointer cleans up m_Shader automatically.
     }
 
-    void Light::Update()
+    void PointLight::Update()
     {
         // Update light logic (for example, animate the light position) if needed.
     }
 
-    void Light::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader)
+    void PointLight::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader)
     {
         // First, update and bind the internal light cube shader.
         m_Shader->Bind();

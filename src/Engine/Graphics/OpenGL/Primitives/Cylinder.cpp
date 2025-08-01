@@ -67,7 +67,8 @@ namespace isaacObjectViewer
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
         shader->setVec3("objectColor", m_Color);
-        
+        shader->setBool("useTexture", false);
+
         // Render using indexed drawing.
         renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);
     }

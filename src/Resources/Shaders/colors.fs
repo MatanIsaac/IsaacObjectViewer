@@ -10,6 +10,7 @@ struct Light {
 
 in vec3 FragPos;
 in vec3 Normal;
+in vec2 TexCoord;
 out vec4 FragColor;
 
 uniform Light lights[MAX_LIGHTS];
@@ -17,7 +18,8 @@ uniform int numLights;
 
 uniform vec3 viewPos;
 uniform vec3 objectColor;
-uniform float specularIntensity;
+uniform sampler2D diffuseTexture; 
+uniform bool useTexture;          
 
 void main() 
 {
@@ -33,7 +35,7 @@ void main()
         // Specular
         vec3 reflectDir = reflect(-lightDir, normal);
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-        spec *= specularIntensity;
+        spec *= lights[i].specular;
 
         // Combine (ambient + diffuse + specular)
         vec3 ambient = 0.1 * lights[i].color;
@@ -42,5 +44,11 @@ void main()
 
         result += (ambient + diffuse + specular);
     }
-    FragColor = vec4(result * objectColor, 1.0);
+    vec3 baseColor = objectColor;
+    if (useTexture)
+    {
+        baseColor = texture(diffuseTexture, TexCoord).rgb; //* objectColor;
+    }
+
+    FragColor = vec4(result * baseColor, 1.0);
 }

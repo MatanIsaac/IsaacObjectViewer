@@ -29,11 +29,16 @@ namespace isaacObjectViewer
         void DrawUI();
 
         void SetGizmoOperation(GizmoMode mode) { m_GizmoOperation = mode; }
+        void ResetSelectedObject() {  selected = nullptr; } 
+        bool isMouseOverGizmo()
+        {
+            return ImGuizmo::IsOver((ImGuizmo::OPERATION)m_GizmoOperation);
+        }
     private:
         void DrawTopPanel(Engine* engine);    
         void DrawRightPanel(Engine* engine);
         void DrawSceneHierarchyPanel(Engine* engine);    
-        void DrawSettings(Engine* engine, ISceneObject* selected);
+        void DrawSettings(ISceneObject* selected);
         void LoadFont();
         void DrawGizmos(Engine* engine,int gizmoOperation);
     private:

@@ -44,11 +44,12 @@ namespace isaacObjectViewer
 
     void Mouse::ProcessMouseClick(float mouseX, float mouseY, Camera* camera)
     {   
+        auto* engine = Engine::GetInstance(); 
+
         Ray pickingRay = Ray::ScreenPointToWorldRay(mouseX, mouseY, 
                                                     SCREEN_WIDTH, SCREEN_HEIGHT, 
                                                     camera->GetViewMatrix(), camera->GetProjectionMatrix());
 
-        auto* engine = Engine::GetInstance(); 
        
         ISceneObject* selected = nullptr;
         float minDist = std::numeric_limits<float>::max();

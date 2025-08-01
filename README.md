@@ -4,7 +4,7 @@
 
 
 <div align="center">
-    <img src="https://github.com/MatanIsaac/IsaacObjectViewer/blob/SDL3-Migration/iov1.png" alt="Isaac-3D-Object-Viewer">
+    <img src="https://github.com/MatanIsaac/IsaacObjectViewer/blob/main/iov1.png" alt="Isaac-3D-Object-Viewer">
 </div>
 
 ---                                                                                                                                                                                                              

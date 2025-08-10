@@ -6,15 +6,20 @@
 
 #include <string>
 #include "Core/Ray.h"
-#include "Graphics/OpenGL/Buffers/IndexBuffer.h"
-#include "Graphics/OpenGL/Buffers/VertexArray.h"
-#include "Graphics/OpenGL/Buffers/VertexBuffer.h"
-#include "Graphics/OpenGL/Renderer/Renderer.h"
-#include "Graphics/OpenGL/Shaders/Shader.h"
+#include "Graphics/Buffers/IndexBuffer.h"
+#include "Graphics/Buffers/VertexArray.h"
+#include "Graphics/Buffers/VertexBuffer.h"
+#include "Graphics/Renderer/Renderer.h"
+#include "Graphics/Shaders/Shader.h"
+#include "Graphics/Renderer/IRenderable.h"
+#include "Graphics/Material.h"
+#include "Graphics/Texture.h"
+#include "Graphics/TextureManager.h"
+
 
 namespace isaacObjectViewer
 {
-     enum class ObjectType : int
+    enum class ObjectType : int
     {
         Unknown = 0, // default value for uninitialized/legacy objects
         Cube,
@@ -22,10 +27,11 @@ namespace isaacObjectViewer
         Cylinder,
         Plane,
         PointLight,
+        Imported,
         Count 
     };
 
-    class ISceneObject
+    class ISceneObject : public IRenderable
     {
     public:
         virtual ~ISceneObject() = default;
@@ -39,10 +45,13 @@ namespace isaacObjectViewer
         virtual glm::vec3& GetRotation() = 0;
         virtual glm::quat& GetOrientation() = 0;
         virtual glm::vec3& GetScale() = 0;
+        virtual float& GetShininess() = 0;
         virtual void SetPosition(const glm::vec3& newPosition) = 0;
         virtual void SetRotation(const glm::vec3& newRotation) = 0;
         virtual void SetOrientation(const glm::quat& newOrientation) = 0;
         virtual void SetScale(const glm::vec3& newScale) = 0;
+        virtual void SetDiffuseTexture(const std::shared_ptr<Texture>& tex) = 0;
+        virtual void SetSpecularTexture(const std::shared_ptr<Texture>& tex) = 0;
 
         static constexpr glm::vec3 DEFAULT_POSITION = {0.0f, 0.0f, 0.0f};
         static constexpr glm::vec3 DEFAULT_ROTATION = {0.0f, 0.0f, 0.0f};
@@ -58,8 +67,6 @@ namespace isaacObjectViewer
         virtual inline const VertexBuffer   &GetVertexBuffer() const = 0;
         virtual inline const IndexBuffer    &GetIndexBuffer() const = 0;
         virtual unsigned inline int         GetIndexCount() const = 0; 
-
-        virtual void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader = nullptr) = 0;
 
         glm::mat4 GetModelMatrix()
         {
@@ -79,6 +86,17 @@ namespace isaacObjectViewer
             this->SetScale(scale);
             this->SetOrientation(orientation);
             this->SetRotation(glm::degrees(glm::eulerAngles(orientation)));
+        }
+
+        Material GetDefaultMaterial()
+        {
+            std::string diffuseMap = GetProjectRootPath("/src/Resources/Textures/wood-02/WoodOak_2K_albedo.png");
+            std::string specularMap = GetProjectRootPath("/src/Resources/Textures/wood-02/WoodOak_2K_roughness.png");
+
+            auto diffuse = TextureManager::LoadTexture(diffuseMap,TextureType::DIFFUSE);
+            auto specular = TextureManager::LoadTexture(specularMap,TextureType::SPECULAR);
+
+            return Material(std::shared_ptr<Texture>(diffuse),std::shared_ptr<Texture>(specular),32.f);
         }
     };
 }

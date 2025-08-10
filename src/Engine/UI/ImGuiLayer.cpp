@@ -1,11 +1,12 @@
 #include "ImGuiLayer.h"
 #include "../Core/Engine.h" // so we can access engine state like m_Camera, m_Light, etc.
 #include "../Core/Mouse.h"
+#include "TextureManager.h"
+#include "ImGuiFileDialog/ImGuiFileDialog.h"
+#include "Graphics/ModelManager.h"
 
 namespace isaacObjectViewer
 {
- 
- 
     ImGuiLayer::ImGuiLayer()
     {
         m_GizmoOperation = ImGuizmo::TRANSLATE;
@@ -42,8 +43,6 @@ namespace isaacObjectViewer
         ImGui_ImplOpenGL3_Init("#version 330 core");
         
         LoadFont();
-
-
     }
     
     void ImGuiLayer::Begin()
@@ -166,13 +165,18 @@ namespace isaacObjectViewer
         {
             if (ImGui::BeginMenu("File"))
             {
-                if (ImGui::MenuItem("New")) { /* New file action */ }
-                if (ImGui::MenuItem("Open...")) { /* Open file action */ }
-                if (ImGui::MenuItem("Save")) { /* Save file action */ }
+                if (ImGui::MenuItem("Import Obj")) 
+                { 
+                    ImGuiFileDialog loadObjFileDialog;
+                    IGFD::FileDialogConfig cfg;
+                    cfg.flags = ImGuiFileDialogFlags_Modal;
+                    cfg.path  = ".";
+                    m_ImportObjDlg.OpenDialog("ImportObj", "Select Obj", ".obj", cfg);
+                }
                 ImGui::Separator();
                 if (ImGui::MenuItem("Exit")) 
                 { 
-                    
+                    engine->Exit();
                 }
                 ImGui::EndMenu();
             }
@@ -215,6 +219,15 @@ namespace isaacObjectViewer
 
             ImGui::EndMainMenuBar();
         }
+        if (m_ImportObjDlg.Display("ImportObj",32,{100.f,100.f}))
+        {
+            if (m_ImportObjDlg.IsOk())
+            {
+                std::string path = m_ImportObjDlg.GetFilePathName();        
+                ModelManager::LoadObjModel(path);
+            }
+            m_ImportObjDlg.Close();
+        }
 
         ImGuiWindowClass window_class;
         window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoTabBar;
@@ -230,6 +243,7 @@ namespace isaacObjectViewer
         ImGui::Text("Gizmo Mode:");
 
         ImGui::SameLine();
+        ImGui::RadioButton("NONE", &m_GizmoOperation, ImGuizmo::NONE); ImGui::SameLine();
         ImGui::RadioButton("Translate", &m_GizmoOperation, ImGuizmo::TRANSLATE); ImGui::SameLine();
         ImGui::RadioButton("Rotate", &m_GizmoOperation, ImGuizmo::ROTATE); ImGui::SameLine();
         ImGui::RadioButton("Scale", &m_GizmoOperation, ImGuizmo::SCALE);
@@ -277,118 +291,303 @@ namespace isaacObjectViewer
 
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove;
         
-            ImGui::Begin("Scene Settings", nullptr, windowFlags);
+        ImGui::Begin("Scene Settings", nullptr, windowFlags);
 
-        // Display FPS.
-        ImGui::Text("FPS: %.4f", engine->GetFPS());
+        if (ImGui::CollapsingHeader("Performance"))
+        {
+            if (ImGui::BeginTable("PerformanceTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
+            {
+                ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+                ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+                // FPS
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); 
+                ImGui::TextUnformatted("FPS");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%.4f", engine->GetFPS());
+
+                // VSync
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); 
+                ImGui::TextUnformatted("VSync");
+                ImGui::TableSetColumnIndex(1);
+                if (ImGui::Checkbox("##VSync", &engine->IsVSyncEanbled()))
+                {
+                    engine->ApplySwapInterval();
+                }
+
+                // Cap FPS (only if VSync is disabled)
+                if (!engine->IsVSyncEanbled())
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0); 
+                    ImGui::TextUnformatted("Cap FPS");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Checkbox("##CapFPS", &engine->GetFrameCapEnabled());
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0); 
+                    ImGui::TextUnformatted("Cap Value");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    ImGui::DragInt("##CapValue", &engine->GetFrameCapFps(), 1, 30, 240);
+                }
+
+                ImGui::EndTable();
+            }
+        }
+
 
         if (ImGui::CollapsingHeader("Environment Settings"))
         {
-            ImGui::Text("Background Color");
-            ImGui::ColorEdit3("##Background Color", (float *)&engine->GetBackgroundColor(), ImGuiColorEditFlags_NoLabel);
-            if (ImGui::Button("Reset Background Color"))
+            if (ImGui::BeginTable("EnvironmentTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
             {
-                engine->SetBackgroundColor({0.0f, 0.0f, 0.0f});
-                ImGui::SetTooltip("Reset background color to default.");
+                ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+                ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+                // Background Color row
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Background Color");
+
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                ImGui::ColorEdit3("##BackgroundColor", (float*)&engine->GetBackgroundColor(),ImGuiColorEditFlags_NoLabel);
+                ImGui::SameLine();
+                if (ImGui::SmallButton("Reset##BackgroundColor"))
+                {
+                    engine->SetBackgroundColor({0.0f, 0.0f, 0.0f});
+                }
+
+                ImGui::EndTable();
             }
+
+            if (ImGui::CollapsingHeader("Directional Light")) 
+            {
+                DirectionalLight& dirLight = engine->GetDirectionalLight();
+
+                // Persist UI state across frames
+                static bool init = true;
+                static glm::vec3 baseAmbient, baseDiffuse, baseSpecular;
+                static float ambient_mult  = 1.0f;
+                static float diffuse_mult  = 1.0f;
+                static float specular_mult = 1.0f;
+
+                if (init) 
+                {
+                    baseAmbient  = dirLight.GetAmbient(); 
+                    baseDiffuse  = dirLight.GetDiffuse();
+                    baseSpecular = dirLight.GetSpecular();
+                    init = false;
+                }
+
+                glm::vec3 direction = dirLight.GetDirection();
+
+                bool changed = false;
+                ImGui::PushID("DirLight");
+
+                if (ImGui::BeginTable("DirLightTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
+                {
+                    ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+                    ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+
+                    // Direction
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0); ImGui::Text("Direction");
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    ImGui::TableSetColumnIndex(1); changed |= ImGui::DragFloat3("##Direction_", &direction.x, 0.01f);
+
+                    // Ambient
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0); ImGui::Text("Ambient");
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    ImGui::TableSetColumnIndex(1); changed |= ImGui::DragFloat3("##Ambient_", &baseAmbient.x, 0.01f, 0.0f, 1.0f);
+
+                    // Ambient Mult
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0); ImGui::Text("Ambient Mult");
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    ImGui::TableSetColumnIndex(1); changed |= ImGui::DragFloat("##AmbientMult_", &ambient_mult, 0.05f, 0.0f, 5.0f, "%.2f");
+
+                    // Diffuse
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0); ImGui::Text("Diffuse");
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    ImGui::TableSetColumnIndex(1); changed |= ImGui::DragFloat3("##Diffuse_", &baseDiffuse.x, 0.01f, 0.0f, 1.0f);
+
+                    // Diffuse Mult
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0); ImGui::Text("Diffuse Mult");
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    ImGui::TableSetColumnIndex(1); changed |= ImGui::DragFloat("##DiffuseMult_", &diffuse_mult, 0.05f, 0.0f, 5.0f, "%.2f");
+
+                    // Specular
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0); ImGui::Text("Specular");
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    ImGui::TableSetColumnIndex(1); changed |= ImGui::DragFloat3("##Specular_", &baseSpecular.x, 0.01f, 0.0f, 1.0f);
+
+                    // Specular Mult
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0); ImGui::Text("Specular Mult");
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    ImGui::TableSetColumnIndex(1); changed |= ImGui::DragFloat("##SpecularMult_", &specular_mult, 0.05f, 0.0f, 5.0f, "%.2f");
+                    
+                    ImGui::EndTable();
+                }
+
+                ImGui::PopID();
+
+                if (changed) 
+                {
+                    dirLight.SetDirection(direction);
+                    dirLight.SetAmbient (baseAmbient  * ambient_mult);
+                    dirLight.SetDiffuse (baseDiffuse  * diffuse_mult);
+                    dirLight.SetSpecular(baseSpecular * specular_mult);
+                }
+            }
+
+
         }
         
         ImGui::Separator();
 
         if (ImGui::CollapsingHeader("Camera Settings"))
         {
-            auto camera = engine->GetCamera();
-            
-            if (ImGui::BeginTable("TransformTable", 2)) 
-            {                
-                ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+            Camera* cam = engine->GetCamera();
+
+            // snapshot current values
+            glm::vec3 pos = cam->GetPosition();
+            float speed   = cam->GetSpeed();
+            float zoom    = cam->GetZoom();
+
+            bool changed_pos   = false;
+            bool changed_speed = false;
+            bool changed_zoom  = false;
+
+            if (ImGui::BeginTable("CameraTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
+            {
+                ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
                 ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
+                // Position
                 ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0); ImGui::Text("Position");
-                ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Position", (float *)&camera->GetPosition(), 0.01f);
-                            
+                ImGui::TableSetColumnIndex(0); ImGui::TextUnformatted("Position");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                changed_pos |= ImGui::DragFloat3("##cam_pos", &pos.x, 0.01f);
+                ImGui::SameLine();
+                if (ImGui::SmallButton("Reset##pos"))
+                {
+                    pos = glm::vec3(0.0f, 0.0f, 0.0f);
+                    changed_pos = true;
+                }
+
+                // Speed
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::TextUnformatted("Movement Speed");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                changed_speed |= ImGui::DragFloat("##cam_speed", &speed, 0.01f, 0.1f, 20.0f, "%.2f");
+                ImGui::SameLine();
+                if (ImGui::SmallButton("Reset##speed"))
+                {
+                    speed = Camera::DEFAULT_CAMERA_SPEED;
+                    changed_speed = true;
+                }
+
+                // Zoom (FOV)
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::TextUnformatted("Zoom (FOV)");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                changed_zoom |= ImGui::DragFloat("##cam_zoom", &zoom, 0.1f, 1.0f, 90.0f, "%.2f");
+                ImGui::SameLine();
+                if (ImGui::SmallButton("Reset##zoom"))
+                {
+                    zoom = Camera::DEFAULT_CAMERA_ZOOM;
+                    changed_zoom = true;
+                }
+
                 ImGui::EndTable();
             }
-            
-            if (ImGui::Button("Reset Camera Position"))
-            {
-                engine->GetCamera()->ResetPosition();
-                ImGui::SetTooltip("Reset camera to default position.");
-            }
 
-            ImGui::Text("Camera Movement Speed");
-            ImGui::DragFloat("##Camera Movement Speed", &engine->GetCamera()->GetSpeed(), 0.01f, 0.1f, 10.0f, "%.2f");
-            if (ImGui::Button("Reset Camera Speed"))
+            // apply only if changed
+            if (changed_pos)   cam->SetPosition(pos);
+            if (changed_speed) cam->SetSpeed(speed);
+            if (changed_zoom)
             {
-                engine->GetCamera()->ResetSpeed();
-                ImGui::SetTooltip("Reset camera speed to initial value.");
-            }
-
-            ImGui::Text("Camera Zoom");
-            if(ImGui::DragFloat("##Camera Zoom", &engine->GetCamera()->GetZoom(), 0.1f, 1.0f, 90.0f, "%.2f"))
-            {
-                engine->GetCamera()->SetProjection((float)display_w / (float)display_h, 0.1f,100.0f);
-            }
-            if (ImGui::Button("Reset Camera Zoom"))
-            {
-                engine->GetCamera()->SetZoom(engine->GetCamera()->DEFAULT_CAMERA_ZOOM);
-                engine->GetCamera()->SetProjection((float)display_w / (float)display_h, 0.1f,100.0f);
-                ImGui::SetTooltip("Reset camera zoom to default (45.f).");
+                cam->SetZoom(zoom);
+                int display_w, display_h;
+                SDL_GetWindowSizeInPixels(engine->GetSDLWindow(), &display_w, &display_h);
+                cam->SetProjection((float)display_w / (float)display_h, 0.1f, 100.0f);
             }
         }
+
         
         ImGui::Separator();
         
         if (ImGui::CollapsingHeader("Mouse Settings"))
         {
-            auto* mouse = Mouse::GetInstance();
-            ImGui::Text("Mouse Sensitivity");
-            ImGui::DragFloat("##Mouse Sensitivity", &mouse->GetSensitivity(), 0.01f, 0.01f, 5.0f, "%.4f");
-            if (ImGui::Button("Reset Mouse Sensitivity"))
+            Mouse* mouse = Mouse::GetInstance();
+
+            // snapshot
+            float sensitivity = mouse->GetSensitivity();
+            bool changed = false;
+
+            if (ImGui::BeginTable("MouseTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
             {
-                mouse->ResetSensitivity();
-                ImGui::SetTooltip("Reset mouse sensitivity.");
+                ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+                ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+                // Sensitivity
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); 
+                ImGui::TextUnformatted("Mouse Sensitivity");
+
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                changed |= ImGui::DragFloat("##mouse_sens", &sensitivity, 0.01f, 0.01f, 5.0f, "%.4f");
+                ImGui::SameLine();
+                if (ImGui::SmallButton("Reset##mouse_sens"))
+                {
+                    sensitivity = Mouse::DEFAULT_SENSITIVITY;
+                    changed = true;
+                }
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::TextUnformatted("Trace Mouse Ray");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                changed |= ImGui::Checkbox("##trace_mouse_ray", &mouse->GetTraceMouseRay());
+                ImGui::SameLine();
+                if (ImGui::SmallButton("Reset##trace_mouse_ray"))
+                {
+                    mouse->GetTraceMouseRay() = false;
+                    changed = true;
+                }
+
+                ImGui::EndTable();
             }
+
+            // apply only if changed
+            if (changed)
+                mouse->SetSensitivity(sensitivity);
         }
 
         ImGui::Separator();
         
         if(selected)
         {
-            if (ImGui::CollapsingHeader("Settings",ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Leaf))
+            if (ImGui::CollapsingHeader("Settings",ImGuiTreeNodeFlags_DefaultOpen)) // ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Leaf
             {    
-                if (ImGui::CollapsingHeader("Transform"))
-                {
-                    if (ImGui::BeginTable("TransformTable", 2)) 
-                    {                
-                        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-                        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0); ImGui::Text("Position");
-                        ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Position", (float *)&selected->GetPosition(), 0.01f);
-                        
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0); ImGui::Text("Rotation");
-                        ImGui::TableSetColumnIndex(1); 
-                        if(ImGui::DragFloat3("##Rotation", (float *)&selected->GetRotation(), 0.01f))
-                        {
-                            selected->SetOrientation(glm::quat(glm::radians(selected->GetRotation())));
-                        }
-                        
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0); ImGui::Text("Scale");
-                        ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Scale", (float *)&selected->GetScale(), 0.01f);
-                        
-                        ImGui::EndTable();
-                    }
-                }
                 DrawSettings(selected);
-                  
             }
+            ImGui::Separator();
         }
-
+        
         ImGui::End();
     }
 
@@ -427,43 +626,129 @@ namespace isaacObjectViewer
 
     void ImGuiLayer::DrawSettings(ISceneObject* selected)
     {
-        if(selected)
+        static std::string lastName;
+        static char buffer[256] = {};
+        
+        if (selected && selected->GetName() != lastName)
         {
-            if(selected->GetType() == ObjectType::PointLight)
-            {
-                auto* light = dynamic_cast<PointLight*>(selected);
-                
-                ImGui::Text("PointLight Color");
-                ImGui::ColorEdit3("Color", (float *)&light->GetColor(), ImGuiColorEditFlags_NoLabel);
-                
-                ImGui::Text("Ambient Intensity");
-                ImGui::DragFloat3("##Ambient Intensity", (float *)&light->GetAmbientIntensity(), 0.01f, 0.0f, 1.0f, "%.3f");
+            memset(buffer, 0, sizeof(buffer));
+            strncpy(buffer, selected->GetName().c_str(), sizeof(buffer) - 1);
+            lastName = selected->GetName();
+        }
+        
+        ImGui::Text("Name");
+        // Now buffer persists across frames, and you don't lose changes!
+        if(ImGui::InputText("##SelectedName", buffer, sizeof(buffer)))
+        {
+            selected->SetName(std::string(buffer));
+            lastName = buffer;
+        }
 
-                ImGui::Text("Diffuse Intensity");
-                ImGui::DragFloat3("##Diffuse Intensity", (float *)&light->GetDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.3f");
+        if (ImGui::CollapsingHeader("Transform",ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            if (ImGui::BeginTable("TransformTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp)) 
+            {                
+                ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 120.0f);
+                ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-                ImGui::Text("Specular Intensity");
-                ImGui::DragFloat3("##Specular Intensity", (float *)&light->GetSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.3f");
-            }
-            
-            static std::string lastName;
-            static char buffer[256] = {};
-            
-            if (selected && selected->GetName() != lastName)
-            {
-                memset(buffer, 0, sizeof(buffer));
-                strncpy(buffer, selected->GetName().c_str(), sizeof(buffer) - 1);
-                lastName = selected->GetName();
-            }
-            
-            ImGui::Text("Name");
-            // Now buffer persists across frames, and you don't lose changes!
-            if(ImGui::InputText("##SelectedName", buffer, sizeof(buffer)))
-            {
-                selected->SetName(std::string(buffer));
-                lastName = buffer;
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::Text("Position");
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Position", (float *)&selected->GetPosition(), 0.01f);
+                
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::Text("Rotation");
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                ImGui::TableSetColumnIndex(1); 
+                if(ImGui::DragFloat3("##Rotation", (float *)&selected->GetRotation(), 0.01f))
+                {
+                    selected->SetOrientation(glm::quat(glm::radians(selected->GetRotation())));
+                } 
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::Text("Scale");
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Scale", (float *)&selected->GetScale(), 0.01f);
+                ImGui::EndTable();
             }
         }
+
+        if(selected->GetType() == ObjectType::PointLight)
+        {
+            auto* light = dynamic_cast<PointLight*>(selected);
+            
+            ImGui::Text("PointLight Color");
+            ImGui::ColorEdit3("Color", (float *)&light->GetColor(), ImGuiColorEditFlags_NoLabel);
+            
+            ImGui::Text("Ambient Intensity");
+            ImGui::DragFloat3("##Ambient Intensity", (float *)&light->GetAmbientIntensity(), 0.01f, 0.0f, 1.0f, "%.3f");
+
+            ImGui::Text("Diffuse Intensity");
+            ImGui::DragFloat3("##Diffuse Intensity", (float *)&light->GetDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.3f");
+
+            ImGui::Text("Specular Intensity");
+            ImGui::DragFloat3("##Specular Intensity", (float *)&light->GetSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.3f");
+        }
+        
+        if (selected->GetType() == ObjectType::Cube ||
+        selected->GetType() == ObjectType::Plane || selected->GetType() == ObjectType::Imported)
+        {
+            ImGui::Separator();
+            if (ImGui::CollapsingHeader("Material Settings"))    
+            {    
+                ImGui::Text("Shininess");
+                ImGui::DragFloat("##Shininess", &selected->GetShininess(), 0.01f, 0.0f, 100.0f, "%.3f");
+                
+                if (ImGui::Button("Load Diffuse Texture"))
+                {
+                    IGFD::FileDialogConfig cfg;
+                    cfg.flags = ImGuiFileDialogFlags_Modal;
+                    cfg.path  = ".";
+                    m_DiffuseFileDialog.OpenDialog("LoadDiffuse", "Select Diffuse", m_ImageDialogFilters, cfg);
+                }
+                
+                if (ImGui::Button("Load Specular Texture"))
+                {
+                    IGFD::FileDialogConfig cfg;
+                    cfg.flags = ImGuiFileDialogFlags_Modal;
+                    cfg.path  = ".";
+                    m_SpecularFileDialog.OpenDialog("LoadSpecular", "Select Specular", m_ImageDialogFilters, cfg);
+                }
+                
+                if (m_DiffuseFileDialog.Display("LoadDiffuse",32,{100.f,100.f}))
+                {
+                    if (m_DiffuseFileDialog.IsOk())
+                    {
+                        std::string path = m_DiffuseFileDialog.GetFilePathName();
+                        auto tex = TextureManager::LoadTexture(path,TextureType::DIFFUSE);
+                        
+                        auto type = selected->GetType();
+                        if (type == ObjectType::Cube || type == ObjectType::Plane || type == ObjectType::Imported)
+                        {
+                            selected->SetDiffuseTexture(tex);    
+                        }
+                    }
+                    m_DiffuseFileDialog.Close();
+                }
+                
+                if (m_SpecularFileDialog.Display("LoadSpecular",32,{100.f,100.f}))
+                {
+                    if (m_SpecularFileDialog.IsOk())
+                    {
+                        std::string path = m_SpecularFileDialog.GetFilePathName();
+                        auto tex = TextureManager::LoadTexture(path,TextureType::SPECULAR);
+                        
+                        auto type = selected->GetType();
+                        if (type == ObjectType::Cube || type == ObjectType::Plane || type == ObjectType::Imported)
+                        {
+                            selected->SetSpecularTexture(tex);    
+                        }
+                    }
+                    m_SpecularFileDialog.Close();
+                }
+                ImGui::Separator();
+            }
+        }
+    
     }
 
     void ImGuiLayer::LoadFont()
@@ -475,7 +760,6 @@ namespace isaacObjectViewer
 
         std::string path = GetProjectRootPath("/src/Resources/FiraCodeNerdFontMono-Regular.ttf");
                         
-        
         static const ImWchar puaRanges[] = {
             0x0020, 0x00FF,   // keep your ASCII
             0xE000, 0xF8FF,   // all PUA (where Nerd-Font patches in icons)
@@ -483,7 +767,7 @@ namespace isaacObjectViewer
         };
 
         ImFont* nerd = io.Fonts->AddFontFromFileTTF(
-            path.c_str(), 16.0f, &cfg, puaRanges
+            path.c_str(), 14.0f, &cfg, puaRanges
         );
         io.FontDefault = nerd;
     }
@@ -515,6 +799,15 @@ namespace isaacObjectViewer
                 selected->SetTransformFromMatrix(model);
             }
             ImGui::End();
+        }
+        else
+        {
+            static bool first_time = false;
+            if (first_time)
+            {
+                first_time = !first_time;
+                SetGizmoOperation(GizmoMode::NONE);
+            }
         }
     }
 }

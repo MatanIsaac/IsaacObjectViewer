@@ -25,6 +25,9 @@
 *.a
 !dependencies/**/*.a
 
+src/Resources/Models/**
+src/Resources/Textures/**
+
 *.lai
 *.la
 *.lib

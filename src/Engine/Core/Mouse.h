@@ -1,12 +1,14 @@
 #pragma once
 #include "Utility/config.h"
-#include "Engine/Scene/Camera/Camera.h"
+#include "Scene/Camera/Camera.h"
 
 namespace isaacObjectViewer
 {
     class Mouse
     {
     public:
+        static constexpr float DEFAULT_SENSITIVITY = 0.1f;
+
         static Mouse* GetInstance()
         {
             if(s_Instance == nullptr)
@@ -16,13 +18,16 @@ namespace isaacObjectViewer
             return s_Instance;
         }   
 
-        bool    &GetFirstMouse()    { return m_FirstMouse; }
-        float   &GetLastX()         { return m_LastX; }
-        float   &GetLastY()         { return m_LastY; }
-        float   &GetYaw()           { return m_Yaw; }
-        float   &GetPitch()         { return m_Pitch; }
-        float   &GetSensitivity()   { return m_Sensitivity; }
-        void    ResetSensitivity()  { m_Sensitivity = DEFAULT_SENSITIVITY; }
+        bool    &GetFirstMouse()                        { return m_FirstMouse; }
+        float   &GetLastX()                             { return m_LastX; }
+        float   &GetLastY()                             { return m_LastY; }
+        float   &GetYaw()                               { return m_Yaw; }
+        float   &GetPitch()                             { return m_Pitch; }
+        float   &GetSensitivity()                       { return m_Sensitivity; }
+        bool    &GetTraceMouseRay()                     { return m_TraceMouseRay; }
+
+        void    SetSensitivity(float newSensitivity)    { m_Sensitivity = newSensitivity; }
+        void    ResetSensitivity()                      { m_Sensitivity = DEFAULT_SENSITIVITY; }
 
         void ProcessMotion(Camera* camera,float xoffset, float yoffset, bool constrainPitch = true);
         void ProcessZoom(float yoffset, Camera* camera);
@@ -35,7 +40,8 @@ namespace isaacObjectViewer
             m_LastY(300.f),
             m_Pitch(0.0f),
             m_Sensitivity(DEFAULT_SENSITIVITY),
-            m_Yaw(-90.0f)
+            m_Yaw(-90.0f),
+            m_TraceMouseRay(false)
         {}
         ~Mouse() = default;
 
@@ -47,8 +53,8 @@ namespace isaacObjectViewer
         float m_Pitch;
         float m_Sensitivity;
         float m_Yaw;
+        bool m_TraceMouseRay;
         
-        static constexpr float DEFAULT_SENSITIVITY = 0.1f;
 
     };
 } // namespace isaacGraphicsEngine

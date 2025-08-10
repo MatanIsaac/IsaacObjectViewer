@@ -2,6 +2,7 @@ CXX = g++
 
 IMGUI_DIR = dependencies/imgui
 IMGUIZMO_DIR = dependencies/ImGuizmo
+ImGuiFileDialog_DIR = dependencies/ImGuiFileDialog
 IMGUI_BACKEND = $(IMGUI_DIR)/backends
 IMGUI_SRC = \
 	$(IMGUI_DIR)/imgui.cpp \
@@ -10,6 +11,7 @@ IMGUI_SRC = \
 	$(IMGUI_DIR)/imgui_widgets.cpp \
 	$(IMGUI_DIR)/imgui_demo.cpp \
 	$(IMGUIZMO_DIR)/ImGuizmo.cpp \
+	$(ImGuiFileDialog_DIR)/ImGuiFileDialog.cpp \
 	$(IMGUI_BACKEND)/imgui_impl_sdl3.cpp \
 	$(IMGUI_BACKEND)/imgui_impl_opengl3.cpp \
 
@@ -38,7 +40,8 @@ INCLUDE = \
 	-Isrc/Engine/Scene \
 	-Isrc/Engine/UI \
 	-I$(IMGUI_DIR) -I$(IMGUI_BACKEND) \
-	-I$(IMGUIZMO_DIR)
+	-I$(IMGUIZMO_DIR) \
+	-I$(ImGuiFileDialog_DIR)/ImGuiFileDialog.hpp \
 
 CXXFLAGS = -std=c++17 -g -Wall -DIMGUI_DEFINE_MATH_OPERATORS $(INCLUDE)
 GLAD_SRC = dependencies/glad/src/glad.c

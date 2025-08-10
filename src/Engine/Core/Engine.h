@@ -5,14 +5,16 @@
 #include "Window.h"
 #include "Scene/Camera/Camera.h"
 #include "Scene/ISceneObject.h"
-#include "Graphics/OpenGL/Primitives/Sphere.h"
-#include "Graphics/OpenGL/Primitives/Plane.h"
-#include "Graphics/OpenGL/Primitives/Cube.h"
-#include "Graphics/OpenGL/Primitives/Cylinder.h"
-#include "Graphics/OpenGL/Lighting/PointLight.h"
-#include "Graphics/OpenGL/Renderer/Renderer.h"
-#include "Graphics/OpenGL/Shaders/Shader.h"
+#include "Graphics/Primitives/Sphere.h"
+#include "Graphics/Primitives/Plane.h"
+#include "Graphics/Primitives/Cube.h"
+#include "Graphics/Primitives/Cylinder.h"
+#include "Graphics/Lighting/PointLight.h"
+#include "Graphics/Lighting/DirectionalLight.h"
+#include "Graphics/Renderer/Renderer.h"
+#include "Graphics/Shaders/Shader.h"
 #include "../UI/ImGuiLayer.h"
+#include "Utility/Timer.h"
 
 namespace isaacObjectViewer
 {
@@ -52,6 +54,8 @@ namespace isaacObjectViewer
 
         Camera *GetCamera() { return m_Camera; }
         
+        DirectionalLight& GetDirectionalLight() const { return *m_DirLight; }
+
         SDL_Window* GetSDLWindow() 
         { return m_Window->GetSDLWindow(); }
 
@@ -69,9 +73,29 @@ namespace isaacObjectViewer
         
         ImGuiLayer& GetImGuiLayer() { return m_ImGuiLayer; }
 
+        bool& IsVSyncEanbled() { return m_VSyncEnabled; }
+        bool& GetFrameCapEnabled() { return m_FrameCapEnabled; }
+        int& GetFrameCapFps() { return m_FrameCapFps; }
+        inline void ApplySwapInterval()
+        {
+            SDL_GL_SetSwapInterval(m_VSyncEnabled ? 1 : 0);
+        }
+
+
         // Scene Objects
         //-----------------------------------------------------------------------
-        
+        inline void AddSceneObject(ISceneObject* obj)
+        {
+            if (!obj) 
+            {
+                LOG_ERROR("Can't add object, obj is nullptr.");
+                return;
+            }
+            
+            m_SceneObjects.push_back(obj);
+            if (obj->GetType() == ObjectType::PointLight)
+                m_LightObjects.push_back(static_cast<PointLight*>(obj));
+        }
         inline void AddSceneObject(ObjectType type,const glm::vec3& position = {0.0f, 0.0f, 0.0f})
         {
             ISceneObject* obj = nullptr;
@@ -106,7 +130,11 @@ namespace isaacObjectViewer
         
         inline void RemoveSceneObject(ISceneObject* object)
         {
-            if (!object) return;                     // safety first
+            if (!object) 
+            {
+                LOG_ERROR("Can't Remove nullptr Object.");
+                return;                     
+            }
 
             if (m_SelectedObject == object)
                 m_SelectedObject = nullptr;
@@ -163,6 +191,7 @@ namespace isaacObjectViewer
         std::vector<ISceneObject*> m_SceneObjects;
         std::vector<PointLight*> m_LightObjects;
         const int MAX_LIGHTS = 8;
+        DirectionalLight* m_DirLight;
 
         Renderer m_Renderer;
 
@@ -178,6 +207,11 @@ namespace isaacObjectViewer
         float m_FPS = 0.0f; // Stores the calculated FPS
 
         glm::vec3 m_BackgroundColor;
+        
+        bool m_VSyncEnabled = true;
+        bool m_FrameCapEnabled = false; // only used when VSync is OFF
+        int  m_FrameCapFps = 60;
+        isaacObjectViewer::Timer m_FrameTimer;  
 
         Engine(const Engine &other) = delete;
         Engine &operator=(const Engine &other) = delete;

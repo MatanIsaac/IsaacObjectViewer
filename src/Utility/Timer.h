@@ -91,12 +91,12 @@ namespace isaacObjectViewer
          */
         void Pause()
         {
-            if (mStarted)
+            if (mStarted && !mPaused)
             {
-                mStarted = false;
                 mPaused = true;
-                mPauseTime = mStartTime;
-                Stop();
+                mStarted = false;
+                mPauseTime = std::chrono::steady_clock::now();
+                mDuration = mPauseTime - mStartTime; // OK: steady_clock::duration
             }
         }
 
@@ -108,9 +108,11 @@ namespace isaacObjectViewer
         {
             if (mPaused)
             {
-                mStarted = true;
                 mPaused = false;
-                StartAtTime(mPauseTime);
+                mStarted = true;
+                auto now = std::chrono::steady_clock::now();
+                auto dur = std::chrono::duration_cast<std::chrono::steady_clock::duration>(mDuration);
+                mStartTime = now - dur; 
             }
         }
 
@@ -124,14 +126,14 @@ namespace isaacObjectViewer
             {
                 if (mPaused)
                 {
-                    mDuration = mPauseTime - mStartTime;
-                    return mDuration.count();
+                    // already computed in Pause()
+                    return std::chrono::duration<float>(mDuration).count();
                 }
-                SteadyTimePoint now = std::chrono::steady_clock::now();
+                auto now = std::chrono::steady_clock::now();
                 mDuration = now - mStartTime;
-                return mDuration.count();
+                return std::chrono::duration<float>(mDuration).count();
             }
-            return 0.0f; // Timer is not started.
+            return 0.0f;
         }
 
         /**
@@ -143,11 +145,9 @@ namespace isaacObjectViewer
             if (mStarted)
             {
                 if (mPaused)
-                {
-                    mDuration = mPauseTime - mStartTime;
                     return std::chrono::duration_cast<std::chrono::milliseconds>(mDuration).count();
-                }
-                SteadyTimePoint now = std::chrono::steady_clock::now();
+
+                auto now = std::chrono::steady_clock::now();
                 mDuration = now - mStartTime;
                 return std::chrono::duration_cast<std::chrono::milliseconds>(mDuration).count();
             }

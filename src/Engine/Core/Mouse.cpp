@@ -46,11 +46,13 @@ namespace isaacObjectViewer
     {   
         auto* engine = Engine::GetInstance(); 
 
-        Ray pickingRay = Ray::ScreenPointToWorldRay(mouseX, mouseY, 
-                                                    SCREEN_WIDTH, SCREEN_HEIGHT, 
-                                                    camera->GetViewMatrix(), camera->GetProjectionMatrix());
+        int fbW, fbH;
+        SDL_GetWindowSizeInPixels(engine->GetSDLWindow(), &fbW, &fbH);
 
-       
+        Ray pickingRay = Ray::GetInstance()->ScreenPointToWorldRay(mouseX, mouseY,
+            static_cast<float>(fbW), static_cast<float>(fbH),
+            camera->GetViewMatrix(), camera->GetProjectionMatrix(), 10.f, 10.f, m_TraceMouseRay);
+
         ISceneObject* selected = nullptr;
         float minDist = std::numeric_limits<float>::max();
             

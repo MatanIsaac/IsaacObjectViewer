@@ -10,6 +10,7 @@
 #include <vector>
 #include <filesystem>
 #include <algorithm>
+#include <memory>
 
 // GLM library
 #define GLM_ENABLE_EXPERIMENTAL
@@ -33,6 +34,7 @@ constexpr int SCREEN_HEIGHT = 900;
 #include <imgui_internal.h>
 #include "backends/imgui_impl_sdl3.h"
 #include "backends/imgui_impl_opengl3.h"
+
 
 #ifdef _WIN32
     #define OS_SEPARATOR '\\'

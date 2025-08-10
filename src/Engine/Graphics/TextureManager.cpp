@@ -7,13 +7,13 @@ namespace isaacObjectViewer
 {
     std::unordered_map<std::string, std::shared_ptr<Texture>> TextureManager::m_Textures;
     
-    std::shared_ptr<Texture> TextureManager::LoadTexture(const std::string &path)
+    std::shared_ptr<Texture> TextureManager::LoadTexture(const std::string &path, TextureType type)
     {
-        m_Textures[path] = LoadTextureFromFile(path);
+        m_Textures[path] = LoadTextureFromFile(path,type);
         return m_Textures[path];
     }
 
-    std::shared_ptr<Texture> TextureManager::LoadTextureFromFile(const std::string &path)
+    std::shared_ptr<Texture> TextureManager::LoadTextureFromFile(const std::string &path, TextureType type)
     {
         // check if already exists exists
         auto it = m_Textures.find(path);
@@ -22,6 +22,7 @@ namespace isaacObjectViewer
 
         // create texture object
         auto texture = std::make_shared<Texture>();
+        texture->SetType(type);
         // load image
         int width, height, nrChannels;
         unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
@@ -46,7 +47,7 @@ namespace isaacObjectViewer
             }
 
             
-            texture->Generate(width, height, data, internalFormat,dataFormat);
+            texture->Generate(width, height, data, internalFormat,dataFormat,type);
         }
         else 
         {

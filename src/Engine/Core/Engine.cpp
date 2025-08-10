@@ -1,10 +1,10 @@
 #include "Engine.h"
 #include <algorithm>
-#include "Utility/ColorMacros.h"
 #include "Utility/Log.hpp"
 #include "Mouse.h"
 #include <utility>
 #include "Graphics/TextureManager.h"
+#include "Graphics/Primitives/Tracer.h"
 
 namespace isaacObjectViewer
 {
@@ -17,12 +17,13 @@ namespace isaacObjectViewer
           m_lightingShader(nullptr),
           m_Camera(nullptr),
           m_SelectedObject(nullptr),
+          m_DirLight(nullptr),
           m_MouseModeEnabled(true),
           m_FreeCameraModeEnabled(false),
           m_KeyPressed(false),
           m_IsRunning(false)
     {
-        
+        m_DirLight = new DirectionalLight();
     }
 
     void Engine::Run(bool fullscreen)
@@ -31,14 +32,21 @@ namespace isaacObjectViewer
         
         m_ImGuiLayer.Init(m_Window->GetSDLWindow(),m_Window->GetGLContext());
 
-        const float targetFrameTime = 1.0f / 60.0f; // Target frame time for 60 FPS
+        // Seed the frame timer and a sane first delta
+        m_FrameTimer.Start();
+        m_DeltaTime = 1.0f / 60.0f;
+        m_FPS = 60.0f;
+
         while (m_IsRunning)
         {
-            // per-frame time logic
-            // --------------------
-            float frameStartTime = static_cast<float>(SDL_GetTicks()) / 1000.0f;
-            
-            // Rendering Correctly
+            float deltaSeconds = m_FrameTimer.Stop();      
+            m_FrameTimer.Start();                          
+
+            if (deltaSeconds <= 0.0f) 
+                deltaSeconds = 1.0f / 60.0f;
+
+            m_DeltaTime = deltaSeconds;
+            m_FPS = 1.0f / deltaSeconds;
 
             m_ImGuiLayer.Begin();
             m_ImGuiLayer.DrawUI();
@@ -48,18 +56,18 @@ namespace isaacObjectViewer
             Update(m_DeltaTime);
             Render();
 
-            float frameEndTime  = static_cast<float>(SDL_GetTicks()) / 1000.0f;
-            float frameDuration = frameEndTime - frameStartTime;
-
-            if (frameDuration < targetFrameTime)
+            //  Manual FPS cap only when VSync is off
+            if (!m_VSyncEnabled && m_FrameCapEnabled && m_FrameCapFps > 0)
             {
-                SDL_Delay(static_cast<Uint32>((targetFrameTime - frameDuration) * 1000.0f));
+                const float target = 1.0f / float(m_FrameCapFps);
+                float soFar = m_FrameTimer.Peek();                 
+                if (soFar < target)
+                {
+                    const float ms = (target - soFar) * 1000.0f;
+                    if (ms > 0.0f) SDL_Delay((Uint32)ms);
+                }
             }
 
-            m_DeltaTime = static_cast<float>(SDL_GetTicks()) / 1000.0f - frameStartTime;
-            if (m_DeltaTime > 0.0f)
-                m_FPS = 1.0f / m_DeltaTime;
-            
             m_ImGuiLayer.End();
             SDL_GL_SwapWindow(m_Window->GetSDLWindow());
         }
@@ -92,13 +100,13 @@ namespace isaacObjectViewer
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         
-        std::string colors_vs = GetProjectRootPath("src/Resources/Shaders/colors.vs"); 
-        std::string colors_fs = GetProjectRootPath("src/Resources/Shaders/colors.fs"); 
+        std::string colors_vs = GetProjectRootPath("src/Resources/Shaders/main.vs"); 
+        std::string colors_fs = GetProjectRootPath("src/Resources/Shaders/main.fs"); 
         
         m_lightingShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
         m_lightingShader->Bind();
                                         
-        m_BackgroundColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        m_BackgroundColor = glm::vec3(0.35f, 0.35f, 0.35f);
 
         int display_w, display_h;
         SDL_GetWindowSizeInPixels(m_Window->GetSDLWindow(), &display_w, &display_h);
@@ -190,6 +198,9 @@ namespace isaacObjectViewer
                         case SDLK_S:
                             m_ImGuiLayer.SetGizmoOperation(GizmoMode::SCALE);
                             break;
+                        case SDLK_H:
+                            m_ImGuiLayer.SetGizmoOperation(GizmoMode::NONE);
+                            break;
                         case SDLK_DELETE:
                             if(m_SelectedObject)
                             {
@@ -210,12 +221,13 @@ namespace isaacObjectViewer
     {
         if(!m_MouseModeEnabled)
             m_Camera->Update(dt);
+
+        Tracer::GetInstance()->Update(dt);
     }
 
     // @brief renders all of the engine textures, sounds and objects.
     void Engine::Render()
     {
-        
         int display_w, display_h;
         SDL_GetWindowSizeInPixels(m_Window->GetSDLWindow(), &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
@@ -227,6 +239,7 @@ namespace isaacObjectViewer
         m_lightingShader->setVec3("viewPos", m_Camera->GetPosition());
         
         SendAllLightsToShader();
+        m_DirLight->SetUniforms(m_lightingShader);
 
         glm::mat4 view = m_Camera->GetViewMatrix(); // VIEW
         glm::mat4 projection = m_Camera->GetProjectionMatrix(); 
@@ -236,6 +249,8 @@ namespace isaacObjectViewer
         {
             obj->Render(m_Renderer, view, projection, m_lightingShader); 
         }
+
+        Tracer::GetInstance()->Render(view, projection, display_w, display_h);
     }
 
     // @brief cleans all of the engine resources.
@@ -273,14 +288,6 @@ namespace isaacObjectViewer
         
     void Engine::SendAllLightsToShader()
     {
-        m_lightingShader->setFloat("material.shininess", 32.0f);
-        // ---- MULTIPLE LIGHTS: Gather and Send Uniforms ----
-        // directional light
-        m_lightingShader->setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-        m_lightingShader->setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-        m_lightingShader->setVec3("dirLight.diffuse", 0.2f, 0.2f, 0.2f);
-        m_lightingShader->setVec3("dirLight.specular", 0.7f, 0.7f, 0.7f);
-
         int numLights = std::min(int(m_LightObjects.size()),MAX_LIGHTS);
 
         for (int i = 0; i < numLights; ++i) 

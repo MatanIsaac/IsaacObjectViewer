@@ -117,12 +117,11 @@ The 3D Viewer runs in two distinct modes
     │   ├── Engine/             # Engine components
     │   │   ├── Core/           # Core engine systems
     │   │   ├── Graphics/       # Graphics-related components
-    │   │   │   ├── OpenGL/
-    │   │   │   │   ├── Buffers/
-    │   │   │   │   ├── Lighting/
-    │   │   │   │   ├── Primitives/
-    │   │   │   │   ├── Renderer/
-    │   │   │   │   ├── Shaders/
+    │   │   │   ├── Buffers/
+    │   │   │   ├── Lighting/
+    │   │   │   ├── Primitives/
+    │   │   │   ├── Renderer/
+    │   │   │   ├── Shaders/
     │   │   └── Scene/          # Scene management
     │   │   │   ├── Camera/
     │   │       └── Models/

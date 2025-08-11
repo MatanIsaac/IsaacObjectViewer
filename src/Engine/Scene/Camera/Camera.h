@@ -66,6 +66,8 @@ namespace isaacObjectViewer
         void SetPitch(float newPitch) { m_Pitch = newPitch; }
         void SetYaw(float newYaw) { m_Yaw = newYaw; }
         void SetZoom(float newZoom) { m_Zoom = newZoom; }
+        float GetNear() const { return m_Near; }
+        float GetFar() const { return m_Far; }
 
         void AddPitch(float amount) { m_Pitch += amount; }
         void AddYaw(float amount) { m_Yaw += amount; }
@@ -93,6 +95,8 @@ namespace isaacObjectViewer
         // camera options
         float m_MovementSpeed;
         float m_Zoom;
+        float m_Near;
+        float m_Far;
     };
 
 }

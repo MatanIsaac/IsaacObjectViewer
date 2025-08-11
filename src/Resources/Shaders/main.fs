@@ -29,6 +29,7 @@ struct PointLight
 
 #define MAX_LIGHTS 8
 
+
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
@@ -37,9 +38,12 @@ out vec4 FragColor;
 
 uniform vec3 viewPos;
 uniform vec3 objectColor;
+
 uniform DirLight dirLight;
 uniform PointLight point_lights[MAX_LIGHTS];
+
 uniform int numPointLights;
+
 uniform Material material;
 
 uniform bool useMaterial;          
@@ -48,6 +52,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 sampleDiffuse();
 vec3 sampleSpecular();
+
 
 void main() 
 {

@@ -15,6 +15,8 @@ namespace isaacObjectViewer
         m_Yaw               = yaw;
         m_Pitch             = pitch;
         UpdateVectors();
+        m_Near              = 0.1f; // Default near plane
+        m_Far               = 100.0f; // Default far plane
     }
 
     Camera::Camera(float posX, float posY, float posZ,float upX, 

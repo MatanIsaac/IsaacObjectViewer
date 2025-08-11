@@ -28,11 +28,16 @@ namespace isaacObjectViewer
         TextureType GetType() const { return m_Type; }
 
         void SetType(TextureType type) { m_Type = type; }
-        
+
+        const std::string& GetPath() const { return m_Path; }
+        void SetPath(const std::string& newPath) { m_Path = newPath; }
+
     private:
         // holds the ID of the texture object, used for all texture operations to reference to this particular texture
         unsigned int m_ID;
+        std::string m_Path; // path to the texture file
         TextureType m_Type;
+        
         // texture image dimensions
         unsigned int m_Width, m_Height; // width and height of loaded image in pixels
         // texture configuration

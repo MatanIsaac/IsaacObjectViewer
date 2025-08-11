@@ -14,7 +14,7 @@ namespace isaacObjectViewer
     Engine::Engine()
         : m_Window(nullptr),
           m_Shader(nullptr),
-          m_lightingShader(nullptr),
+          m_MainShader(nullptr),
           m_Camera(nullptr),
           m_SelectedObject(nullptr),
           m_DirLight(nullptr),
@@ -103,8 +103,8 @@ namespace isaacObjectViewer
         std::string colors_vs = GetProjectRootPath("src/Resources/Shaders/main.vs"); 
         std::string colors_fs = GetProjectRootPath("src/Resources/Shaders/main.fs"); 
         
-        m_lightingShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
-        m_lightingShader->Bind();
+        m_MainShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
+        m_MainShader->Bind();
                                         
         m_BackgroundColor = glm::vec3(0.35f, 0.35f, 0.35f);
 
@@ -235,11 +235,11 @@ namespace isaacObjectViewer
         glClearColor(m_BackgroundColor.x, m_BackgroundColor.y, m_BackgroundColor.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        m_lightingShader->Bind();
-        m_lightingShader->setVec3("viewPos", m_Camera->GetPosition());
+        m_MainShader->Bind();
+        m_MainShader->setVec3("viewPos", m_Camera->GetPosition());
         
         SendAllLightsToShader();
-        m_DirLight->SetUniforms(m_lightingShader);
+        m_DirLight->SetUniforms(m_MainShader);
 
         glm::mat4 view = m_Camera->GetViewMatrix(); // VIEW
         glm::mat4 projection = m_Camera->GetProjectionMatrix(); 
@@ -247,7 +247,7 @@ namespace isaacObjectViewer
 
         for (auto& obj : m_SceneObjects)
         {
-            obj->Render(m_Renderer, view, projection, m_lightingShader); 
+            obj->Render(m_Renderer, view, projection, m_MainShader); 
         }
 
         Tracer::GetInstance()->Render(view, projection, display_w, display_h);
@@ -262,7 +262,7 @@ namespace isaacObjectViewer
             delete m_SelectedObject;
         delete m_Camera;
         delete m_Shader;
-        delete m_lightingShader;
+        delete m_MainShader;
         delete m_Window;
         SDL_Quit();
     }
@@ -292,15 +292,15 @@ namespace isaacObjectViewer
 
         for (int i = 0; i < numLights; ++i) 
         {
-            m_lightingShader->setVec3("point_lights[" + std::to_string(i) + "].position", m_LightObjects[i]->GetPosition());
-            m_lightingShader->setVec3("point_lights[" + std::to_string(i) + "].ambient", m_LightObjects[i]->GetAmbientIntensity());
-            m_lightingShader->setVec3("point_lights[" + std::to_string(i) + "].diffuse", m_LightObjects[i]->GetDiffuseIntensity());
-            m_lightingShader->setVec3("point_lights[" + std::to_string(i) + "].specular", m_LightObjects[i]->GetSpecularIntensity());
-            m_lightingShader->setFloat("point_lights["+ std::to_string(i) + "].constant", 1.0f);
-            m_lightingShader->setFloat("point_lights["+ std::to_string(i) + "].linear", 0.09f);
-            m_lightingShader->setFloat("point_lights["+ std::to_string(i) + "].quadratic", 0.032f);
+            m_MainShader->setVec3("point_lights[" + std::to_string(i) + "].position", m_LightObjects[i]->GetPosition());
+            m_MainShader->setVec3("point_lights[" + std::to_string(i) + "].ambient", m_LightObjects[i]->GetAmbientIntensity());
+            m_MainShader->setVec3("point_lights[" + std::to_string(i) + "].diffuse", m_LightObjects[i]->GetDiffuseIntensity());
+            m_MainShader->setVec3("point_lights[" + std::to_string(i) + "].specular", m_LightObjects[i]->GetSpecularIntensity());
+            m_MainShader->setFloat("point_lights["+ std::to_string(i) + "].constant", 1.0f);
+            m_MainShader->setFloat("point_lights["+ std::to_string(i) + "].linear", 0.09f);
+            m_MainShader->setFloat("point_lights["+ std::to_string(i) + "].quadratic", 0.032f);
         }
-        m_lightingShader->setInt("numPointLights", numLights);
+        m_MainShader->setInt("numPointLights", numLights);
         // ----------------------------------------------------
     }
 

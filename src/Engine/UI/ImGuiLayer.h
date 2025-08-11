@@ -50,7 +50,6 @@ namespace isaacObjectViewer
         void DrawSettings(ISceneObject* selected);
         void LoadFont();
         void DrawGizmos(Engine* engine,int gizmoOperation);
-        void DrawFileDialog();
 
     private:
         SDL_Window* m_Window = nullptr;
@@ -59,7 +58,7 @@ namespace isaacObjectViewer
         
         int m_GizmoOperation;
         
-        ImGuiFileDialog m_ImportObjDlg;
+        ImGuiFileDialog m_ImportObjectDialog;
         ImGuiFileDialog m_DiffuseFileDialog;
         ImGuiFileDialog m_SpecularFileDialog;
         std::string m_CurrentPath  = std::filesystem::current_path().string();

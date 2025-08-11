@@ -23,6 +23,7 @@ namespace isaacObjectViewer
         // create texture object
         auto texture = std::make_shared<Texture>();
         texture->SetType(type);
+        texture->SetPath(path);
         // load image
         int width, height, nrChannels;
         unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);

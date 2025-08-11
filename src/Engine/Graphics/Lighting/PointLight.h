@@ -71,6 +71,7 @@ namespace isaacObjectViewer
         virtual inline const VertexBuffer   &GetVertexBuffer()  const override { return m_Sphere.GetVertexBuffer(); }
         virtual inline const IndexBuffer    &GetIndexBuffer()   const override { return m_Sphere.GetIndexBuffer(); }
         virtual unsigned inline int         GetIndexCount()     const override { return m_Sphere.GetIndexCount(); } 
+        virtual unsigned inline int         GetVertexCount()    const override { return m_Sphere.GetVertexCount(); }
     private:
         std::size_t m_ID;
         std::string m_Name; 

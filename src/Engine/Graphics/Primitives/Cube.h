@@ -53,6 +53,7 @@ namespace isaacObjectViewer
         inline const VertexBuffer   &GetVertexBuffer()  const override { return *m_VertexBuffer; }
         inline const IndexBuffer    &GetIndexBuffer()   const override { return *m_IndexBuffer; }
         inline unsigned int         GetIndexCount()     const override { return m_IndicesCount; }
+        inline unsigned int         GetVertexCount() const override { return m_VertexCount; }
 
         bool IntersectRay(const Ray& ray, float* outDist) override
         {
@@ -87,6 +88,7 @@ namespace isaacObjectViewer
         int m_IndicesCount; // will be set to 36 (6 faces * 6 indices)
 
         static constexpr int m_FloatsPerVertex = 8;
+        unsigned int m_VertexCount = 24; 
 
     public:
         // 24 vertices (4 per face) × 6 floats each = 144 floats.

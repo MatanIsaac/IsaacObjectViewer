@@ -165,13 +165,13 @@ namespace isaacObjectViewer
         {
             if (ImGui::BeginMenu("File"))
             {
-                if (ImGui::MenuItem("Import Obj")) 
+                if (ImGui::MenuItem("Import 3D Object")) 
                 { 
                     ImGuiFileDialog loadObjFileDialog;
                     IGFD::FileDialogConfig cfg;
                     cfg.flags = ImGuiFileDialogFlags_Modal;
                     cfg.path  = ".";
-                    m_ImportObjDlg.OpenDialog("ImportObj", "Select Obj", ".obj", cfg);
+                    m_ImportObjectDialog.OpenDialog("Import 3D Object", "Select 3D Object", "All Objects{.obj,.fbx,},.obj,.fbx", cfg);
                 }
                 ImGui::Separator();
                 if (ImGui::MenuItem("Exit")) 
@@ -219,14 +219,24 @@ namespace isaacObjectViewer
 
             ImGui::EndMainMenuBar();
         }
-        if (m_ImportObjDlg.Display("ImportObj",32,{100.f,100.f}))
+        if (m_ImportObjectDialog.Display("Import 3D Object",32,{500.f,500.f}))
         {
-            if (m_ImportObjDlg.IsOk())
+            LOG_ERROR("Loading Model...");
+            if (m_ImportObjectDialog.IsOk()) 
             {
-                std::string path = m_ImportObjDlg.GetFilePathName();        
-                ModelManager::LoadObjModel(path);
+                std::string path = m_ImportObjectDialog.GetFilePathName();
+                auto* model = ModelManager::GetInstance().LoadModel(path);
+                if (model) 
+                {
+                    Engine::GetInstance()->GetSceneObjects().push_back(model);
+                    Engine::GetInstance()->SetSelectedObject(model);
+                }
+            } 
+            else
+            {
+                LOG_ERROR("Model import cancelled or failed.");
             }
-            m_ImportObjDlg.Close();
+            m_ImportObjectDialog.Close();
         }
 
         ImGuiWindowClass window_class;

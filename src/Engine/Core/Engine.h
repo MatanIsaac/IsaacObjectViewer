@@ -183,7 +183,7 @@ namespace isaacObjectViewer
         static Engine* s_Instance;
         Window* m_Window;
         Shader* m_Shader;
-        Shader* m_lightingShader;
+        Shader* m_MainShader;
         
         Camera* m_Camera;
         

@@ -9,10 +9,18 @@
 
 namespace isaacObjectViewer
 {
+
+    enum class ModelFileType
+    {
+        Unknown,
+        OBJ,
+        FBX,
+    };
+
     class Model : public ISceneObject
     {
     public:
-        explicit Model(const std::string& name = "Model");
+        explicit Model(const std::vector<Mesh>& meshes, const std::string& name);
 
         /* ---------- SceneObject interface ---------- */
         std::size_t          GetID()   const override { return m_ID; }
@@ -20,6 +28,7 @@ namespace isaacObjectViewer
         void                 SetName(const std::string& n) override { m_Name = n; }
 
         ObjectType           GetType() const override { return ObjectType::Imported; } // Imported asset
+        ModelFileType        GetFileType() const { return m_FileType; }
 
         glm::vec3&           GetPosition()    override { return m_Position;    }
         glm::vec3&           GetRotation()    override { return m_Rotation;    }
@@ -47,7 +56,8 @@ namespace isaacObjectViewer
         const VertexBuffer& GetVertexBuffer() const override { return *m_Meshes.front().GetVertexBuffer(); }
         const IndexBuffer&  GetIndexBuffer () const override { return *m_Meshes.front().GetIndexBuffer(); }
         unsigned int        GetIndexCount  () const override { return  m_Meshes.front().GetIndexCount(); }
-
+        unsigned int        GetVertexCount() const override { return  m_Meshes.front().GetVertexCount(); }
+        
         bool IntersectRay(const Ray& ray, float* outDist) override;
 
         /* ---------- Loading ---------- */
@@ -58,15 +68,17 @@ namespace isaacObjectViewer
     private:
         std::size_t         m_ID;
         std::string         m_Name;
+        ModelFileType       m_FileType;
 
-        glm::vec3           m_Position  { DEFAULT_POSITION };
-        glm::vec3           m_Rotation  { DEFAULT_ROTATION };
-        glm::quat           m_Orientation{ glm::quat(glm::vec3(0)) };
-        glm::vec3           m_Scale     { DEFAULT_SCALE   };
-        float               m_Shininess { 32.f };               // fallback if mesh has none
+        glm::vec3           m_Position;
+        glm::vec3           m_Rotation;
+        glm::quat           m_Orientation;
+        glm::vec3           m_Scale;
+        float               m_Shininess;
 
-        std::vector<Mesh>   m_Meshes;                            // <-- one asset == many sub-meshess
-        
+        // <-- one asset == many sub-meshes
+        std::vector<Mesh>   m_Meshes;
+
         /* Cached AABB for fast pick-testing */
         glm::vec3           m_BBoxMin {  std::numeric_limits<float>::max() };
         glm::vec3           m_BBoxMax { -std::numeric_limits<float>::max() };

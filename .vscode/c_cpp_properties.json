@@ -11,6 +11,7 @@
                 "${workspaceFolder}/src/Engine/Scene",
                 "${workspaceFolder}/src/Engine/UI",
                 "${workspaceFolder}/dependencies/**",
+                "${workspaceFolder}/dependencies/assimp/**",
                 "${workspaceFolder}/dependencies/imgui",
                 "${workspaceFolder}/dependencies/imGuizmo",
                 "${workspaceFolder}/dependencies/imGuiFileDialog",

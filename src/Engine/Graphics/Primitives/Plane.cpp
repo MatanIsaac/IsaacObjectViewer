@@ -10,7 +10,7 @@ namespace isaacObjectViewer
         , m_Position(position)
     {
         // Initialize vertex count for indexed drawing
-        m_VertexCount = m_IndicesCount;
+        m_VertexCount = 4;
 
         // Create the VertexArray
         m_VertexArray = std::make_unique<VertexArray>();

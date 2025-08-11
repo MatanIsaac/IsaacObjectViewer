@@ -56,6 +56,7 @@ namespace isaacObjectViewer
         inline const VertexBuffer   &GetVertexBuffer()  const override { return *m_VertexBuffer; }
         inline const IndexBuffer    &GetIndexBuffer()   const override { return *m_IndexBuffer; }
         unsigned inline int         GetIndexCount()     const override { return m_IndexCount; }
+        unsigned inline int         GetVertexCount()    const override { return m_VertexCount; }
 
         bool IntersectRay(const Ray& ray, float* outDistance) override
         {

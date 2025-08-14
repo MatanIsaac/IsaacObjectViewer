@@ -1,4 +1,4 @@
-# <div align="center"> Isaac's Graphics Engine </div>
+# <div align="center"> Isaac's Object Viewer </div>
 <!-- License -->
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-green)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

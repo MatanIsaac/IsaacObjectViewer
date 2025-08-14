@@ -109,12 +109,16 @@ namespace isaacObjectViewer
 
         ProcessNode(scene->mRootNode, scene);
 
-        // name fallback: file stem if mesh name is empty
         std::string modelName = p.stem().string();
-        if (!m_Meshes.empty() && !m_Meshes.back().GetName().empty())
-            modelName = m_Meshes.back().GetName();
+        auto model = new Model(m_Meshes, modelName);
+        
+        if (path.ends_with(".fbx") || path.ends_with(".dae"))
+        {
+            // FBX/DAE models are Z-up, convert to Y-up
+            model->SetOrientation(glm::quat(glm::vec3(glm::radians(-90.0f), 0.0f, 0.0f)));
+        }
 
-        return new Model(m_Meshes, modelName);
+        return model;
     }
 
     void ModelManager::ProcessNode(aiNode *node, const aiScene *scene)
@@ -133,7 +137,6 @@ namespace isaacObjectViewer
     Mesh ModelManager::ProcessMesh(aiMesh *mesh, const aiScene *scene)
     {
         std::string meshName = mesh->mName.C_Str();
-
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
 
@@ -228,8 +231,8 @@ namespace isaacObjectViewer
         // engine Material (includes solid-color fallbacks)
         Material engineMaterial = toEngineMaterial(material, m_BaseDir);
 
-        LOG_INFO("ModelManager::ProcessMesh - Mesh: {}, V:{} I:{} Tex:{}",
-                 meshName, vertices.size(), indices.size(), textures.size());
+        //LOG_INFO("ModelManager::ProcessMesh - Mesh: {}, V:{} I:{} Tex:{}",
+        //         meshName, vertices.size(), indices.size(), textures.size());
 
         return Mesh(vertices, indices, textures, engineMaterial, meshName);
     }

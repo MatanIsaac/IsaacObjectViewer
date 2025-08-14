@@ -18,6 +18,13 @@
 
 namespace isaacObjectViewer
 {
+    enum class ShadingType
+    {
+        NONE,
+        PHONG,
+        BLINNPHONG
+    };
+
     class Engine
     {
     public:
@@ -173,8 +180,30 @@ namespace isaacObjectViewer
 
         ISceneObject* GetSelectedObject() { return m_SelectedObject; }
         void SetSelectedObject(ISceneObject* obj) { m_SelectedObject = obj; }
-        
+
+        // Light
         void SendAllLightsToShader();
+        bool& GetBlinnPhongShading() { return m_BlinnPhongShading; }
+        void SetBlinnPhongShading(bool value) { m_BlinnPhongShading = value; }
+        void SetShading(ShadingType type) 
+        { 
+            switch(type)
+            {
+                case ShadingType::NONE:
+                    m_BlinnPhongShading = false;
+                    break;
+                case ShadingType::PHONG:
+                    m_BlinnPhongShading = false;
+                    break;
+                case ShadingType::BLINNPHONG:
+                    m_BlinnPhongShading = true;
+                    break;
+            }
+            m_MainShader->Bind(); 
+            m_MainShader->setBool("useBlinnPhong", m_BlinnPhongShading); 
+        }
+
+
         //-----------------------------------------------------------------------
     private:
         Engine();
@@ -192,6 +221,8 @@ namespace isaacObjectViewer
         std::vector<PointLight*> m_LightObjects;
         const int MAX_LIGHTS = 8;
         DirectionalLight* m_DirLight;
+        bool m_BlinnPhongShading;
+        bool m_UseMaterial = true;
 
         Renderer m_Renderer;
 

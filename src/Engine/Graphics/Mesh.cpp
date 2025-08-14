@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "Utility/Log.hpp"
+#include "Core/Engine.h"
 
 namespace isaacObjectViewer
 {
@@ -10,12 +11,14 @@ namespace isaacObjectViewer
             : m_Vertices(vertices)
             , m_Indices(indices)
             , m_Textures(textures)
-            , m_Material(material)
             , m_Name(name)
             , m_Position(DEFAULT_POSITION)
             , m_Rotation(DEFAULT_ROTATION)
             , m_Orientation(glm::quat(glm::radians(m_Rotation)))
             , m_Scale(DEFAULT_SCALE)
+            , m_Color(DEFAULT_COLOR)
+            , m_UseMaterial(true)
+            , m_Material(material)
             , m_BBoxMin(std::numeric_limits<float>::max())      
             , m_BBoxMax(std::numeric_limits<float>::lowest()) 
     {
@@ -27,12 +30,14 @@ namespace isaacObjectViewer
         : m_Vertices(other.m_Vertices)
         , m_Indices(other.m_Indices)
         , m_Textures(other.m_Textures)
+        , m_Name(other.m_Name)
+        , m_Position(other.m_Position)
+        , m_Rotation(other.m_Rotation)
+        , m_Orientation(other.m_Orientation)
+        , m_Scale(other.m_Scale)
+        , m_Color(other.m_Color)
+        , m_UseMaterial(other.m_UseMaterial)
         , m_Material(other.m_Material)
-        , m_Name(other.m_Name)                 // NEW
-        , m_Position(other.m_Position)         // NEW
-        , m_Rotation(other.m_Rotation)         // NEW
-        , m_Orientation(other.m_Orientation)   // NEW
-        , m_Scale(other.m_Scale)               // NEW
         , m_BBoxMin(other.m_BBoxMin)
         , m_BBoxMax(other.m_BBoxMax)
     {
@@ -45,21 +50,23 @@ namespace isaacObjectViewer
     {
         if (this != &other)
         {
-            m_Vertices   = other.m_Vertices;
-            m_Indices    = other.m_Indices;
-            m_Textures   = other.m_Textures;
-            m_Material   = other.m_Material;
-            m_Name       = other.m_Name;               
-            m_Position   = other.m_Position;           
-            m_Rotation   = other.m_Rotation;           
-            m_Orientation= other.m_Orientation;        
-            m_Scale      = other.m_Scale;                  
+            m_Vertices      = other.m_Vertices;
+            m_Indices       = other.m_Indices;
+            m_Textures      = other.m_Textures;
+            m_Name          = other.m_Name;               
+            m_Position      = other.m_Position;           
+            m_Rotation      = other.m_Rotation;           
+            m_Orientation   = other.m_Orientation;        
+            m_Scale         = other.m_Scale;                  
+            m_Color         = other.m_Color;                  
+            m_UseMaterial   = other.m_UseMaterial;
+            m_Material      = other.m_Material;
             // Rebuild GL objects
             m_IndexBuffer.reset();
             m_VertexBuffer.reset();
             m_VertexArray.reset();
-            m_BBoxMin    = other.m_BBoxMin;
-            m_BBoxMax    = other.m_BBoxMax;
+            m_BBoxMin       = other.m_BBoxMin;
+            m_BBoxMax       = other.m_BBoxMax;
         
             SetupMesh();
         }
@@ -70,12 +77,14 @@ namespace isaacObjectViewer
         : m_Vertices(std::move(other.m_Vertices))
         , m_Indices(std::move(other.m_Indices))
         , m_Textures(std::move(other.m_Textures))
-        , m_Material(std::move(other.m_Material))
         , m_Name(std::move(other.m_Name))               
         , m_Position(other.m_Position)                  
         , m_Rotation(other.m_Rotation)                  
         , m_Orientation(other.m_Orientation)            
-        , m_Scale(other.m_Scale)                        
+        , m_Scale(other.m_Scale)  
+        , m_Color(other.m_Color)  
+        , m_UseMaterial(other.m_UseMaterial)
+        , m_Material(std::move(other.m_Material))
         , m_IndexBuffer(std::move(other.m_IndexBuffer))
         , m_VertexBuffer(std::move(other.m_VertexBuffer))
         , m_VertexArray(std::move(other.m_VertexArray))
@@ -89,12 +98,12 @@ namespace isaacObjectViewer
             m_Vertices      = std::move(other.m_Vertices);
             m_Indices       = std::move(other.m_Indices);
             m_Textures      = std::move(other.m_Textures);
-            m_Material    = std::move(other.m_Material);
-            m_IndexBuffer = std::move(other.m_IndexBuffer);
-            m_VertexBuffer= std::move(other.m_VertexBuffer);
-            m_VertexArray = std::move(other.m_VertexArray);
-            m_BBoxMin     = other.m_BBoxMin;
-            m_BBoxMax     = other.m_BBoxMax;
+            m_Material      = std::move(other.m_Material);
+            m_IndexBuffer   = std::move(other.m_IndexBuffer);
+            m_VertexBuffer  = std::move(other.m_VertexBuffer);
+            m_VertexArray   = std::move(other.m_VertexArray);
+            m_BBoxMin       = other.m_BBoxMin;
+            m_BBoxMax       = other.m_BBoxMax;
         }
         return *this;
     }
@@ -135,36 +144,55 @@ namespace isaacObjectViewer
                 }
         }
 
-        const bool useMaterial = (bool)diffuse;
-        shader->setBool("useMaterial", useMaterial);
+        const bool hasDiffuse  = (diffuse  != nullptr);
+        const bool hasSpecular = (specular != nullptr);
+        
+        const bool useMaterial = m_UseMaterial && (hasDiffuse || hasSpecular);
+
+        shader->setBool("useMaterial",   useMaterial);
+        shader->setBool("hasDiffuseMap",  hasDiffuse);
+        shader->setBool("hasSpecularMap", hasSpecular);
         shader->setFloat("material.shininess", m_Material.Shininess);
 
         if (useMaterial) 
         {
-            // Bind diffuse texture to unit 0
             glActiveTexture(GL_TEXTURE0);
-            diffuse->Bind();
+            if (hasDiffuse) 
+            {
+                diffuse->Bind(); 
+            } 
+            else 
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
             shader->setInt("material.diffuse", 0);
 
-            // Bind specular texture to unit 1 (or unbind if missing)
             glActiveTexture(GL_TEXTURE1);
-            if (specular) specular->Bind(); else glBindTexture(GL_TEXTURE_2D, 0);
+            if (hasSpecular) 
+            {
+                specular->Bind();
+            } 
+            else 
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
             shader->setInt("material.specular", 1);
-        } else {
-            shader->setVec3("objectColor", glm::vec3(1.0f));
+        } 
+        else 
+        {
+            shader->setVec3("objectColor", m_Color);
         }
 
-        // Use renderer to draw
         renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);
-
-        // Reset texture unit
         glActiveTexture(GL_TEXTURE0);
     }
     void Mesh::RenderWithParent(const Renderer& renderer,
                             const glm::mat4& parentModel,
                             const glm::mat4& view,
                             const glm::mat4& projection,
-                            Shader* shader)
+                            Shader* shader,
+                            bool useMaterial,
+                            const glm::vec3& objectColor)
     {
         if (!shader || !m_VertexArray || !m_IndexBuffer)
         {
@@ -173,38 +201,72 @@ namespace isaacObjectViewer
         }
 
         shader->Bind();
+        // parent * local
+        const glm::mat4 model = parentModel * GetModelMatrix();
+        shader->setMat4("model", model);
         shader->setMat4("view",       view);
         shader->setMat4("projection", projection);
 
-        // key line: parent * local
-        const glm::mat4 model = parentModel * GetModelMatrix();
-        shader->setMat4("model", model);
 
-        // --- same material binding logic as in Mesh::Render() ---
         std::shared_ptr<Texture> diffuse  = m_Material.Diffuse;
         std::shared_ptr<Texture> specular = m_Material.Specular;
-
+        
         if (!diffuse)
-            for (const auto& t : m_Textures) if (t && t->GetType()==TextureType::DIFFUSE)  { diffuse=t;  break; }
+        {
+            for (const auto& t : m_Textures)
+            if (t && t->GetType()==TextureType::DIFFUSE)
+            {
+                diffuse=t;  
+                break;
+            }
+        }
         if (!specular)
-            for (const auto& t : m_Textures) if (t && t->GetType()==TextureType::SPECULAR) { specular=t; break; }
+        {
+            for (const auto& t : m_Textures)
+            if (t && t->GetType()==TextureType::SPECULAR)
+            {
+                specular=t; 
+                break;
+            }
+        }
+        
+        const bool hasDiffuse  = (diffuse  != nullptr);
+        const bool hasSpecular = (specular != nullptr);
+        
+        const bool useMat = useMaterial && (hasDiffuse || hasSpecular);
 
-        const bool useMaterial = (bool)diffuse;
-        shader->setBool ("useMaterial", useMaterial);
+        shader->setBool("useMaterial",   useMat);
+        shader->setBool("hasDiffuseMap",  hasDiffuse);
+        shader->setBool("hasSpecularMap", hasSpecular);
         shader->setFloat("material.shininess", m_Material.Shininess);
 
-        if (useMaterial)
+        if (useMat) 
         {
-            glActiveTexture(GL_TEXTURE0); diffuse->Bind();
+            glActiveTexture(GL_TEXTURE0);
+            if (hasDiffuse) 
+            {
+                diffuse->Bind(); 
+            } 
+            else 
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
             shader->setInt("material.diffuse", 0);
 
             glActiveTexture(GL_TEXTURE1);
-            if (specular) specular->Bind(); else glBindTexture(GL_TEXTURE_2D, 0);
+            if (hasSpecular) 
+            {
+                specular->Bind();
+            } 
+            else 
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
             shader->setInt("material.specular", 1);
-        }
-        else
+        } 
+        else 
         {
-            shader->setVec3("objectColor", glm::vec3(1.0f));
+            shader->setVec3("objectColor", objectColor);
         }
 
         renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);

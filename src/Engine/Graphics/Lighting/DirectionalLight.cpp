@@ -7,10 +7,10 @@
 namespace isaacObjectViewer
 {
     DirectionalLight::DirectionalLight()
-        : m_Direction({-0.2f, -0.3f, -0.3f})
-        , m_Ambient({0.8f, 0.8f, 0.8f})
-        , m_Diffuse({0.7f, 0.7f, 0.7f})
-        , m_Specular({0.6f, 0.6f, 0.6f})
+        : m_Direction({ -0.2f, -1.0f, -0.3f})
+        , m_Ambient({0.2f, 0.2f, 0.2f})
+        , m_Diffuse({0.5f, 0.5f, 0.5f})
+        , m_Specular({1.0f, 1.0f, 1.0f})
         , m_Changed(true)
     {}
 

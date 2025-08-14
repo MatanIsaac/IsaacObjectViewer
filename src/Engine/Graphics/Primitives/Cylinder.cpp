@@ -11,8 +11,10 @@ namespace isaacObjectViewer
         , m_Name("Cylinder_" + std::to_string(m_ID))
         , m_Position(position)
         , m_Rotation(DEFAULT_ROTATION)
+        , m_Orientation(glm::quat(glm::radians(DEFAULT_ROTATION)))
         , m_Scale(glm::vec3(1.0f))
-        , m_Color(DEFAULT_COLOR) 
+        , m_Color(DEFAULT_COLOR)
+        , m_UseMaterial(false)
     {
         // Generate cylinder data
         std::vector<float> vertices;
@@ -36,9 +38,6 @@ namespace isaacObjectViewer
 
         m_VertexArray->AddBuffer(*m_VertexBuffer, layout);
         m_VertexArray->Unbind();
-
-        m_Color = DEFAULT_COLOR;
-        m_Orientation = glm::quat(glm::radians(m_Rotation));
     }
 
     Cylinder::~Cylinder()

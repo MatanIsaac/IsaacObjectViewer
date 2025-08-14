@@ -9,7 +9,7 @@ struct Material
 
 struct DirLight 
 {
-    vec3 direction;	
+    vec3 direction;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
@@ -21,14 +21,13 @@ struct PointLight
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-	
+
     float constant;
     float linear;
     float quadratic;
 };
 
 #define MAX_LIGHTS 8
-
 
 in vec3 FragPos;
 in vec3 Normal;
@@ -39,80 +38,87 @@ out vec4 FragColor;
 uniform vec3 viewPos;
 uniform vec3 objectColor;
 
-uniform DirLight dirLight;
-uniform PointLight point_lights[MAX_LIGHTS];
-
-uniform int numPointLights;
+uniform DirLight    dirLight;
+uniform PointLight  point_lights[MAX_LIGHTS];
+uniform int         numPointLights;
 
 uniform Material material;
 
-uniform bool useMaterial;          
+// Controls whether we use material samplers at all, and if those samplers are bound
+uniform bool useMaterial;
+uniform bool hasDiffuseMap;
+uniform bool hasSpecularMap;
+uniform bool useBlinnPhong;
 
-vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
-vec3 sampleDiffuse();
-vec3 sampleSpecular();
+// ---- Helpers
+vec3 CalcDirLight(DirLight light, vec3 N, vec3 V, vec3 albedo, vec3 specTint);
+vec3 CalcPointLight(PointLight light, vec3 N, vec3 P, vec3 V, vec3 albedo, vec3 specTint);
 
-
-void main() 
+void main()
 {
     vec3 normal = normalize(Normal);
-    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 V = normalize(viewPos - FragPos);
 
-    // directional lighting
-    vec3 result = CalcDirLight(dirLight, normal, viewDir);
-    // point lights
-    for(int i = 0; i < numPointLights; i++)
-        result += CalcPointLight(point_lights[i], normal, FragPos, viewDir);  
-    
-    FragColor = vec4(result, 1.0);
+    // Sample once (with graceful fallbacks)
+    vec3 albedo   = (useMaterial && hasDiffuseMap)  ? texture(material.diffuse,  TexCoords).rgb : objectColor;
+    vec3 specTint = (useMaterial && hasSpecularMap) ? texture(material.specular, TexCoords).rgb : vec3(1.0);
+
+    vec3 color = CalcDirLight(dirLight, normal, V, albedo, specTint);
+    for (int i = 0; i < numPointLights; ++i)
+        color += CalcPointLight(point_lights[i], normal, FragPos, V, albedo, specTint);
+
+    FragColor = vec4(color, 1.0);
 }
 
-// calculates the color when using a directional light.
-vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
+vec3 CalcDirLight(DirLight L, vec3 normal, vec3 V, vec3 albedo, vec3 specTint)
 {
-    vec3 lightDir = normalize(-light.direction);
-    // diffuse shading
+    vec3 Ldir = normalize(-L.direction);
+
+    float diff = max(dot(normal, Ldir), 0.0);
+    float spec = 0.0;
+    if(useBlinnPhong)
+    {
+        vec3 H = normalize(Ldir + V);
+        spec = pow(max(dot(normal, H), 0.0), material.shininess);
+    }
+    else
+    {
+        vec3 R = reflect(-Ldir, normal);
+        spec = pow(max(dot(V, R), 0.0), material.shininess);
+    }
+
+    vec3 ambient  = L.ambient  * albedo;
+    vec3 diffuse  = L.diffuse  * diff    * albedo;
+    vec3 specular = L.specular * spec    * specTint;
+
+    return ambient + diffuse + specular;
+}
+
+vec3 CalcPointLight(PointLight L, vec3 normal, vec3 P, vec3 V, vec3 albedo, vec3 specTint)
+{
+    vec3 lightDir = normalize(L.position - P);
+
     float diff = max(dot(normal, lightDir), 0.0);
-    // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    // combine results
-    vec3 ambient = light.ambient * sampleDiffuse();
-    vec3 diffuse = light.diffuse * diff * sampleDiffuse();
-    vec3 specular = light.specular * spec * sampleSpecular();
-    return (ambient + diffuse + specular);
-}
 
-// calculates the color when using a point light.
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
-{
-    vec3 lightDir = normalize(light.position - fragPos);
-    // diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0);
-    // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    // attenuation
-    float distance = length(light.position - fragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
-    // combine results
-    vec3 ambient = light.ambient * sampleDiffuse();
-    vec3 diffuse = light.diffuse * diff * sampleDiffuse();
-    vec3 specular = light.specular * spec * sampleSpecular();
-    ambient *= attenuation;
-    diffuse *= attenuation;
-    specular *= attenuation;
-    return (ambient + diffuse + specular);
-}
+    float spec = 0.0;
 
+    if (useBlinnPhong)
+    {
+        vec3 halfwayDir = normalize(lightDir + V);
+        spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
+    }
+    else
+    {
+        vec3 reflectDir = reflect(-lightDir, normal);
+        spec = pow(max(dot(V, reflectDir), 0.0), material.shininess);
+    }
 
-vec3 sampleDiffuse()
-{
-    return useMaterial ? vec3(texture(material.diffuse, TexCoords)) : objectColor;                                 
-}
+    float dist = length(L.position - P);
+    float att  = 1.0 / (L.constant + L.linear * dist + L.quadratic * (dist * dist));
 
-vec3 sampleSpecular()
-{
-    return useMaterial ? vec3(texture(material.specular, TexCoords)) : vec3(1.0);
+    vec3 ambient  = L.ambient  * albedo;
+    vec3 diffuse  = L.diffuse  * diff    * albedo;
+    vec3 specular = L.specular * spec    * specTint;
+
+    return (ambient + diffuse + specular) * att;
 }

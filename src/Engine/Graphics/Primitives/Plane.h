@@ -33,20 +33,22 @@ namespace isaacObjectViewer
         glm::quat& GetOrientation() override { return m_Orientation; }
         glm::vec3& GetScale() override { return m_Scale; }
         glm::vec3& GetColor() { return m_Color; }
+        bool& GetUseMaterial() override { return m_UseMaterial; }
         float& GetShininess() override { return m_Material.Shininess; }
         const Material& GetMaterial() const { return m_Material; }
 
-        void ResetPosition() { m_Position = DEFAULT_POSITION; }
-        void ResetRotation() { m_Rotation = DEFAULT_ROTATION; }
-        void ResetScale() { m_Scale = DEFAULT_SCALE; }
-        inline void SetPosition(const glm::vec3& newPosition) override { m_Position = newPosition; }
-        inline void SetRotation(const glm::vec3& rotation) override { m_Rotation = rotation; }
-        inline void SetOrientation(const glm::quat& newOrientation) override { m_Orientation = newOrientation; }
-        inline void SetScale(const glm::vec3& scale) override { m_Scale = scale; }
-        void SetColor(const glm::vec3& newColor) { m_Color = newColor; }
-        void SetMaterial(const Material& newMaterial) { m_Material = newMaterial; }
-        void SetDiffuseTexture(const std::shared_ptr<Texture>& tex) override { m_Material.Diffuse = tex; }
-        void SetSpecularTexture(const std::shared_ptr<Texture>& tex) override { m_Material.Specular = tex; }
+        void        ResetPosition() { m_Position = DEFAULT_POSITION; }
+        void        ResetRotation() { m_Rotation = DEFAULT_ROTATION; }
+        void        ResetScale()    { m_Scale = DEFAULT_SCALE; }
+        inline void SetPosition(const glm::vec3& newPosition) override          { m_Position = newPosition; }
+        inline void SetRotation(const glm::vec3& rotation) override             { m_Rotation = rotation; }
+        inline void SetOrientation(const glm::quat& newOrientation) override    { m_Orientation = newOrientation; }
+        inline void SetScale(const glm::vec3& scale) override                   { m_Scale = scale; }
+        void        SetColor(const glm::vec3& newColor)                         { m_Color = newColor; }
+        void        SetUseMaterial(bool useMaterial) override                   { m_UseMaterial = useMaterial; }
+        void        SetMaterial(const Material& newMaterial)                    { m_Material = newMaterial; }
+        void        SetDiffuseTexture(const std::shared_ptr<Texture>& tex) override { m_Material.Diffuse = tex; }
+        void        SetSpecularTexture(const std::shared_ptr<Texture>& tex) override { m_Material.Specular = tex; }
 
         inline const VertexArray    &GetVertexArray()   const override { return *m_VertexArray; }
         inline const VertexBuffer   &GetVertexBuffer()  const override { return *m_VertexBuffer; }
@@ -99,10 +101,11 @@ namespace isaacObjectViewer
 
         glm::vec3 m_Position;
         glm::vec3 m_Rotation;
+        glm::quat m_Orientation;
         glm::vec3 m_Scale;
         glm::vec3 m_Color;
-        glm::quat m_Orientation;
-        
+        bool m_UseMaterial;
+
         Material m_Material;
 
         std::unique_ptr<IndexBuffer> m_IndexBuffer;

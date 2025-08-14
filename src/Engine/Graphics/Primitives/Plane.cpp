@@ -1,6 +1,7 @@
 #include "Plane.h"
 #include "Utility/Log.hpp"
 #include "TextureManager.h"
+#include "Core/Engine.h"
 
 namespace isaacObjectViewer
 {
@@ -8,6 +9,12 @@ namespace isaacObjectViewer
         : m_ID(GenerateUniqueID())
         , m_Name("Plane_" + std::to_string(m_ID)) 
         , m_Position(position)
+        , m_Rotation(0.0f)
+        , m_Orientation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f))
+        , m_Scale(1.0f)
+        , m_Color(DEFAULT_COLOR)
+        , m_UseMaterial(false)
+        ,m_Material(GetDefaultMaterial())
     {
         // Initialize vertex count for indexed drawing
         m_VertexCount = 4;
@@ -27,13 +34,6 @@ namespace isaacObjectViewer
 
         // Create the IndexBuffer with the index data
         m_IndexBuffer = std::make_unique<IndexBuffer>(m_PlaneIndices, m_IndicesCount);
-
-        m_Color = DEFAULT_COLOR;
-        m_Scale = glm::vec3(1.0f);
-        m_Rotation = glm::vec3(0.0f);
-        m_Orientation = glm::quat(glm::radians(m_Rotation));
-
-        m_Material = GetDefaultMaterial();
     }
 
     Plane::~Plane()
@@ -52,6 +52,7 @@ namespace isaacObjectViewer
         
         // Calculate the model matrix
         auto model = GetModelMatrix();
+
         // Bind the shader and set uniforms
         shader->Bind();
         shader->setMat4("model", model);
@@ -59,25 +60,47 @@ namespace isaacObjectViewer
         shader->setMat4("projection", projection);
         shader->setVec3("objectColor", m_Color);
         
-        shader->setBool("useMaterial", true);
-        shader->setInt("material.diffuse", 0);
-        shader->setInt("material.specular", 1);
-        shader->setFloat("material.shininess", m_Material.Shininess);
+        bool hasDiffuse  = (m_Material.Diffuse  != nullptr);
+        bool hasSpecular = (m_Material.Specular != nullptr);
 
-        if(m_Material.Diffuse)
+        const bool useMaterial = m_UseMaterial && (hasDiffuse || hasSpecular);
+
+        shader->setBool("useMaterial",   useMaterial);
+        shader->setBool("hasDiffuseMap",  hasDiffuse);
+        shader->setBool("hasSpecularMap", hasSpecular);
+        shader->setFloat("material.shininess",m_Material.Shininess);
+        
+        if (useMaterial) 
         {
             glActiveTexture(GL_TEXTURE0);
-            m_Material.Diffuse->Bind();
-        }
-        
-        if(m_Material.Specular)
-        {
+            if (hasDiffuse) 
+            {
+                m_Material.Diffuse->Bind(); 
+            }    
+            else
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }   
+            shader->setInt("material.diffuse", 0);
+
             glActiveTexture(GL_TEXTURE1);
-            m_Material.Specular->Bind();
+            if (hasSpecular) 
+            {
+                m_Material.Specular->Bind(); 
+            } 
+            else 
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+            shader->setInt("material.specular", 1);
+        } 
+        else 
+        {
+            shader->setVec3("objectColor", m_Color);
         }
 
-        // indexed drawing
-        renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader); 
+        renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);
+        glActiveTexture(GL_TEXTURE0);
     }
 
 }

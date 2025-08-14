@@ -36,8 +36,8 @@ namespace isaacObjectViewer
         Mouse()
             : 
             m_FirstMouse(true),
-            m_LastX(400.f),
-            m_LastY(300.f),
+            m_LastX(0.f),
+            m_LastY(0.f),
             m_Pitch(0.0f),
             m_Sensitivity(DEFAULT_SENSITIVITY),
             m_Yaw(-90.0f),

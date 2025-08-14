@@ -33,7 +33,8 @@ namespace isaacObjectViewer
         glm::vec3& GetRotation() override { return m_Rotation; }
         glm::quat& GetOrientation() override { return m_Orientation; }
         glm::vec3& GetScale() override { return m_Scale; }
-        glm::vec3& GetColor() { return m_Color; }
+        glm::vec3& GetColor() override{ return m_Color; }
+        bool& GetUseMaterial() override { return m_UseMaterial; }
         float& GetShininess() override { return m_Material.Shininess; }
         const Material& GetMaterial() const { return m_Material; }
 
@@ -44,7 +45,8 @@ namespace isaacObjectViewer
         inline void SetRotation(const glm::vec3& rotation) override { m_Rotation = rotation; }
         inline void SetOrientation(const glm::quat& newOrientation) override { m_Orientation = newOrientation; }
         inline void SetScale(const glm::vec3& scale) override { m_Scale = scale; }
-        inline void SetColor(const glm::vec3& newColor) { m_Color = newColor; }
+        inline void SetColor(const glm::vec3& newColor) override{ m_Color = newColor; }
+        inline void SetUseMaterial(bool use) override { m_UseMaterial = use; }
         void SetMaterial(const Material& newMaterial) { m_Material = newMaterial; }
         void SetDiffuseTexture(const std::shared_ptr<Texture>& tex) override { m_Material.Diffuse = tex; }
         void SetSpecularTexture(const std::shared_ptr<Texture>& tex) override { m_Material.Specular = tex; }
@@ -75,9 +77,10 @@ namespace isaacObjectViewer
         
         glm::vec3 m_Position;
         glm::vec3 m_Rotation;
+        glm::quat m_Orientation;
         glm::vec3 m_Scale;
         glm::vec3 m_Color;
-        glm::quat m_Orientation;
+        bool m_UseMaterial;
 
         Material m_Material;
 

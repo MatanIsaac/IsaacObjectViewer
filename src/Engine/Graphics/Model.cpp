@@ -12,18 +12,22 @@ namespace isaacObjectViewer
         , m_Rotation(DEFAULT_ROTATION)
         , m_Orientation(glm::quat(glm::radians(DEFAULT_ROTATION)))
         , m_Scale(DEFAULT_SCALE)
+        , m_Color(DEFAULT_COLOR)
+        , m_UseMaterial(true)
         , m_Shininess(32.0f)
         , m_Meshes(meshes)
     {}
 
     void Model::SetDiffuseTexture(const std::shared_ptr<Texture>& tex)
     {
-        for (auto& m : m_Meshes) m.SetDiffuseTexture(tex);
+        for (auto& m : m_Meshes) 
+            m.SetDiffuseTexture(tex);
     }
 
     void Model::SetSpecularTexture(const std::shared_ptr<Texture>& tex)
     {
-        for (auto& m : m_Meshes) m.SetSpecularTexture(tex);
+        for (auto& m : m_Meshes) 
+            m.SetSpecularTexture(tex);
     }
 
     void Model::Render(const Renderer& renderer,
@@ -33,7 +37,14 @@ namespace isaacObjectViewer
     {
         const glm::mat4 parentModel = GetModelMatrix();
         for (auto& mesh : m_Meshes)
-            mesh.RenderWithParent(renderer, parentModel, view, projection, shader);
+        {
+            if (!m_UseMaterial)
+            {
+                mesh.SetColor(m_Color);
+            }
+            mesh.RenderWithParent(renderer, parentModel, view, projection, shader, 
+                                    m_UseMaterial, m_Color);
+        }
     }
 
 
@@ -47,13 +58,17 @@ namespace isaacObjectViewer
 
         /* Optional: iterate meshes for finer test here */
 
-        if (outDist) *outDist = hitDist;
+        if (outDist) 
+            *outDist = hitDist;
+
         return true;
     }
 
     void Model::RecomputeBoundingBox()
     {
-        if (m_Meshes.empty()) return;
+        if (m_Meshes.empty()) 
+            return;
+            
         m_BBoxMin =  glm::vec3( std::numeric_limits<float>::max());
         m_BBoxMax = -glm::vec3( std::numeric_limits<float>::max());
 

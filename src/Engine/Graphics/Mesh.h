@@ -50,7 +50,9 @@ namespace isaacObjectViewer
                               const glm::mat4& parentModel,
                               const glm::mat4& view,
                               const glm::mat4& projection,
-                              Shader* shader = nullptr);
+                              Shader* shader = nullptr,
+                              bool useMaterial = false,
+                              const glm::vec3& objectColor = glm::vec3(DEFAULT_COLOR));
 
         std::size_t GetID() const override { return 0; } // Mesh does not have an ID
         const std::string& GetName() const override { return m_Name; }
@@ -61,11 +63,15 @@ namespace isaacObjectViewer
         glm::vec3& GetRotation() override { return m_Rotation; }
         glm::quat& GetOrientation() override { return m_Orientation; }
         glm::vec3& GetScale() override { return m_Scale; }
+        glm::vec3& GetColor() override { return m_Color; }
+        bool& GetUseMaterial() override { return m_UseMaterial; }
 
         void SetPosition(const glm::vec3& newPosition) override { m_Position = newPosition; }
         void SetRotation(const glm::vec3& newRotation) override { m_Rotation = newRotation; }
         void SetOrientation(const glm::quat& newOrientation) override { m_Orientation = newOrientation; }
         void SetScale(const glm::vec3& newScale) override { m_Scale = newScale; }
+        void SetColor(const glm::vec3& newColor) override { m_Color = newColor; }
+        void SetUseMaterial(bool use) override { m_UseMaterial = use; }
 
         void SetMaterial(Material newMaterial) { m_Material = newMaterial; }
         void SetShininess(float s) { m_Material.Shininess = s; }
@@ -93,13 +99,17 @@ namespace isaacObjectViewer
         std::vector<unsigned int> m_Indices;
         std::vector<std::shared_ptr<Texture>> m_Textures;
 
-        Material m_Material;
-
+        
         std::string m_Name;
         glm::vec3 m_Position;
         glm::vec3 m_Rotation;
         glm::quat m_Orientation;
         glm::vec3 m_Scale;
+        glm::vec3 m_Color;
+        
+        bool m_UseMaterial;
+        
+        Material m_Material;
 
         std::unique_ptr<IndexBuffer> m_IndexBuffer;
         std::unique_ptr<VertexBuffer> m_VertexBuffer;

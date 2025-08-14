@@ -43,7 +43,8 @@ namespace isaacObjectViewer
             return identity;
         }
         glm::vec3& GetScale() override { return m_Sphere.GetScale(); }
-        glm::vec3& GetColor() { return m_Color; }
+        glm::vec3& GetColor() override { return m_Color; }
+        bool& GetUseMaterial() override { return m_UseMaterial; }
         float& GetShininess() override { return m_Shininess; }
 
 
@@ -57,8 +58,9 @@ namespace isaacObjectViewer
         void SetSpecularTexture(const std::shared_ptr<Texture>& tex) override { }
         
         void SetScale(const glm::vec3& scale) override { m_Sphere.SetScale(scale); }
-        void SetColor(const glm::vec3& color) { m_Color = color; }
-        
+        void SetColor(const glm::vec3& color) override { m_Color = color; }
+        void SetUseMaterial(bool use) override { m_UseMaterial = use; }
+
         bool IntersectRay(const Ray& ray, float* outDistance) override { return m_Sphere.IntersectRay(ray, outDistance);}
 
         virtual std::size_t GenerateUniqueID() override
@@ -77,6 +79,7 @@ namespace isaacObjectViewer
         std::string m_Name; 
         
         glm::vec3 m_Color;
+        bool m_UseMaterial;
         Sphere m_Sphere;
         float m_Shininess = 0.f;
 

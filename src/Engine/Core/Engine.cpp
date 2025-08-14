@@ -18,6 +18,8 @@ namespace isaacObjectViewer
           m_Camera(nullptr),
           m_SelectedObject(nullptr),
           m_DirLight(nullptr),
+          m_BlinnPhongShading(true),
+          m_UseMaterial(true),
           m_MouseModeEnabled(true),
           m_FreeCameraModeEnabled(false),
           m_KeyPressed(false),
@@ -106,15 +108,14 @@ namespace isaacObjectViewer
         m_MainShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
         m_MainShader->Bind();
                                         
-        m_BackgroundColor = glm::vec3(0.35f, 0.35f, 0.35f);
+        m_BackgroundColor = glm::vec3(0.0f, 0.0f, 0.0f);
 
         int display_w, display_h;
         SDL_GetWindowSizeInPixels(m_Window->GetSDLWindow(), &display_w, &display_h);
 
-        m_Camera = new Camera(glm::vec3(0.0f, 2.0f, 5.0f));
-        m_Camera->SetProjection((float)display_w / (float)display_h, 0.1f,100.0f);
-        
-        
+        m_Camera = new Camera(glm::vec3(-3.0f, 2.5f, 4.5f));
+        m_Camera->SetProjection((float)display_w / (float)display_h);
+
         m_IsRunning = true;
 
         return true;
@@ -240,10 +241,10 @@ namespace isaacObjectViewer
         
         SendAllLightsToShader();
         m_DirLight->SetUniforms(m_MainShader);
+        m_MainShader->setBool("useBlinnPhong", m_BlinnPhongShading);
 
         glm::mat4 view = m_Camera->GetViewMatrix(); // VIEW
         glm::mat4 projection = m_Camera->GetProjectionMatrix(); 
-
 
         for (auto& obj : m_SceneObjects)
         {

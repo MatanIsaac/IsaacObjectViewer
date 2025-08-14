@@ -30,16 +30,20 @@ namespace isaacObjectViewer
         ObjectType           GetType() const override { return ObjectType::Imported; } // Imported asset
         ModelFileType        GetFileType() const { return m_FileType; }
 
-        glm::vec3&           GetPosition()    override { return m_Position;    }
-        glm::vec3&           GetRotation()    override { return m_Rotation;    }
-        glm::quat&           GetOrientation() override { return m_Orientation; }
-        glm::vec3&           GetScale()       override { return m_Scale;       }
-        float&               GetShininess()   override { return m_Shininess;   }
+        glm::vec3&          GetPosition()    override { return m_Position;    }
+        glm::vec3&          GetRotation()    override { return m_Rotation;    }
+        glm::quat&          GetOrientation() override { return m_Orientation; }
+        glm::vec3&          GetScale()       override { return m_Scale;       }
+        glm::vec3&          GetColor()       override { return m_Color;       }
+        bool&               GetUseMaterial() override { return m_UseMaterial; }
+        float&              GetShininess()   override { return m_Shininess;   }
 
-        void  SetPosition   (const glm::vec3& p) override { m_Position   = p; }
-        void  SetRotation   (const glm::vec3& r) override { m_Rotation   = r; m_Orientation = glm::quat(glm::radians(r)); }
-        void  SetOrientation(const glm::quat& q) override { m_Orientation= q; m_Rotation = glm::degrees(glm::eulerAngles(q)); }
-        void  SetScale      (const glm::vec3& s) override { m_Scale      = s; }
+        void    SetPosition   (const glm::vec3& p) override { m_Position   = p; }
+        void    SetRotation   (const glm::vec3& r) override { m_Rotation   = r; m_Orientation = glm::quat(glm::radians(r)); }
+        void    SetOrientation(const glm::quat& q) override { m_Orientation= q; m_Rotation = glm::degrees(glm::eulerAngles(q)); }
+        void    SetScale      (const glm::vec3& s) override { m_Scale      = s; }
+        void    SetColor      (const glm::vec3& c) override { m_Color      = c; }
+        void    SetUseMaterial(bool useMaterial)   override { m_UseMaterial = useMaterial; }
 
         /* Materials are set per-mesh – keep empty */
         void SetDiffuseTexture (const std::shared_ptr<Texture>&) override;
@@ -74,6 +78,8 @@ namespace isaacObjectViewer
         glm::vec3           m_Rotation;
         glm::quat           m_Orientation;
         glm::vec3           m_Scale;
+        glm::vec3           m_Color;
+        bool                m_UseMaterial;
         float               m_Shininess;
 
         // <-- one asset == many sub-meshes

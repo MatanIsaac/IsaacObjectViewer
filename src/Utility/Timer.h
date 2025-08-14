@@ -190,7 +190,7 @@ namespace isaacObjectViewer
             Interval interval(seconds);
             // Create a new thread to run the timer
             std::thread timerThread(
-                [=]()
+                [=, this]()
                 {
                     Start();                               // Start the timer
                     std::this_thread::sleep_for(interval); // Sleep for the specified interval

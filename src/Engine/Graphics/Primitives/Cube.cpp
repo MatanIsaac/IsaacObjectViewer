@@ -1,6 +1,7 @@
 #include "Cube.h"
 #include "Utility/Log.hpp"
 #include "TextureManager.h"
+#include "Core/Engine.h"
 
 namespace isaacObjectViewer
 {
@@ -8,6 +9,12 @@ namespace isaacObjectViewer
         : m_ID(GenerateUniqueID())
         , m_Name("Cube_" + std::to_string(m_ID))
         , m_Position(position)  
+        , m_Rotation(DEFAULT_ROTATION)
+        , m_Orientation(glm::quat(glm::radians(m_Rotation)))
+        , m_Scale(1.0f)
+        , m_Color(DEFAULT_COLOR)
+        , m_UseMaterial(false)
+        , m_Material(GetDefaultMaterial())
     {
         // Set index count for our cube (36 indices)
         m_IndicesCount = 36;
@@ -27,11 +34,6 @@ namespace isaacObjectViewer
 
         // Create the IndexBuffer with our index data
         m_IndexBuffer = std::make_unique<IndexBuffer>(m_CubeIndices, m_IndicesCount);
-
-        m_Color = DEFAULT_COLOR;
-        m_Scale = glm::vec3(1.0f);
-        m_Rotation = glm::vec3(0.0f);
-        m_Orientation = glm::quat(glm::radians(m_Rotation));
 
         m_Material = GetDefaultMaterial();
     }
@@ -59,24 +61,47 @@ namespace isaacObjectViewer
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
         shader->setVec3("objectColor", m_Color);
-        
-        shader->setBool("useMaterial", true);
-        shader->setInt("material.diffuse", 0); 
-        shader->setInt("material.specular", 1);
-        shader->setFloat("material.shininess",m_Material.Shininess);
-        
-        if(m_Material.Diffuse)
+
+        bool hasDiffuse  = (m_Material.Diffuse  != nullptr);
+        bool hasSpecular = (m_Material.Specular != nullptr);
+
+        const bool useMaterial = m_UseMaterial && (hasDiffuse || hasSpecular);
+
+        shader->setBool("useMaterial",   useMaterial);
+        shader->setBool("hasDiffuseMap",  hasDiffuse);
+        shader->setBool("hasSpecularMap", hasSpecular);
+        shader->setFloat("material.shininess", m_Material.Shininess);
+
+        if (useMaterial) 
         {
             glActiveTexture(GL_TEXTURE0);
-            m_Material.Diffuse->Bind();
-        }
-        
-        if(m_Material.Specular)
-        {
+            if (hasDiffuse) 
+            {
+                m_Material.Diffuse->Bind(); 
+            }    
+            else   
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+            shader->setInt("material.diffuse", 0);
+
             glActiveTexture(GL_TEXTURE1);
-            m_Material.Specular->Bind();
+            if (hasSpecular) 
+            {
+                m_Material.Specular->Bind(); 
+            } 
+            else 
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+            shader->setInt("material.specular", 1);
+        } 
+        else 
+        {
+            shader->setVec3("objectColor", m_Color);
         }
 
         renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);
+        glActiveTexture(GL_TEXTURE0);
     }
 }

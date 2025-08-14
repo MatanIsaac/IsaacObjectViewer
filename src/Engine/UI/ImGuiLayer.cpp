@@ -259,7 +259,7 @@ namespace isaacObjectViewer
         ImGui::RadioButton("Scale", &m_GizmoOperation, ImGuizmo::SCALE);
         ImGui::SameLine();
         // draw the button with a little ▼ glyph
-        if (ImGui::Button(u8"View Modes \uf0d7"))
+        if (ImGui::Button("View Modes \uf0d7"))
         ImGui::OpenPopup("modes_popup");         // toggle the popup
         
         if (ImGui::BeginPopup("modes_popup"))
@@ -368,6 +368,19 @@ namespace isaacObjectViewer
                 if (ImGui::SmallButton("Reset##BackgroundColor"))
                 {
                     engine->SetBackgroundColor({0.0f, 0.0f, 0.0f});
+                }
+
+                // Lighting settings
+                bool changed = false;
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::TextUnformatted("Blinn-Phong Shading");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                changed |= ImGui::Checkbox("##Blinn-Phong Shading", &engine->GetBlinnPhongShading());
+                if(changed)
+                {
+                    engine->SetShading(engine->GetBlinnPhongShading() ? ShadingType::BLINNPHONG : ShadingType::PHONG);
+                    changed = false;
                 }
 
                 ImGui::EndTable();
@@ -532,7 +545,7 @@ namespace isaacObjectViewer
                 cam->SetZoom(zoom);
                 int display_w, display_h;
                 SDL_GetWindowSizeInPixels(engine->GetSDLWindow(), &display_w, &display_h);
-                cam->SetProjection((float)display_w / (float)display_h, 0.1f, 100.0f);
+                cam->SetProjection((float)display_w / (float)display_h);
             }
         }
 
@@ -705,6 +718,15 @@ namespace isaacObjectViewer
             ImGui::Separator();
             if (ImGui::CollapsingHeader("Material Settings"))    
             {    
+                if (ImGui::Button(selected->GetUseMaterial() ? "Use Object Color" : "Use Material")) 
+                {
+                    selected->SetUseMaterial(!selected->GetUseMaterial());
+                }
+                // Show color picker when not using material
+                if (!selected->GetUseMaterial()) 
+                {
+                    ImGui::ColorEdit3("Object Color", (float*)&selected->GetColor());
+                }
                 ImGui::Text("Shininess");
                 ImGui::DragFloat("##Shininess", &selected->GetShininess(), 0.01f, 0.0f, 100.0f, "%.3f");
                 

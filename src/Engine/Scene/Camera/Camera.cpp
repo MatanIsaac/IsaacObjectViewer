@@ -15,8 +15,8 @@ namespace isaacObjectViewer
         m_Yaw               = yaw;
         m_Pitch             = pitch;
         UpdateVectors();
-        m_Near              = 0.1f; // Default near plane
-        m_Far               = 100.0f; // Default far plane
+        m_Near              = 0.1f;
+        m_Far               = 100.0f;
     }
 
     Camera::Camera(float posX, float posY, float posZ,float upX, 
@@ -32,6 +32,8 @@ namespace isaacObjectViewer
         m_Yaw               = yaw;
         m_Pitch             = pitch;
         UpdateVectors();
+        m_Near              = 0.1f;
+        m_Far               = 100.0f;
     }
 
     void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime)
@@ -59,10 +61,8 @@ namespace isaacObjectViewer
         front.y = sin(glm::radians(m_Pitch));
         front.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
         m_Front = glm::normalize(front);
-        // also re-calculate the Right and Up vector
-        m_Right = glm::normalize(glm::cross(
-            m_Front, m_WorldUp));  // normalize the vectors, because their length gets closer to 0 the
-                                // more you look up or down which results in slower movement.
+        // re-calculate the Right and Up vector
+        m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp));  
         m_Up = glm::normalize(glm::cross(m_Right, m_Front));
     }
 

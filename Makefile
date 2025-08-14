@@ -26,7 +26,6 @@ ifeq ($(OS),Windows_NT)
 else
     EXE = iov
     LDFLAGS = -lSDL3 -lassimp -lGL -ldl -lpthread -g
-	COPY_DLL = cp dependencies/SDL3/i686-w64-mingw32/bin/SDL3.dll .
 endif
 
 
@@ -48,7 +47,7 @@ INCLUDE = \
 	-I$(IMGUIZMO_DIR) \
 	-I$(ImGuiFileDialog_DIR)/ImGuiFileDialog.hpp \
 
-CXXFLAGS = -std=c++17 -g -Wall -DIMGUI_DEFINE_MATH_OPERATORS $(INCLUDE)
+CXXFLAGS = -std=c++20 -g -Wall -DIMGUI_DEFINE_MATH_OPERATORS $(INCLUDE)
 GLAD_SRC = dependencies/glad/src/glad.c
 SOURCES := $(wildcard src/*.cpp src/**/*.cpp src/**/**/*.cpp src/**/**/**/*.cpp src/**/**/**/**/*.cpp) $(GLAD_SRC) $(IMGUI_SRC)
 OBJS := $(SOURCES:.cpp=.o)

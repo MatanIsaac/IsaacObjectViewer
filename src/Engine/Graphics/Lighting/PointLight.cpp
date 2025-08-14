@@ -8,10 +8,11 @@ namespace isaacObjectViewer
 {
     PointLight::PointLight(const glm::vec3& position, const glm::vec3& color)
         : m_Color(color)
+        , m_UseMaterial(false)
         , m_Sphere(position)
-        , m_AmbientIntensity({0.2f, 0.2f, 0.2f})
-        , m_DiffuseIntensity({0.4f, 0.4f, 0.4f})
-        , m_SpecularIntensity({0.5f, 0.5f, 0.5f})
+        , m_AmbientIntensity(0.05f)
+        , m_DiffuseIntensity(1.0f)
+        , m_SpecularIntensity(1.0f)
     {
         m_ID = GenerateUniqueID();
         m_Name = "Light_" + std::to_string(m_ID);

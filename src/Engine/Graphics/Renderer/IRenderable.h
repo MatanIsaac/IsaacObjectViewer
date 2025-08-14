@@ -43,12 +43,15 @@ namespace isaacObjectViewer
         virtual glm::vec3& GetRotation() = 0;
         virtual glm::quat& GetOrientation() = 0;
         virtual glm::vec3& GetScale() = 0;
+        virtual glm::vec3& GetColor() = 0;
+        virtual bool& GetUseMaterial() = 0;
 
         virtual void SetPosition(const glm::vec3& newPosition) = 0;
         virtual void SetRotation(const glm::vec3& newRotation) = 0;
         virtual void SetOrientation(const glm::quat& newOrientation) = 0;
         virtual void SetScale(const glm::vec3& newScale) = 0;
-
+        virtual void SetColor(const glm::vec3& newColor) = 0;
+        virtual void SetUseMaterial(bool useMaterial) = 0;
         glm::mat4 GetModelMatrix()
         {
             glm::mat4 model = glm::translate(glm::mat4(1.0f), GetPosition());

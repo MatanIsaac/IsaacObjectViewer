@@ -4,7 +4,7 @@
 #include "Mouse.h"
 #include <utility>
 #include "Graphics/TextureManager.h"
-#include "Graphics/Primitives/Tracer.h"
+#include "Graphics/Tracer.h"
 
 namespace isaacObjectViewer
 {
@@ -113,7 +113,8 @@ namespace isaacObjectViewer
         int display_w, display_h;
         SDL_GetWindowSizeInPixels(m_Window->GetSDLWindow(), &display_w, &display_h);
 
-        m_Camera = new Camera(glm::vec3(-3.0f, 2.5f, 4.5f));
+        m_Camera = new Camera(glm::vec3(-4.0f, 3.0f, 4.0f));
+        m_Camera->LookAtTarget(glm::vec3(1.0f, 0.0f, 0.0f)); 
         m_Camera->SetProjection((float)display_w / (float)display_h);
 
         m_IsRunning = true;
@@ -123,36 +124,33 @@ namespace isaacObjectViewer
 
     // @brief processes player input
     void Engine::ProcessInput()
-    {
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
-            if(!m_FreeCameraModeEnabled)
-                ImGui_ImplSDL3_ProcessEvent(&event);
+    {   
+        SDL_Event MainEvent;
+        while (SDL_PollEvent(&MainEvent))
+        {       
+            if(m_ImGuiLayer.isMouseOverUI() || m_ImGuiLayer.isMouseOverGizmo())
+            {
+                ImGui_ImplSDL3_ProcessEvent(&MainEvent);
+                continue; // Skip processing if mouse is over UI or gizmo
+            }
 
             std::pair<float,float> mouseState;
             SDL_GetMouseState(&mouseState.first, &mouseState.second);
 
-            if(event.type == SDL_EVENT_QUIT)
+            if(MainEvent.type == SDL_EVENT_QUIT)
             {
                 m_IsRunning = false;
             }
 
-            if(event.type == SDL_EVENT_KEY_DOWN)
+            if(MainEvent.type == SDL_EVENT_KEY_DOWN)
             {
-                switch(event.key.key)
+                switch(MainEvent.key.key)
                 {
                     case SDLK_ESCAPE:
-                        m_MouseModeEnabled = true;
-                        m_FreeCameraModeEnabled = false;
-                        SDL_ShowCursor();
-                        SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),false);
+                        EnableMouseMode();
                         break;
                     case SDLK_F4:
-                        m_MouseModeEnabled = false;
-                        m_FreeCameraModeEnabled = true;
-                        SDL_HideCursor();
-                        SDL_SetWindowRelativeMouseMode(m_Window->GetSDLWindow(),true);
+                        EnableFreeCameraMode();
                         break;
                     default:
                         break;       
@@ -160,35 +158,38 @@ namespace isaacObjectViewer
             }
             
             if(m_FreeCameraModeEnabled)
-            {            
-                if(event.type == SDL_EVENT_MOUSE_MOTION)
+            {
+                if(MainEvent.type == SDL_EVENT_MOUSE_MOTION)
                 {
-                    float xoffset = static_cast<float>(event.motion.xrel);
-                    float yoffset = static_cast<float>(event.motion.yrel); 
+                    float xoffset = static_cast<float>(MainEvent.motion.xrel);
+                    float yoffset = static_cast<float>(MainEvent.motion.yrel);
 
                     MouseRef->ProcessMotion(m_Camera, xoffset, -yoffset);
                 }
 
-                if(event.type == SDL_EVENT_MOUSE_WHEEL)
+                if(MainEvent.type == SDL_EVENT_MOUSE_WHEEL)
                 {
-                    float yoffset = static_cast<float>(event.wheel.y);
-
+                    float yoffset = static_cast<float>(MainEvent.wheel.y);
                     MouseRef->ProcessZoom(yoffset,m_Camera);
+
+                     // Camera caches the projection matrix, so we refresh it here
+                    int w, h; SDL_GetWindowSizeInPixels(m_Window->GetSDLWindow(), &w, &h);
+                    m_Camera->SetProjection((float)w / (float)h);
                 }
             }
             
             if(m_MouseModeEnabled)
             {
-                if(event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+                if(MainEvent.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
                 {
-                    if(!m_ImGuiLayer.isMouseOverGizmo() && event.button.button == SDL_BUTTON_LEFT)
+                    if(!m_ImGuiLayer.isMouseOverGizmo() && MainEvent.button.button == SDL_BUTTON_LEFT)
                     {
                         MouseRef->ProcessMouseClick(mouseState.first,mouseState.second, m_Camera);
                     }
                 }
-                if(event.type == SDL_EVENT_KEY_DOWN)
+                if(MainEvent.type == SDL_EVENT_KEY_DOWN)
                 {
-                    switch(event.key.key)
+                    switch(MainEvent.key.key)
                     {
                         case SDLK_T:
                             m_ImGuiLayer.SetGizmoOperation(GizmoMode::TRANSLATION);

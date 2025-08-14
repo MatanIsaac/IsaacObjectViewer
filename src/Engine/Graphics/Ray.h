@@ -1,12 +1,20 @@
+/**
+ * @file Ray.h
+ * @brief Header file for the Ray class.
+ *  This class represents a ray in 3D space, defined by an origin and a direction.
+ */
+
 #pragma once 
 #include "Utility/config.h"
-#include "Graphics/Primitives/Tracer.h"
+#include "Graphics/Tracer.h"
 
 namespace isaacObjectViewer
 {   
     class Ray
     {
     public:
+        /// @brief Gets the singleton instance of the Ray class.
+        /// @return The singleton instance of the Ray class.
         static Ray* GetInstance()
         {
             if (s_Instance == nullptr)
@@ -14,14 +22,29 @@ namespace isaacObjectViewer
             return s_Instance;
         }
 
-        // getters 
+        /// @brief Gets the origin of the ray.
+        /// @return The origin of the ray.
         const glm::vec3& GetOrigin() const { return m_origin; }
+
+        /// @brief Gets the direction of the ray.
+        /// @return The direction of the ray.
         const glm::vec3& GetDirection() const { return m_direction; }
-    
-    Ray ScreenPointToWorldRay(float mouseX, float mouseY, 
-        int windowWidth, int windowHeight,
-        const glm::mat4& view, const glm::mat4& projection, 
-        float distance, float duration, bool trace = false);
+
+        /// @brief Creates a ray from screen space coordinates to world space.
+        /// @param mouseX The X coordinate of the mouse in screen space.
+        /// @param mouseY The Y coordinate of the mouse in screen space.
+        /// @param windowWidth The width of the window.
+        /// @param windowHeight The height of the window.
+        /// @param view The view matrix.
+        /// @param projection The projection matrix.
+        /// @param distance The distance to the near plane.
+        /// @param duration The duration of the ray.
+        /// @param trace Whether to trace the ray.
+        /// @return A ray representing the world space direction.
+        Ray ScreenPointToWorldRay(float mouseX, float mouseY, 
+            int windowWidth, int windowHeight,
+            const glm::mat4& view, const glm::mat4& projection, 
+            float distance, float duration, bool trace = false);
 
 
     private:
@@ -32,8 +55,13 @@ namespace isaacObjectViewer
         glm::vec3 m_origin;
         glm::vec3 m_direction;
     };
-    
-    // Returns true if hit, and stores hit distance in outDist
+
+    /// @brief Checks if a ray intersects with an axis-aligned bounding box (AABB).
+    /// @param ray The ray to test for intersection.
+    /// @param boxMin The minimum corner of the AABB.
+    /// @param boxMax The maximum corner of the AABB.
+    /// @param outDist The distance to the intersection point, if it exists.
+    /// @return True if the ray intersects the AABB, false otherwise.
     inline bool RayIntersectsAABB(const Ray& ray, const glm::vec3& boxMin, const glm::vec3& boxMax, float* outDist)
     {
         float tMin = (boxMin.x - ray.GetOrigin().x) / ray.GetDirection().x;

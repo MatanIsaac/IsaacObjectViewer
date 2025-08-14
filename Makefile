@@ -41,7 +41,6 @@ INCLUDE = \
 	-Isrc/Engine \
 	-Isrc/Engine/Core \
 	-Isrc/Engine/Graphics \
-	-Isrc/Engine/Scene \
 	-Isrc/Engine/UI \
 	-I$(IMGUI_DIR) -I$(IMGUI_BACKEND) \
 	-I$(IMGUIZMO_DIR) \

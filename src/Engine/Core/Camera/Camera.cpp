@@ -84,4 +84,14 @@ namespace isaacObjectViewer
         if (keys[SDL_SCANCODE_Q]) 
             ProcessKeyboard(DOWN, dt);
     }
+
+    void Camera::LookAtTarget(const glm::vec3 &target)
+    {
+        glm::vec3 dir = glm::normalize(target - m_Position);
+        float pitch = glm::degrees(asinf(glm::clamp(dir.y, -1.0f, 1.0f)));
+        float yaw   = glm::degrees(atan2f(dir.z, dir.x));
+        SetPitch(pitch);
+        SetYaw(yaw);
+        UpdateVectors();
+    }
 }

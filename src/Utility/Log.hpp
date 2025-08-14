@@ -1,3 +1,9 @@
+/**
+ * @brief Logging utilities.
+ * This header file provides utilities for logging messages.
+ * It uses the spdlog library for logging.
+ */
+
 #pragma once
 
 #include <spdlog/spdlog.h>
@@ -5,7 +11,9 @@
 #include <iostream>
 #include <string>
 
-// Extract the file name from the __FILE__ macro
+/// @brief Extracts the short file name from a file path.
+/// @param filePath The full file path.
+/// @return The short file name.
 constexpr const char *shortFileName(const char *filePath)
 {
     const char *file = filePath;
@@ -24,7 +32,9 @@ using SharedLogger = std::shared_ptr<spdlog::logger>;
 class Log
 {
 public:
+    /// @brief Initializes the logging system.
     static void Init();
+    
     /**
      * @brief Get the shared logger instance.
      * @return A reference to the shared logger.

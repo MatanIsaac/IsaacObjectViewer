@@ -273,7 +273,6 @@ namespace isaacObjectViewer
         glActiveTexture(GL_TEXTURE0);
     }
 
-
     void Mesh::SetupMesh()
     {
         // Guard: no vertices => nothing to build

@@ -1,7 +1,7 @@
 #include "Mouse.h"
-#include "Ray.h"
+#include "Graphics/Ray.h"
 #include "Engine.h"
-#include "Scene/ISceneObject.h"
+#include "Core/IObject.h"
 #include "Utility/Log.hpp"
 
 namespace isaacObjectViewer
@@ -37,9 +37,13 @@ namespace isaacObjectViewer
     {
         camera->AddZoom(-yoffset);
         if (camera->GetZoom() < 1.0f)
+        {
             camera->SetZoom(1.0f);
+        }
         if (camera->GetZoom() > 45.0f)
+        {
             camera->SetZoom(45.0f);
+        }
     }
 
     void Mouse::ProcessMouseClick(float mouseX, float mouseY, Camera* camera)
@@ -53,7 +57,7 @@ namespace isaacObjectViewer
             static_cast<float>(fbW), static_cast<float>(fbH),
             camera->GetViewMatrix(), camera->GetProjectionMatrix(), 10.f, 10.f, m_TraceMouseRay);
 
-        ISceneObject* selected = nullptr;
+        IObject* selected = nullptr;
         float minDist = std::numeric_limits<float>::max();
             
         for(auto* obj : engine->GetSceneObjects())
@@ -74,4 +78,6 @@ namespace isaacObjectViewer
             LOG_INFO("Selected an object at ({},{},{})",pos.x,pos.y,pos.z);
         }
     }
+    
+
 }

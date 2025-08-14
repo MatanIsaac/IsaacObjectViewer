@@ -8,7 +8,6 @@
                 "${workspaceFolder}/src/Engine",
                 "${workspaceFolder}/src/Engine/Core",
                 "${workspaceFolder}/src/Engine/Graphics",
-                "${workspaceFolder}/src/Engine/Scene",
                 "${workspaceFolder}/src/Engine/UI",
                 "${workspaceFolder}/dependencies/**",
                 "${workspaceFolder}/dependencies/assimp/**",

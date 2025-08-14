@@ -1,9 +1,15 @@
+/**
+ * @brief OpenGL error management utilities.
+ * This header file provides utilities for managing OpenGL errors.
+ */
+
 #pragma once
 
 #include <glad/glad.h>
 #include <iostream>
 #include "Utility/Log.hpp"
 
+/// @brief Assertion macro for debugging.
 #ifdef _WIN32
     // MSVC only: Use '__debugbreak()' for debugging
     #define ASSERT(x) if (!(x)) __debugbreak();
@@ -15,12 +21,18 @@
     #define GLCall(x) do { GLClearError(); x; ASSERT(GLLogCall(#x, __FILE__, __LINE__)); } while(0)
 #endif
 
+/// @brief Clears all OpenGL errors.
 inline void GLClearError()
 {
     while (glGetError() != GL_NO_ERROR)
         ;
 }
 
+/// @brief Logs an OpenGL error.
+/// @param function The name of the OpenGL function that generated the error.
+/// @param file The source file where the error occurred.
+/// @param line The line number where the error occurred.
+/// @return True if no error occurred, false otherwise.
 inline bool GLLogCall(const char* function, const char* file, int line)
 {
     while (GLenum error = glGetError())

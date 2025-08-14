@@ -1,3 +1,8 @@
+/**
+ * @brief Configuration header for the project.
+ * This header file contains configuration settings and includes for the project.
+ */
+
 #pragma once
 
 // Standard library includes
@@ -44,5 +49,8 @@ constexpr int SCREEN_HEIGHT = 900;
 
 namespace isaacObjectViewer
 {
+    /// @brief Gets the project root path.
+    /// @param relative_path The relative path to the project root.
+    /// @return The absolute path to the project root.
     std::string GetProjectRootPath(const std::string& relative_path);
 }

@@ -8,9 +8,17 @@
 namespace isaacObjectViewer
 {
     ImGuiLayer::ImGuiLayer()
-    {
-        m_GizmoOperation = ImGuizmo::TRANSLATE;
-    }
+        : m_Window(nullptr)
+        , m_GLContext(nullptr)
+        , selected(nullptr)
+        , m_GizmoOperation(ImGuizmo::TRANSLATE)
+        , m_CurrentPath(std::filesystem::current_path().string())
+        , m_SelectedPath("")
+        , m_ImageDialogFilters("All Images{.png,.jpg,.jpeg},.png,.jpg,.jpeg")
+        , m_IsMouseOverUI(false)
+        , M_RightPanelWidth(350.0f)
+        , M_TopPanelHeight(40.0f)
+    { }
 
     ImGuiLayer::~ImGuiLayer()
     {
@@ -28,7 +36,6 @@ namespace isaacObjectViewer
         (void)io;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-
         ImGui::StyleColorsDark();
 
         // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
@@ -73,6 +80,7 @@ namespace isaacObjectViewer
             ImGui::RenderPlatformWindowsDefault();
             SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
         }
+        m_IsMouseOverUI = io.WantCaptureMouse;
     }
     
     void ImGuiLayer::Shutdown()
@@ -121,17 +129,15 @@ namespace isaacObjectViewer
             ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->Size);
 
             ImGuiID right_id, main_id;
-            float rightPanelWidth = 350.0f; 
             ImGui::DockBuilderSplitNode(
                 dockspace_id, ImGuiDir_Right,
-                rightPanelWidth / ImGui::GetMainViewport()->Size.x, 
+                M_RightPanelWidth / ImGui::GetMainViewport()->Size.x, 
                 &right_id, &main_id);
 
             ImGuiID top_id, viewport_id;
-            float topPanelHeight = 40.0f; 
             ImGui::DockBuilderSplitNode(
                 main_id, ImGuiDir_Up,
-                topPanelHeight / ImGui::GetMainViewport()->Size.y,
+                M_TopPanelHeight / ImGui::GetMainViewport()->Size.y,
                 &top_id, &viewport_id);
 
             ImGuiID sceneHierarchy_id, sceneSettings_id;
@@ -248,35 +254,62 @@ namespace isaacObjectViewer
             ImGuiWindowFlags_NoMove | 
             ImGuiWindowFlags_NoDecoration;
         
-        ImGui::Begin("Engine Controls", nullptr, topPanelFlags);
-        
-        ImGui::Text("Gizmo Mode:");
-
-        ImGui::SameLine();
-        ImGui::RadioButton("NONE", &m_GizmoOperation, ImGuizmo::NONE); ImGui::SameLine();
-        ImGui::RadioButton("Translate", &m_GizmoOperation, ImGuizmo::TRANSLATE); ImGui::SameLine();
-        ImGui::RadioButton("Rotate", &m_GizmoOperation, ImGuizmo::ROTATE); ImGui::SameLine();
-        ImGui::RadioButton("Scale", &m_GizmoOperation, ImGuizmo::SCALE);
-        ImGui::SameLine();
-        // draw the button with a little ▼ glyph
-        if (ImGui::Button("View Modes \uf0d7"))
-        ImGui::OpenPopup("modes_popup");         // toggle the popup
-        
-        if (ImGui::BeginPopup("modes_popup"))
+        if (ImGui::Begin("Engine Controls", nullptr, topPanelFlags))
         {
-            if (ImGui::MenuItem("Mouse mode"))       
+            // Build a 3-column table: [ViewModes][CenterPlay][GizmoModes]
+            if (ImGui::BeginTable("TopBarTable", 3,
+                                ImGuiTableFlags_SizingStretchProp |
+                                ImGuiTableFlags_BordersInnerV))
             {
-                engine->EnableMouseMode();
-            }
-            
-            if (ImGui::MenuItem("Free camera mode"))
-            {
-                engine->EnableFreeCameraMode();
-            }
-            
-            ImGui::EndPopup();
-        }
+                auto view_modes_width = ImGui::CalcTextSize("View Modes").x + 25.f;
+                auto gizmo_modes_width = ImGui::CalcTextSize("Gizmo Modes").x 
+                                       + ImGui::CalcTextSize("NONE").x 
+                                       + ImGui::CalcTextSize("Translate").x 
+                                       + ImGui::CalcTextSize("Rotate").x
+                                       + ImGui::CalcTextSize("Scale").x + 120.f;
+                ImGui::TableSetupColumn("##Blank", ImGuiTableColumnFlags_WidthStretch, 100.0f);
+                ImGui::TableSetupColumn("ViewModes", ImGuiTableColumnFlags_WidthFixed, view_modes_width);
+                ImGui::TableSetupColumn("GizmoModes", ImGuiTableColumnFlags_WidthFixed, gizmo_modes_width);
 
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                {}                
+                
+                // ---------------- Left: View Modes ----------------
+                ImGui::TableSetColumnIndex(1);
+                {
+                    const char* btn_label = "View Modes \uf0d7"; // ▼
+                    if (ImGui::Button(btn_label))
+                        ImGui::OpenPopup("modes_popup");
+
+                    if (ImGui::BeginPopup("modes_popup"))
+                    {
+                        if (ImGui::MenuItem("Mouse mode"))       
+                            engine->EnableMouseMode();
+                        if (ImGui::MenuItem("Free camera mode")) 
+                            engine->EnableFreeCameraMode();
+                        ImGui::EndPopup();
+                    }
+                }
+                // ---------------- Right: Gizmo Modes ----------------
+                ImGui::TableSetColumnIndex(2);
+                {
+                    ImGui::TextUnformatted("Gizmo Mode:");
+                    ImGui::SameLine();
+
+                    // keep them compact
+                    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, ImGui::GetStyle().ItemSpacing.y));
+                    ImGui::RadioButton("NONE",      &m_GizmoOperation, ImGuizmo::NONE);      ImGui::SameLine();
+                    ImGui::RadioButton("Translate", &m_GizmoOperation, ImGuizmo::TRANSLATE); ImGui::SameLine();
+                    ImGui::RadioButton("Rotate",    &m_GizmoOperation, ImGuizmo::ROTATE);    ImGui::SameLine();
+                    ImGui::RadioButton("Scale",     &m_GizmoOperation, ImGuizmo::SCALE);
+                    ImGui::PopStyleVar();
+                }
+                ImGui::EndTable();
+            }
+        }
+        
         // Style and exit button styling
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
@@ -287,7 +320,6 @@ namespace isaacObjectViewer
         ImGui::PopStyleColor(3);
 
         ImGui::End();
-
     }
 
     void ImGuiLayer::DrawRightPanel(Engine* engine)
@@ -322,13 +354,13 @@ namespace isaacObjectViewer
                 ImGui::TableSetColumnIndex(0); 
                 ImGui::TextUnformatted("VSync");
                 ImGui::TableSetColumnIndex(1);
-                if (ImGui::Checkbox("##VSync", &engine->IsVSyncEanbled()))
+                if (ImGui::Checkbox("##VSync", &engine->IsVSyncEnabled()))
                 {
                     engine->ApplySwapInterval();
                 }
 
                 // Cap FPS (only if VSync is disabled)
-                if (!engine->IsVSyncEanbled())
+                if (!engine->IsVSyncEnabled())
                 {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0); 
@@ -484,7 +516,7 @@ namespace isaacObjectViewer
             // snapshot current values
             glm::vec3 pos = cam->GetPosition();
             float speed   = cam->GetSpeed();
-            float zoom    = cam->GetZoom();
+            
 
             bool changed_pos   = false;
             bool changed_speed = false;
@@ -526,11 +558,11 @@ namespace isaacObjectViewer
                 ImGui::TableSetColumnIndex(0); ImGui::TextUnformatted("Zoom (FOV)");
                 ImGui::TableSetColumnIndex(1);
                 ImGui::SetNextItemWidth(-FLT_MIN);
-                changed_zoom |= ImGui::DragFloat("##cam_zoom", &zoom, 0.1f, 1.0f, 90.0f, "%.2f");
+                changed_zoom |= ImGui::DragFloat("##cam_zoom", &cam->GetZoom(), 0.1f, 1.0f, 90.0f, "%.2f");
                 ImGui::SameLine();
                 if (ImGui::SmallButton("Reset##zoom"))
                 {
-                    zoom = Camera::DEFAULT_CAMERA_ZOOM;
+                    cam->SetZoom(Camera::DEFAULT_CAMERA_ZOOM);
                     changed_zoom = true;
                 }
 
@@ -542,7 +574,7 @@ namespace isaacObjectViewer
             if (changed_speed) cam->SetSpeed(speed);
             if (changed_zoom)
             {
-                cam->SetZoom(zoom);
+                cam->SetZoom(cam->GetZoom());
                 int display_w, display_h;
                 SDL_GetWindowSizeInPixels(engine->GetSDLWindow(), &display_w, &display_h);
                 cam->SetProjection((float)display_w / (float)display_h);
@@ -628,7 +660,7 @@ namespace isaacObjectViewer
 
         for (size_t i = 0; i < sceneObjects.size(); ++i) 
         {
-            ISceneObject* obj = sceneObjects[i];
+            IObject* obj = sceneObjects[i];
             ImGui::PushID(obj->GetID());                        // push a unique ID for this object (e.g., index)
             bool isSelected = false;
             if(selected)
@@ -647,7 +679,7 @@ namespace isaacObjectViewer
         ImGui::End();
     }
 
-    void ImGuiLayer::DrawSettings(ISceneObject* selected)
+    void ImGuiLayer::DrawSettings(IObject* selected)
     {
         static std::string lastName;
         static char buffer[256] = {};
@@ -806,6 +838,17 @@ namespace isaacObjectViewer
 
     void ImGuiLayer::DrawGizmos(Engine* engine,int gizmoOperation)
     {
+        if(!engine)
+        {
+            LOG_ERROR("ImGuiLayer::DrawGizmos: Engine instance is null.");
+            return;
+        }
+
+        if(engine->IsFreeCameraModeEnabled())
+        {
+            return;
+        }
+
         // check if an object is selected
         auto* selected = engine->GetSelectedObject();
         if(selected)

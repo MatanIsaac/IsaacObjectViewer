@@ -127,13 +127,18 @@ namespace isaacObjectViewer
     {   
         SDL_Event MainEvent;
         while (SDL_PollEvent(&MainEvent))
-        {       
+        {   
+            // Process ImGui Events only if we are in mouse mode
+            if(!m_FreeCameraModeEnabled)
+                ImGui_ImplSDL3_ProcessEvent(&MainEvent);    
+            
+            // Note: its important to process imgui events before checking if mouse is over UI
+            // to make sure the UI acn take input.
             if(m_ImGuiLayer.isMouseOverUI() || m_ImGuiLayer.isMouseOverGizmo())
             {
-                ImGui_ImplSDL3_ProcessEvent(&MainEvent);
                 continue; // Skip processing if mouse is over UI or gizmo
             }
-
+            
             std::pair<float,float> mouseState;
             SDL_GetMouseState(&mouseState.first, &mouseState.second);
 

@@ -109,6 +109,7 @@ namespace isaacObjectViewer
         std::string m_CurrentPath;
         std::string m_SelectedPath;     
         const char* m_ImageDialogFilters;
+        const char* m_ImportObjDialogFilters;
 
         bool m_IsMouseOverUI;
 

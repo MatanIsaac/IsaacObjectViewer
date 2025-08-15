@@ -17,15 +17,16 @@ IMGUI_SRC = \
 
 # --------------------- Compiler and Linker Settings ---------------------
 EXE =
-COPY_DLL = 
+COPY_FILES = 
 LDFLAGS = 
 ifeq ($(OS),Windows_NT)
     EXE = iov.exe
 	LDFLAGS = -Ldependencies/SDL3/x86_64-w64-mingw32/lib -lmingw32 -lSDL3 -Ldependencies/assimp/lib -lassimp -lgdi32 -lopengl32 -limm32 -g # -Wl,-subsystem,windows
-	COPY_DLL = cp dependencies/SDL3/x86_64-w64-mingw32/bin/SDL3.dll dependencies/assimp/bin/libassimp-6.dll .
+	COPY_FILES = cp dependencies/SDL3/x86_64-w64-mingw32/bin/SDL3.dll dependencies/assimp/bin/libassimp-6.dll .
 else
     EXE = iov
-    LDFLAGS = -lSDL3 -lassimp -lGL -ldl -lpthread -g
+    LDFLAGS = -Ldependencies/assimp/lib -Wl,-rpath,'$$ORIGIN/dependencies/assimp/lib' -lSDL3 -lassimp -lGL -ldl -lpthread -g
+	COPY_FILES = cp dependencies/assimp/lib/libassimp.so.6 .
 endif
 
 
@@ -34,8 +35,6 @@ INCLUDE = \
 	-Idependencies/SDL3/x86_64-w64-mingw32/include \
 	-Idependencies/spdlog/include \
 	-Idependencies/assimp \
-	-Idependencies\assimp\bin \
-	-Idependencies\assimp\lib \
 	-Idependencies \
 	-Isrc \
 	-Isrc/Engine \
@@ -56,7 +55,7 @@ all: $(EXE)
 
 $(EXE): $(OBJS)
 	$(CXX) -o $@ $^ $(LDFLAGS)
-	$(COPY_DLL)
+	$(COPY_FILES)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

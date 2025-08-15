@@ -15,6 +15,7 @@ namespace isaacObjectViewer
         , m_CurrentPath(std::filesystem::current_path().string())
         , m_SelectedPath("")
         , m_ImageDialogFilters("All Images{.png,.jpg,.jpeg},.png,.jpg,.jpeg")
+        , m_ImportObjDialogFilters("All Objects{.obj,.fbx,.dae,},.obj,.fbx,.dae")
         , m_IsMouseOverUI(false)
         , M_RightPanelWidth(350.0f)
         , M_TopPanelHeight(40.0f)
@@ -177,7 +178,7 @@ namespace isaacObjectViewer
                     IGFD::FileDialogConfig cfg;
                     cfg.flags = ImGuiFileDialogFlags_Modal;
                     cfg.path  = ".";
-                    m_ImportObjectDialog.OpenDialog("Import 3D Object", "Select 3D Object", "All Objects{.obj,.fbx,},.obj,.fbx", cfg);
+                    m_ImportObjectDialog.OpenDialog("Import 3D Object", "Select 3D Object", m_ImportObjDialogFilters, cfg);
                 }
                 ImGui::Separator();
                 if (ImGui::MenuItem("Exit")) 

@@ -9,6 +9,8 @@
 #include <string>
 #include <unordered_map>
 #include "Texture.h"
+#include "Material.h"
+#include "Utility/config.h"
 
 namespace isaacObjectViewer
 {
@@ -29,6 +31,11 @@ namespace isaacObjectViewer
         /// @brief Unloads all textures.
         static void UnloadAll();
 
+        /// @brief Gets the default material for the object.
+        /// @return The default material for the object.
+        static Material GetDefaultMaterial();
+        
+
     private:
         /// @brief Constructs a TextureManager object.
         TextureManager() { }
@@ -36,5 +43,5 @@ namespace isaacObjectViewer
         static std::shared_ptr<Texture> LoadTextureFromFile(const std::string& path,TextureType type);
 
     };
-
+    
 } // namespace isaacGraphicsEngine

@@ -1,6 +1,5 @@
 #include "TextureManager.h"
 #include "stb_image.h"
-#include "Utility/config.h"
 #include "Utility/Log.hpp"
 
 namespace isaacObjectViewer
@@ -69,5 +68,17 @@ namespace isaacObjectViewer
     void TextureManager::UnloadAll()
     {
         m_Textures.clear();
+    }
+    Material TextureManager::GetDefaultMaterial()
+    {
+        std::string diffuseMap = GetProjectRootPath("/src/Resources/Textures/stonewall-01/stonewall-01_albedo.png");
+        std::string normalMap = GetProjectRootPath("/src/Resources/Textures/stonewall-01/stonewall-01_normal.png");
+        std::string specularMap = GetProjectRootPath("/src/Resources/Textures/stonewall-01/stonewall-01_roughness.png");
+
+        auto diffuse = TextureManager::LoadTexture(diffuseMap,TextureType::DIFFUSE);
+        auto normal = TextureManager::LoadTexture(normalMap,TextureType::NORMAL);
+        auto specular = TextureManager::LoadTexture(specularMap,TextureType::SPECULAR);
+
+        return Material(std::shared_ptr<Texture>(diffuse),std::shared_ptr<Texture>(normal),std::shared_ptr<Texture>(specular),32.f);
     }
 }

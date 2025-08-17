@@ -7,15 +7,21 @@
 namespace isaacObjectViewer
 {
     PointLight::PointLight(const glm::vec3& position, const glm::vec3& color)
-        : m_Color(color)
+        : m_ID(GenerateUniqueID())
+        , m_Name("Light_" + std::to_string(m_ID))
+        , m_Type(ObjectType::PointLight)
+        , m_Color(color)
+        , m_Enabled(true)
         , m_UseMaterial(false)
         , m_Sphere(position)
-        , m_AmbientIntensity(0.05f)
+        , m_AmbientIntensity(0.03f)
         , m_DiffuseIntensity(1.0f)
         , m_SpecularIntensity(1.0f)
+        , m_AttConstant(1.0f)
+        , m_AttLinear(0.09f)
+        , m_AttQuadratic(0.032f)
     {
-        m_ID = GenerateUniqueID();
-        m_Name = "Light_" + std::to_string(m_ID);
+        
         // Scale down the cube representation for the light.
         m_Sphere.SetScale(glm::vec3(0.2f));
         m_Sphere.SetColor(color);
@@ -54,7 +60,18 @@ namespace isaacObjectViewer
         m_Shader->setMat4("projection", projection);
         m_Shader->setVec3("lightColor", m_Color);
 
-        // Render the light cube using indexed drawing.
-        renderer.Render(m_Sphere.GetVertexArray(), m_Sphere.GetIndexBuffer(), *m_Shader);
+        m_Sphere.Render(renderer, view, projection, m_Shader.get());
+    }
+    
+    void PointLight::SetLightUniforms(Shader* shader, const std::string& uniformName) const
+    {
+        shader->setBool(uniformName + ".enabled", m_Enabled);
+        shader->setVec3(uniformName + ".position", GetPosition());
+        shader->setVec3(uniformName + ".ambient", m_AmbientIntensity);
+        shader->setVec3(uniformName + ".diffuse", m_DiffuseIntensity);
+        shader->setVec3(uniformName + ".specular", m_SpecularIntensity);
+        shader->setFloat(uniformName + ".att_constant", m_AttConstant);
+        shader->setFloat(uniformName + ".att_linear", m_AttLinear);
+        shader->setFloat(uniformName + ".att_quadratic", m_AttQuadratic);
     }
 }

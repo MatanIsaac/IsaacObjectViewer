@@ -299,13 +299,7 @@ namespace isaacObjectViewer
 
         for (int i = 0; i < numLights; ++i) 
         {
-            m_MainShader->setVec3("point_lights[" + std::to_string(i) + "].position", m_LightObjects[i]->GetPosition());
-            m_MainShader->setVec3("point_lights[" + std::to_string(i) + "].ambient", m_LightObjects[i]->GetAmbientIntensity());
-            m_MainShader->setVec3("point_lights[" + std::to_string(i) + "].diffuse", m_LightObjects[i]->GetDiffuseIntensity());
-            m_MainShader->setVec3("point_lights[" + std::to_string(i) + "].specular", m_LightObjects[i]->GetSpecularIntensity());
-            m_MainShader->setFloat("point_lights["+ std::to_string(i) + "].constant", 1.0f);
-            m_MainShader->setFloat("point_lights["+ std::to_string(i) + "].linear", 0.09f);
-            m_MainShader->setFloat("point_lights["+ std::to_string(i) + "].quadratic", 0.032f);
+            m_LightObjects[i]->SetLightUniforms(m_MainShader, "point_lights[" + std::to_string(i) + "]");
         }
         m_MainShader->setInt("numPointLights", numLights);
         // ----------------------------------------------------

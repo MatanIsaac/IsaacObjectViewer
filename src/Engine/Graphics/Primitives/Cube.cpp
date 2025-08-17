@@ -8,13 +8,14 @@ namespace isaacObjectViewer
     Cube::Cube(const glm::vec3& position)
         : m_ID(GenerateUniqueID())
         , m_Name("Cube_" + std::to_string(m_ID))
-        , m_Position(position)  
+        , m_Type(ObjectType::Cube)
+        , m_Position(position)
         , m_Rotation(DEFAULT_ROTATION)
         , m_Orientation(glm::quat(glm::radians(m_Rotation)))
         , m_Scale(1.0f)
         , m_Color(DEFAULT_COLOR)
-        , m_UseMaterial(false)
-        , m_Material(GetDefaultMaterial())
+        , m_UseMaterial(true)
+        , m_Material(TextureManager::GetDefaultMaterial())
     {
         // Set index count for our cube (36 indices)
         m_IndicesCount = 36;
@@ -30,12 +31,14 @@ namespace isaacObjectViewer
         vb_layout.Push<float>(3); // Positions
         vb_layout.Push<float>(3); // Normals
         vb_layout.Push<float>(2); // TexCoords
+        vb_layout.Push<float>(3); // Tangents
+        vb_layout.Push<float>(3); // Bitangents
         m_VertexArray->AddBuffer(*m_VertexBuffer, vb_layout);
 
         // Create the IndexBuffer with our index data
         m_IndexBuffer = std::make_unique<IndexBuffer>(m_CubeIndices, m_IndicesCount);
 
-        m_Material = GetDefaultMaterial();
+        m_Material = TextureManager::GetDefaultMaterial();
     }
 
     Cube::~Cube()
@@ -51,24 +54,23 @@ namespace isaacObjectViewer
             LOG_INFO("Shader parameter is null!");
             return;
         }
-        
-        // Compute model matrix
-        auto model = GetModelMatrix();
 
         // Bind shader and set uniforms
         shader->Bind();
-        shader->setMat4("model", model);
+        shader->setMat4("model", GetModelMatrix());
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
         shader->setVec3("objectColor", m_Color);
-
+        
         bool hasDiffuse  = (m_Material.Diffuse  != nullptr);
+        bool hasNormal   = (m_Material.Normal   != nullptr);
         bool hasSpecular = (m_Material.Specular != nullptr);
-
-        const bool useMaterial = m_UseMaterial && (hasDiffuse || hasSpecular);
+        
+        const bool useMaterial = m_UseMaterial && (hasDiffuse || hasSpecular || hasNormal);
 
         shader->setBool("useMaterial",   useMaterial);
         shader->setBool("hasDiffuseMap",  hasDiffuse);
+        shader->setBool("hasNormalMap",   hasNormal);
         shader->setBool("hasSpecularMap", hasSpecular);
         shader->setFloat("material.shininess", m_Material.Shininess);
 
@@ -86,6 +88,17 @@ namespace isaacObjectViewer
             shader->setInt("material.diffuse", 0);
 
             glActiveTexture(GL_TEXTURE1);
+            if (hasNormal) 
+            {
+                m_Material.Normal->Bind(); 
+            }    
+            else   
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+            shader->setInt("material.normal", 1);
+
+            glActiveTexture(GL_TEXTURE2);
             if (hasSpecular) 
             {
                 m_Material.Specular->Bind(); 
@@ -94,7 +107,7 @@ namespace isaacObjectViewer
             {
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
-            shader->setInt("material.specular", 1);
+            shader->setInt("material.specular", 2);
         } 
         else 
         {

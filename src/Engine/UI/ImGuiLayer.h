@@ -96,6 +96,9 @@ namespace isaacObjectViewer
         /// @param gizmoOperation The gizmo operation mode.
         void DrawGizmos(Engine* engine,int gizmoOperation);
 
+        /// @brief Draws a blank table row.
+        void DrawBlankTableRow();
+        
     private:
         SDL_Window* m_Window = nullptr;
         void* m_GLContext = nullptr;
@@ -105,6 +108,7 @@ namespace isaacObjectViewer
         
         ImGuiFileDialog m_ImportObjectDialog;
         ImGuiFileDialog m_DiffuseFileDialog;
+        ImGuiFileDialog m_NormalFileDialog;
         ImGuiFileDialog m_SpecularFileDialog;
         std::string m_CurrentPath;
         std::string m_SelectedPath;     

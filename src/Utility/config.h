@@ -53,4 +53,9 @@ namespace isaacObjectViewer
     /// @param relative_path The relative path to the project root.
     /// @return The absolute path to the project root.
     std::string GetProjectRootPath(const std::string& relative_path);
+
+    /// @brief Gets the file name from a given path.
+    /// @param path The path to extract the file name from.
+    /// @return The file name without the directory.
+    std::string GetFileName(const std::string& path);
 }

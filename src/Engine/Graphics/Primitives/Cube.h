@@ -44,60 +44,61 @@ namespace isaacObjectViewer
 
         /// @brief Gets the cube's ID.
         /// @return The cube's ID.
-        std::size_t GetID() const { return m_ID; }
+        const std::size_t& GetID() const { return m_ID; }
 
         /// @brief Gets the cube's name.
         /// @return The cube's name.
         const std::string& GetName() const override { return m_Name; };
 
-        /// @brief Sets the cube's name.
-        /// @param newName The new name for the cube.
-        void SetName(const std::string& newName) override { m_Name = newName; }
-
+        
         /// @brief Gets the cube's type.
         /// @return The cube's type.
-        ObjectType GetType() const { return ObjectType::Cube; }
-
+        const ObjectType& GetType() const override { return m_Type; }
+        
         /// @brief Gets the cube's position.
         /// @return The cube's position.
-        glm::vec3& GetPosition() override { return m_Position; }
+        const glm::vec3& GetPosition() const override { return m_Position; }
 
         /// @brief Gets the cube's rotation.
         /// @return The cube's rotation.
-        glm::vec3& GetRotation() override { return m_Rotation; }
+        const glm::vec3& GetRotation() const override { return m_Rotation; }
 
         /// @brief Gets the cube's orientation.
         /// @return The cube's orientation.
-        glm::quat& GetOrientation() override { return m_Orientation; }
+        const glm::quat& GetOrientation() const override { return m_Orientation; }
 
         /// @brief Gets the cube's scale.
         /// @return The cube's scale.
-        glm::vec3& GetScale() override { return m_Scale; }
+        const glm::vec3& GetScale() const override { return m_Scale; }
 
         /// @brief Gets the cube's color.
         /// @return The cube's color.
-        glm::vec3& GetColor() override{ return m_Color; }
-
-        /// @brief Gets the cube's material usage flag.
-        /// @return The cube's material usage flag.
-        bool& GetUseMaterial() override { return m_UseMaterial; }
-
-        /// @brief Gets the cube's shininess.
-        /// @return The cube's shininess.
-        float& GetShininess() override { return m_Material.Shininess; }
+        const glm::vec3& GetColor() const override { return m_Color; }
 
         /// @brief Gets the cube's material.
         /// @return The cube's material.
-        const Material& GetMaterial() const { return m_Material; }
+        const Material& GetMaterial() const override { return m_Material; }
+
+        /// @brief Gets the cube's material usage flag.
+        /// @return The cube's material usage flag.
+        const bool& GetUseMaterial() const override { return m_UseMaterial; }
+
+        /// @brief Gets the cube's shininess.
+        /// @return The cube's shininess.
+        const float& GetShininess() const override { return m_Material.Shininess; }
 
         /// @brief Resets the cube's position to the default.
         void ResetPosition() { m_Position = DEFAULT_POSITION; }
-
+        
         /// @brief Resets the cube's rotation to the default.
         void ResetRotation() { m_Rotation = DEFAULT_ROTATION; }
-
+        
         /// @brief Resets the cube's scale to the default.
         void ResetScale() { m_Scale = DEFAULT_SCALE; }
+        
+        /// @brief Sets the cube's name.
+        /// @param newName The new name for the cube.
+        void SetName(const std::string& newName) override { m_Name = newName; }
 
         /// @brief Sets the cube's position.
         /// @param newPosition The new position for the cube.
@@ -119,41 +120,17 @@ namespace isaacObjectViewer
         /// @param newColor The new color for the cube.
         inline void SetColor(const glm::vec3& newColor) override{ m_Color = newColor; }
 
+        /// @brief Sets the cube's material.
+        /// @param newMaterial The new material for the cube.
+        void SetMaterial(const Material& newMaterial) override { m_Material = newMaterial; }
+        
         /// @brief Sets the cube's material usage flag.
         /// @param use The new material usage flag for the cube.
         inline void SetUseMaterial(bool use) override { m_UseMaterial = use; }
 
-        /// @brief Sets the cube's material.
-        /// @param newMaterial The new material for the cube.
-        void SetMaterial(const Material& newMaterial) { m_Material = newMaterial; }
-
-        /// @brief Sets the cube's diffuse texture.
-        /// @param tex The new diffuse texture for the cube.
-        void SetDiffuseTexture(const std::shared_ptr<Texture>& tex) override { m_Material.Diffuse = tex; }
-
-        /// @brief Sets the cube's specular texture.
-        /// @param tex The new specular texture for the cube.
-        void SetSpecularTexture(const std::shared_ptr<Texture>& tex) override { m_Material.Specular = tex; }
-
-        /// @brief Gets the cube's vertex array.
-        /// @return The cube's vertex array.
-        inline const VertexArray    &GetVertexArray()   const override { return *m_VertexArray; }
-
-        /// @brief Gets the cube's vertex buffer.
-        /// @return The cube's vertex buffer.
-        inline const VertexBuffer   &GetVertexBuffer()  const override { return *m_VertexBuffer; }
-
-        /// @brief Gets the cube's index buffer.
-        /// @return The cube's index buffer.
-        inline const IndexBuffer    &GetIndexBuffer()   const override { return *m_IndexBuffer; }
-
-        /// @brief Gets the cube's index count.
-        /// @return The cube's index count.
-        inline unsigned int         GetIndexCount()     const override { return m_IndicesCount; }
-
-        /// @brief Gets the cube's vertex count.
-        /// @return The cube's vertex count.
-        inline unsigned int         GetVertexCount() const override { return m_VertexCount; }
+        /// @brief Sets the cube's shininess.
+        /// @param newShininess The new shininess for the cube's material.
+        void SetShininess(float newShininess) override { m_Material.Shininess = newShininess; }
 
         /// @brief Checks for intersection with a ray.
         /// @param ray The ray to check for intersection.
@@ -178,7 +155,7 @@ namespace isaacObjectViewer
     private:
         std::size_t m_ID;
         std::string m_Name;
-        
+        ObjectType m_Type;
         glm::vec3 m_Position;
         glm::vec3 m_Rotation;
         glm::quat m_Orientation;
@@ -200,45 +177,45 @@ namespace isaacObjectViewer
     public:
         /// @brief The cube's vertex data.
         /// 24 vertices (4 per face) × 6 floats each = 144 floats.
-        /// Each vertex: position (x,y,z) then normal (x,y,z)
+        /// Each vertex: pos(3) | normal(3) | uv(2) | tangent(3) | bitangent(3)
         /// @return A pointer to the cube's vertex data.
-        static constexpr float m_CubeVertices[192] = 
+        static constexpr float m_CubeVertices[] = 
         {
             // Front face (z = -0.5, normal (0,0,-1))
-            -0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  0.0f, 0.0f, // bottom-left
-             0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  1.0f, 0.0f, // bottom-right
-             0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  1.0f, 1.0f, // top-right
-            -0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  0.0f, 1.0f, // top-left
+            -0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  0.0f, 0.0f,  1,0,0,   0,1,0, // bottom-left
+             0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  1.0f, 0.0f,  1,0,0,   0,1,0, // bottom-right
+             0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  1.0f, 1.0f,  1,0,0,   0,1,0, // top-right
+            -0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,  0.0f, 1.0f,  1,0,0,   0,1,0, // top-left
 
             // Back face (z = 0.5, normal (0,0,1))
-            -0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  0.0f, 0.0f, // bottom-left
-             0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  1.0f, 0.0f, // bottom-right
-             0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  1.0f, 1.0f, // top-right
-            -0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  0.0f, 1.0f, // top-left
+            -0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1,0,0, 0,1,0, // bottom-left
+             0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  1.0f, 0.0f, 1,0,0, 0,1,0, // bottom-right
+             0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  1.0f, 1.0f, 1,0,0, 0,1,0, // top-right
+            -0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1,0,0, 0,1,0, // top-left
 
             // Left face (x = -0.5, normal (-1,0,0))
-            -0.5f, -0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom-left
-            -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, // bottom-right
-            -0.5f,  0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top-right
-            -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 1.0f, // top-left
+            -0.5f, -0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 0.0f, 1,0,0, 0,1,0, // bottom-lef
+            -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1,0,0, 0,1,0, // bottom-rig
+            -0.5f,  0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1,0,0, 0,1,0, // top-right
+            -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 1.0f, 1,0,0, 0,1,0, // top-left
 
             // Right face (x = 0.5, normal (1,0,0))
-             0.5f, -0.5f, -0.5f,   1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom-left
-             0.5f, -0.5f,  0.5f,   1.0f,  0.0f,  0.0f,  1.0f, 0.0f, // bottom-right
-             0.5f,  0.5f,  0.5f,   1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top-right
-             0.5f,  0.5f, -0.5f,   1.0f,  0.0f,  0.0f,  0.0f, 1.0f, // top-left
+             0.5f, -0.5f, -0.5f,   1.0f,  0.0f,  0.0f,  0.0f, 0.0f, 1,0,0, 0,1,0, // bottom-left
+             0.5f, -0.5f,  0.5f,   1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1,0,0, 0,1,0, // bottom-right
+             0.5f,  0.5f,  0.5f,   1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1,0,0, 0,1,0, // top-right
+             0.5f,  0.5f, -0.5f,   1.0f,  0.0f,  0.0f,  0.0f, 1.0f, 1,0,0, 0,1,0, // top-left
 
             // Bottom face (y = -0.5, normal (0,-1,0))
-            -0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,  0.0f, 0.0f, // bottom-left
-             0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,  1.0f, 0.0f, // bottom-right
-             0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,  1.0f, 1.0f, // top-right
-            -0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,  0.0f, 1.0f, // top-left
+            -0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1,0,0, 0,1,0, // bottom-left
+             0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,  1.0f, 0.0f, 1,0,0, 0,1,0, // bottom-right
+             0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,  1.0f, 1.0f, 1,0,0, 0,1,0, // top-right
+            -0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1,0,0, 0,1,0, // top-left
 
             // Top face (y = 0.5, normal (0,1,0))
-            -0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,  0.0f, 0.0f, // bottom-left
-             0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,  1.0f, 0.0f, // bottom-right
-             0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,  1.0f, 1.0f, // top-right
-            -0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,  0.0f, 1.0f // top-left
+            -0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1,0,0, 0,1,0, // bottom-left
+             0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,  1.0f, 0.0f, 1,0,0, 0,1,0, // bottom-right
+             0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,  1.0f, 1.0f, 1,0,0, 0,1,0, // top-right
+            -0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1,0,0, 0,1,0  // top-left
         };
 
         /// @brief The cube's index data.
@@ -267,4 +244,4 @@ namespace isaacObjectViewer
             22, 23, 20
         };
     };
-} // namespace isaacGraphicsEngine
+} // namespace isaacObjectViewer

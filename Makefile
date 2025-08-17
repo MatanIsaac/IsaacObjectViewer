@@ -1,9 +1,12 @@
+# --------------------- Compiler ---------------------
 CXX = g++
 
+# --------------------- Third-Party Paths ---------------------
 IMGUI_DIR = dependencies/imgui
 IMGUIZMO_DIR = dependencies/ImGuizmo
 ImGuiFileDialog_DIR = dependencies/ImGuiFileDialog
 IMGUI_BACKEND = $(IMGUI_DIR)/backends
+
 IMGUI_SRC = \
 	$(IMGUI_DIR)/imgui.cpp \
 	$(IMGUI_DIR)/imgui_draw.cpp \
@@ -13,23 +16,32 @@ IMGUI_SRC = \
 	$(IMGUIZMO_DIR)/ImGuizmo.cpp \
 	$(ImGuiFileDialog_DIR)/ImGuiFileDialog.cpp \
 	$(IMGUI_BACKEND)/imgui_impl_sdl3.cpp \
-	$(IMGUI_BACKEND)/imgui_impl_opengl3.cpp \
+	$(IMGUI_BACKEND)/imgui_impl_opengl3.cpp
 
-# --------------------- Compiler and Linker Settings ---------------------
+# --------------------- OS-Specific ---------------------
 EXE =
-COPY_FILES = 
-LDFLAGS = 
+TEST_EXE =
+COPY_RUNTIME =
+LDFLAGS =
+
 ifeq ($(OS),Windows_NT)
-    EXE = iov.exe
-	LDFLAGS = -Ldependencies/SDL3/x86_64-w64-mingw32/lib -lmingw32 -lSDL3 -Ldependencies/assimp/lib -lassimp -lgdi32 -lopengl32 -limm32 -g # -Wl,-subsystem,windows
-	COPY_FILES = cp dependencies/SDL3/x86_64-w64-mingw32/bin/SDL3.dll dependencies/assimp/bin/libassimp-6.dll .
+  EXE       = iov.exe
+  TEST_EXE  = test_runner.exe
+  LDFLAGS   = -Ldependencies/SDL3/x86_64-w64-mingw32/lib -lmingw32 -lSDL3 \
+              -Ldependencies/assimp/lib -lassimp -lgdi32 -lopengl32 -limm32 -g
+  COPY_RUNTIME = \
+    cp dependencies/SDL3/x86_64-w64-mingw32/bin/SDL3.dll $(BUILD_DIR)/ && \
+    cp dependencies/assimp/bin/libassimp-6.dll $(BUILD_DIR)/
 else
-    EXE = iov
-    LDFLAGS = -Ldependencies/assimp/lib -Wl,-rpath,'$$ORIGIN/dependencies/assimp/lib' -lSDL3 -lassimp -lGL -ldl -lpthread -g
-	COPY_FILES = cp dependencies/assimp/lib/libassimp.so.6 .
+  EXE       = iov
+  TEST_EXE  = test_runner
+  # Load shared libs from the exe directory
+  LDFLAGS   = -Ldependencies/assimp/lib -Wl,-rpath,'$$ORIGIN' \
+              -lSDL3 -lassimp -lGL -ldl -lpthread -g
+  COPY_RUNTIME = cp dependencies/assimp/lib/libassimp.so.6 $(BUILD_DIR)/
 endif
 
-
+# --------------------- Includes & Flags ---------------------
 INCLUDE = \
 	-Idependencies/glad/include \
 	-Idependencies/SDL3/x86_64-w64-mingw32/include \
@@ -43,49 +55,79 @@ INCLUDE = \
 	-Isrc/Engine/UI \
 	-I$(IMGUI_DIR) -I$(IMGUI_BACKEND) \
 	-I$(IMGUIZMO_DIR) \
-	-I$(ImGuiFileDialog_DIR)/ImGuiFileDialog.hpp \
+	-I$(ImGuiFileDialog_DIR)
 
-CXXFLAGS = -std=c++20 -g -Wall -DIMGUI_DEFINE_MATH_OPERATORS $(INCLUDE)
+CXXFLAGS = -std=c++20 -g -Wall -Wextra -DIMGUI_DEFINE_MATH_OPERATORS $(INCLUDE)
 GLAD_SRC = dependencies/glad/src/glad.c
-SOURCES := $(wildcard src/*.cpp src/**/*.cpp src/**/**/*.cpp src/**/**/**/*.cpp src/**/**/**/**/*.cpp) $(GLAD_SRC) $(IMGUI_SRC)
-OBJS := $(SOURCES:.cpp=.o)
-OBJS := $(OBJS:.c=.o)
 
-all: $(EXE)
+# --------------------- Build Layout ---------------------
+BUILD_DIR := build
+OBJDIR    := $(BUILD_DIR)
+BINDIR    := $(BUILD_DIR)
 
-$(EXE): $(OBJS)
+# --------------------- Portable recursive wildcard ---------------------
+# Usage: $(call rwildcard,dir/,pattern)
+rwildcard = $(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
+
+# --------------------- Source Discovery (no external 'find') -----------
+SRC_CPP := $(call rwildcard,src/,*.cpp) $(IMGUI_SRC)
+SRC_C   := $(GLAD_SRC)
+SOURCES := $(SRC_CPP) $(SRC_C)
+
+# Map sources to build/ objects (preserve subdirectories)
+OBJ_CPP := $(patsubst %.cpp,$(OBJDIR)/%.o,$(SRC_CPP))
+OBJ_C   := $(patsubst %.c,$(OBJDIR)/%.o,$(SRC_C))
+OBJS    := $(OBJ_CPP) $(OBJ_C)
+
+# --------------------- Phony ---------------------
+.PHONY: all clean tests clean_tests run
+
+# --------------------- App Build ---------------------
+all: $(BINDIR)/$(EXE)
+
+# Ensure build root exists 
+$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
+
+$(BINDIR)/$(EXE): $(OBJS) | $(BUILD_DIR)
+	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(LDFLAGS)
-	$(COPY_FILES)
+	@$(COPY_RUNTIME)
 
-%.o: %.cpp
+# compile into mirrored build/ path; auto-create subdirs
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-%.o: %.c
+$(OBJDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(EXE)
+	rm -rf $(BUILD_DIR)
 
 # --------------------- GoogleTest ---------------------
 GTEST_DIR     = dependencies/googletest/googletest
 GTEST_SRC     = $(GTEST_DIR)/src/gtest-all.cc
 GTEST_HEADERS = -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 
-TEST_SRCS     := $(wildcard tests/*.cpp)
-TEST_OBJS     := $(TEST_SRCS:.cpp=.o)
-TEST_BIN      := tests/test_runner
+TEST_SRCS     := $(call rwildcard,tests/,*.cpp)
+TEST_OBJS     := $(patsubst tests/%.cpp,$(OBJDIR)/tests/%.o,$(TEST_SRCS))
+TEST_BIN      := $(BINDIR)/tests/$(TEST_EXE)
 
-TEST_CXXFLAGS = -std=c++17 -g -Wall -Wextra -DIMGUI_DEFINE_MATH_OPERATORS $(GTEST_HEADERS) $(INCLUDE)
+TEST_CXXFLAGS = -std=c++20 -g -Wall -Wextra -DIMGUI_DEFINE_MATH_OPERATORS $(GTEST_HEADERS) $(INCLUDE)
 TEST_LDFLAGS  = $(LDFLAGS)
 
 tests: $(TEST_BIN)
 
-$(TEST_BIN): $(TEST_OBJS) $(OBJS) $(GTEST_SRC)
+$(TEST_BIN): $(TEST_OBJS) $(OBJS) $(GTEST_SRC) | $(BUILD_DIR)
+	@mkdir -p $(dir $@)
 	$(CXX) $(TEST_CXXFLAGS) $^ -o $@ $(TEST_LDFLAGS)
+	@$(COPY_RUNTIME)
 
-tests/%.o: tests/%.cpp
+$(OBJDIR)/tests/%.o: tests/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(TEST_CXXFLAGS) -c $< -o $@
 
 clean_tests:
 	rm -f $(TEST_OBJS) $(TEST_BIN)
-# --------------------- GoogleTest ---------------------

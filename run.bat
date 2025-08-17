@@ -1,3 +1,3 @@
 @echo off
-echo "Running Isaac-Graphics-Engine.."
-@iov.exe
+echo "Running Isaac-Object-Viewer.."
+@build\\iov.exe

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-echo "Running Isaac-Graphics-Engine.."
+echo "Running Isaac-Object-Viewer.."
 
-./iov
+./build/iov

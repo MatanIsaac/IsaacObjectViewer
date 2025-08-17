@@ -8,13 +8,14 @@ namespace isaacObjectViewer
     Plane::Plane(const glm::vec3& position) 
         : m_ID(GenerateUniqueID())
         , m_Name("Plane_" + std::to_string(m_ID)) 
+        , m_Type(ObjectType::Plane)
         , m_Position(position)
         , m_Rotation(0.0f)
         , m_Orientation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f))
         , m_Scale(1.0f)
         , m_Color(DEFAULT_COLOR)
         , m_UseMaterial(false)
-        ,m_Material(GetDefaultMaterial())
+        ,m_Material(TextureManager::GetDefaultMaterial())
     {
         // Initialize vertex count for indexed drawing
         m_VertexCount = 4;
@@ -30,6 +31,8 @@ namespace isaacObjectViewer
         vb_layout.Push<float>(3); // Positions
         vb_layout.Push<float>(3); // Normals
         vb_layout.Push<float>(2); // TexCoords
+        vb_layout.Push<float>(3); // Tangents
+        vb_layout.Push<float>(3); // Bitangents
         m_VertexArray->AddBuffer(*m_VertexBuffer, vb_layout);
 
         // Create the IndexBuffer with the index data
@@ -61,12 +64,14 @@ namespace isaacObjectViewer
         shader->setVec3("objectColor", m_Color);
         
         bool hasDiffuse  = (m_Material.Diffuse  != nullptr);
+        bool hasNormal   = (m_Material.Normal   != nullptr);
         bool hasSpecular = (m_Material.Specular != nullptr);
 
-        const bool useMaterial = m_UseMaterial && (hasDiffuse || hasSpecular);
+        const bool useMaterial = m_UseMaterial && (hasDiffuse || hasSpecular || hasNormal);
 
         shader->setBool("useMaterial",   useMaterial);
         shader->setBool("hasDiffuseMap",  hasDiffuse);
+        shader->setBool("hasNormalMap",   hasNormal);
         shader->setBool("hasSpecularMap", hasSpecular);
         shader->setFloat("material.shininess",m_Material.Shininess);
         
@@ -84,6 +89,17 @@ namespace isaacObjectViewer
             shader->setInt("material.diffuse", 0);
 
             glActiveTexture(GL_TEXTURE1);
+            if (hasNormal) 
+            {
+                m_Material.Normal->Bind(); 
+            }    
+            else
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+            shader->setInt("material.normal", 1);
+
+            glActiveTexture(GL_TEXTURE2);
             if (hasSpecular) 
             {
                 m_Material.Specular->Bind(); 
@@ -92,7 +108,7 @@ namespace isaacObjectViewer
             {
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
-            shader->setInt("material.specular", 1);
+            shader->setInt("material.specular", 2);
         } 
         else 
         {

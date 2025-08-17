@@ -7,9 +7,10 @@
 namespace isaacObjectViewer
 {
     DirectionalLight::DirectionalLight()
-        : m_Direction({ -0.2f, -1.0f, -0.3f})
-        , m_Ambient({0.2f, 0.2f, 0.2f})
-        , m_Diffuse({0.5f, 0.5f, 0.5f})
+        : m_Enabled(true)
+        , m_Direction({ -0.2f, -1.0f, -0.3f})
+        , m_Ambient({0.5f, 0.5f, 0.5f})
+        , m_Diffuse({0.8f, 0.8f, 0.8f})
         , m_Specular({1.0f, 1.0f, 1.0f})
         , m_Changed(true)
     {}
@@ -30,6 +31,8 @@ namespace isaacObjectViewer
         }
         if(m_Changed)
         {
+            shader->setVec3("dirLightPos", m_Direction);
+            shader->setBool("dirLight.enabled", m_Enabled);
             shader->setVec3("dirLight.direction", m_Direction);
             shader->setVec3("dirLight.ambient", m_Ambient);
             shader->setVec3("dirLight.diffuse", m_Diffuse);

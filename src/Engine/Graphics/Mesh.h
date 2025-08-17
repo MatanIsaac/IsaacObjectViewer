@@ -80,7 +80,7 @@ namespace isaacObjectViewer
 
         /// @brief Gets the ID of the mesh.
         /// @return The ID of the mesh.
-        std::size_t GetID() const override { return 0; } // Mesh does not use an ID currently
+        const std::size_t& GetID() const override { return m_ID; }
 
         /// @brief Gets the name of the mesh.
         /// @return The name of the mesh.
@@ -92,31 +92,35 @@ namespace isaacObjectViewer
 
         /// @brief Gets the type of the mesh.
         /// @return The type of the mesh.
-        ObjectType GetType() const override { return ObjectType::Imported; }
+        const ObjectType& GetType() const override { return m_Type; }
 
         /// @brief Gets the position of the mesh.
         /// @return The position of the mesh.
-        glm::vec3& GetPosition() override { return m_Position; }
+        const glm::vec3& GetPosition() const override { return m_Position; }
 
         /// @brief Gets the rotation of the mesh.
         /// @return The rotation of the mesh.
-        glm::vec3& GetRotation() override { return m_Rotation; }
+        const glm::vec3& GetRotation() const override { return m_Rotation; }
 
         /// @brief Gets the orientation of the mesh.
         /// @return The orientation of the mesh.
-        glm::quat& GetOrientation() override { return m_Orientation; }
+        const glm::quat& GetOrientation() const override { return m_Orientation; }
 
         /// @brief Gets the scale of the mesh.
         /// @return The scale of the mesh.
-        glm::vec3& GetScale() override { return m_Scale; }
+        const glm::vec3& GetScale() const override { return m_Scale; }
 
         /// @brief Gets the color of the mesh.
         /// @return The color of the mesh.
-        glm::vec3& GetColor() override { return m_Color; }
+        const glm::vec3& GetColor() const override { return m_Color; }
+
+        /// @brief Gets the material of the mesh.
+        /// @return The material of the mesh.
+        const Material& GetMaterial() const override { return m_Material; }
 
         /// @brief Gets the use material flag of the mesh.
         /// @return The use material flag of the mesh.
-        bool& GetUseMaterial() override { return m_UseMaterial; }
+        const bool& GetUseMaterial() const override { return m_UseMaterial; }
 
         /// @brief Sets the position of the mesh.
         /// @param newPosition The new position for the mesh.
@@ -138,21 +142,17 @@ namespace isaacObjectViewer
         /// @param newColor The new color for the mesh.
         void SetColor(const glm::vec3& newColor) override { m_Color = newColor; }
 
+        /// @brief Sets the material of the mesh.
+        /// @param newMaterial The new material for the mesh.
+        void SetMaterial(const Material& newMaterial) override { m_Material = newMaterial; }
+
         /// @brief Sets the use material flag of the mesh.
         /// @param use The new use material flag for the mesh.
         void SetUseMaterial(bool use) override { m_UseMaterial = use; }
 
-        /// @brief Sets the material of the mesh.
-        /// @param newMaterial The new material for the mesh.
-        void SetMaterial(Material newMaterial) { m_Material = newMaterial; }
-
         /// @brief Sets the shininess of the material.
         /// @param newShininess The new shininess value for the material.
-        void SetShininess(float newShininess) { m_Material.Shininess = newShininess; }
-
-        /// @brief Gets the material of the mesh.
-        /// @return The material of the mesh.
-        const Material& GetMaterial() const { return m_Material; }
+        void SetShininess(float newShininess) override { m_Material.Shininess = newShininess; }
 
         /// @brief Sets the diffuse texture of the material.
         /// @param t The new diffuse texture for the material.
@@ -164,27 +164,31 @@ namespace isaacObjectViewer
 
         /// @brief Gets the shininess of the material.
         /// @return The shininess of the material.
-        float GetShininess() const { return m_Material.Shininess; }
+        const float& GetShininess() const override { return m_Material.Shininess; }
 
         /// @brief Gets the vertex array of the mesh.
         /// @return The vertex array of the mesh.
-        const VertexArray*  GetVertexArray()  const { return m_VertexArray.get(); }
+        const VertexArray&  GetVertexArray()  const { return *m_VertexArray; }
 
         /// @brief Gets the vertex buffer of the mesh.
         /// @return The vertex buffer of the mesh.
-        const VertexBuffer* GetVertexBuffer() const { return m_VertexBuffer.get(); }
-        
+        const VertexBuffer& GetVertexBuffer() const { return *m_VertexBuffer; }
+
         /// @brief Gets the index buffer of the mesh.
         /// @return The index buffer of the mesh.
-        const IndexBuffer*  GetIndexBuffer()  const { return m_IndexBuffer.get(); }
+        const IndexBuffer&  GetIndexBuffer()  const { return *m_IndexBuffer; }
 
         /// @brief Gets the index count of the mesh.
         /// @return The index count of the mesh.
-        unsigned int        GetIndexCount()   const { return static_cast<unsigned int>(m_Indices.size()); }
+        unsigned int GetIndexCount()   const { return static_cast<unsigned int>(m_Indices.size()); }
 
         /// @brief Gets the vertex count of the mesh.
         /// @return The vertex count of the mesh.
-        unsigned int        GetVertexCount()  const { return static_cast<unsigned int>(m_Vertices.size()); }
+        unsigned int GetVertexCount()  const { return static_cast<unsigned int>(m_Vertices.size()); }
+
+        /// @brief Generates a unique ID for the mesh.
+        /// @return The unique ID for the mesh.
+        std::size_t GenerateUniqueID();
 
         /// @brief Gets the minimum bounding box of the mesh.
         /// @return The minimum bounding box of the mesh.
@@ -203,8 +207,9 @@ namespace isaacObjectViewer
         std::vector<unsigned int> m_Indices;
         std::vector<std::shared_ptr<Texture>> m_Textures;
 
-        
+        std::size_t m_ID;
         std::string m_Name;
+        ObjectType m_Type;
         glm::vec3 m_Position;
         glm::vec3 m_Rotation;
         glm::quat m_Orientation;

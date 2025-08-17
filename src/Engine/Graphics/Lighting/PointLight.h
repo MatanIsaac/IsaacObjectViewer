@@ -13,6 +13,7 @@
 #include "Graphics/Shader/Shader.h"
 #include "Graphics/Renderer/Renderer.h"
 #include "Utility/config.h"  
+#include "Graphics/Material.h"
 #include "Core/IObject.h"
 
 namespace isaacObjectViewer
@@ -29,6 +30,20 @@ namespace isaacObjectViewer
         /// @brief Updates the PointLight.
         void Update();
 
+        /// @brief Enables the light.
+        void Enable() { m_Enabled = true; }
+
+        /// @brief Disables the light.
+        void Disable() { m_Enabled = false; }
+
+        /// @brief Checks if the light is enabled.
+        /// @return True if the light is enabled, false otherwise.
+        bool IsEnabled() const { return m_Enabled; }
+
+        /// @brief Sets the light's enabled state.
+        /// @param enabled The new enabled state.
+        void SetEnabled(bool enabled) { m_Enabled = enabled; }
+
         /// @brief Renders the PointLight.
         /// @param renderer The renderer to use for rendering.
         /// @param view The view matrix.
@@ -38,7 +53,7 @@ namespace isaacObjectViewer
 
         /// @brief Gets the light's ID.
         /// @return The light's ID.
-        std::size_t GetID() const override { return m_ID; }
+        const std::size_t& GetID() const override { return m_ID; }
 
         /// @brief Gets the light's name.
         /// @return The light's name.
@@ -50,27 +65,39 @@ namespace isaacObjectViewer
 
         /// @brief Gets the light's type.
         /// @return The light's type.
-        ObjectType GetType() const override { return ObjectType::PointLight; }
+        const ObjectType& GetType() const override { return m_Type; }
 
         /// @brief Gets the light's ambient intensity.
         /// @return The light's ambient intensity.
-        glm::vec3& GetAmbientIntensity() { return m_AmbientIntensity; }
+        const glm::vec3& GetAmbientIntensity() const { return m_AmbientIntensity; }
 
         /// @brief Gets the light's diffuse intensity.
         /// @return The light's diffuse intensity.
-        glm::vec3& GetDiffuseIntensity() { return m_DiffuseIntensity; }
+        const glm::vec3& GetDiffuseIntensity() const { return m_DiffuseIntensity; }
 
         /// @brief Gets the light's specular intensity.
         /// @return The light's specular intensity.
-        glm::vec3& GetSpecularIntensity() { return m_SpecularIntensity; }
+        const glm::vec3& GetSpecularIntensity() const { return m_SpecularIntensity; }
+
+        /// @brief Gets the light's attenuation constant.
+        /// @return The light's attenuation constant.
+        const float& GetAttConstant() const { return m_AttConstant; }
+
+        /// @brief Gets the light's attenuation linear.
+        /// @return The light's attenuation linear.
+        const float& GetAttLinear() const { return m_AttLinear; }
+
+        /// @brief Gets the light's attenuation quadratic.
+        /// @return The light's attenuation quadratic.
+        const float& GetAttQuadratic() const { return m_AttQuadratic; }
 
         /// @brief Gets the light's position.
         /// @return The light's position.
-        glm::vec3& GetPosition() override { return m_Sphere.GetPosition(); }
+        const glm::vec3& GetPosition() const override { return m_Sphere.GetPosition(); }
 
         /// @brief Gets the light's rotation.
         /// @return The light's rotation.
-        glm::vec3& GetRotation() override 
+        const glm::vec3& GetRotation() const override 
         { 
             static glm::vec3 zero = glm::vec3(0.0f); 
             return zero; 
@@ -78,7 +105,7 @@ namespace isaacObjectViewer
 
         /// @brief Gets the light's orientation.
         /// @return The light's orientation.
-        glm::quat& GetOrientation() override 
+        const glm::quat& GetOrientation() const override 
         { 
             static glm::quat identity = glm::quat(1.0f, 0, 0, 0); 
             return identity;
@@ -86,19 +113,23 @@ namespace isaacObjectViewer
 
         /// @brief Gets the light's scale.
         /// @return The light's scale.
-        glm::vec3& GetScale() override { return m_Sphere.GetScale(); }
+        const glm::vec3& GetScale() const override { return m_Sphere.GetScale(); }
 
         /// @brief Gets the light's color.
         /// @return The light's color.
-        glm::vec3& GetColor() override { return m_Color; }
+        const glm::vec3& GetColor() const override { return m_Color; }
+
+        /// @brief Gets the light's material.
+        /// @return The light's material.
+        const Material& GetMaterial() const override { return m_Sphere.GetMaterial(); }
 
         /// @brief Gets the light's use material flag.
         /// @return The light's use material flag.
-        bool& GetUseMaterial() override { return m_UseMaterial; }
+        const bool& GetUseMaterial() const override { return m_UseMaterial; }
 
         /// @brief Gets the light's shininess.
         /// @return The light's shininess.
-        float& GetShininess() override { return m_Shininess; }
+        const float& GetShininess() const override { return m_Shininess; }
 
         /// @brief Sets the light's ambient intensity.
         /// @param newAmbientIntensity The new ambient intensity.
@@ -112,6 +143,18 @@ namespace isaacObjectViewer
         /// @param newSpecularIntensity The new specular intensity.
         void SetSpecularIntensity(const glm::vec3& newSpecularIntensity) { m_SpecularIntensity = newSpecularIntensity; }
 
+        /// @brief Sets the light's attenuation constant.
+        /// @param newAttConstant The new attenuation constant.
+        void SetAttConstant(float newAttConstant) { m_AttConstant = newAttConstant; }
+
+        /// @brief Sets the light's attenuation linear.
+        /// @param newAttLinear The new attenuation linear.
+        void SetAttLinear(float newAttLinear) { m_AttLinear = newAttLinear; }
+
+        /// @brief Sets the light's attenuation quadratic.
+        /// @param newAttQuadratic The new attenuation quadratic.
+        void SetAttQuadratic(float newAttQuadratic) { m_AttQuadratic = newAttQuadratic; }
+
         /// @brief Sets the light's position.
         /// @param position The new position.
         void SetPosition(const glm::vec3& position) override { m_Sphere.SetPosition(position); }
@@ -122,15 +165,7 @@ namespace isaacObjectViewer
 
         /// @brief Sets the light's orientation.
         /// @param newOrientation The new orientation.
-        void SetOrientation(const glm::quat& newOrientation) {}
-
-        /// @brief Sets the light's diffuse texture.
-        /// @param tex The new diffuse texture.
-        void SetDiffuseTexture(const std::shared_ptr<Texture>& tex) override { }
-
-        /// @brief Sets the light's specular texture.
-        /// @param tex The new specular texture.
-        void SetSpecularTexture(const std::shared_ptr<Texture>& tex) override { }
+        void SetOrientation(const glm::quat& newOrientation) override {}
 
         /// @brief Sets the light's scale.
         /// @param scale The new scale.
@@ -140,9 +175,17 @@ namespace isaacObjectViewer
         /// @param color The new color.
         void SetColor(const glm::vec3& color) override { m_Color = color; }
 
+        /// @brief Sets the light's material.
+        /// @param material The new material.
+        void SetMaterial(const Material& material) override { m_Sphere.SetMaterial(material); }
+        
         /// @brief Sets the light's use material flag.
         /// @param use The new use material flag.
         void SetUseMaterial(bool use) override { m_UseMaterial = use; }
+
+        /// @brief Sets the light's shininess.
+        /// @param newShininess The new shininess.
+        void SetShininess(float newShininess) override { m_Material.Shininess = newShininess; }
 
         /// @brief Intersects a ray with the light's volume.
         /// @param ray The ray to intersect.
@@ -158,38 +201,30 @@ namespace isaacObjectViewer
             return ++currentID;
         }
 
-        /// @brief Gets the light's vertex array.
-        /// @return The vertex array.
-        inline const VertexArray    &GetVertexArray()   const override { return m_Sphere.GetVertexArray(); }
-
-        /// @brief Gets the light's vertex buffer.
-        /// @return The vertex buffer.
-        inline const VertexBuffer   &GetVertexBuffer()  const override { return m_Sphere.GetVertexBuffer(); }
-
-        /// @brief Gets the light's index buffer.
-        /// @return The index buffer.
-        inline const IndexBuffer    &GetIndexBuffer()   const override { return m_Sphere.GetIndexBuffer(); }
-
-        /// @brief Gets the light's index count.
-        /// @return The index count.
-        unsigned inline int         GetIndexCount()     const override { return m_Sphere.GetIndexCount(); }
-
-        /// @brief Gets the light's vertex count.
-        /// @return The vertex count.
-        unsigned inline int         GetVertexCount()    const override { return m_Sphere.GetVertexCount(); }
+        /// @brief Sets the uniforms for this point light in the given shader.
+        /// @param shader The shader to set the uniforms for.
+        /// @param lightIndex The index of this light in the uniform array.
+        void SetLightUniforms(Shader* shader, const std::string& uniformName) const;
+        
     private:
         std::size_t m_ID;
         std::string m_Name; 
-        
+        ObjectType m_Type;
         glm::vec3 m_Color;
+        bool m_Enabled;
         bool m_UseMaterial;
+        Material m_Material;
         Sphere m_Sphere;
         float m_Shininess = 0.f;
 
         glm::vec3 m_AmbientIntensity;
         glm::vec3 m_DiffuseIntensity;
         glm::vec3 m_SpecularIntensity;
-        
+
+        float m_AttConstant;
+        float m_AttLinear;
+        float m_AttQuadratic;
+
         std::unique_ptr<Shader> m_Shader;
     };
 }

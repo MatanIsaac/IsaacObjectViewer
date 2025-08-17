@@ -9,6 +9,7 @@ namespace isaacObjectViewer
     Cylinder::Cylinder(const glm::vec3& position) 
         : m_ID(GenerateUniqueID())
         , m_Name("Cylinder_" + std::to_string(m_ID))
+        , m_Type(ObjectType::Cylinder)
         , m_Position(position)
         , m_Rotation(DEFAULT_ROTATION)
         , m_Orientation(glm::quat(glm::radians(DEFAULT_ROTATION)))
@@ -69,7 +70,7 @@ namespace isaacObjectViewer
         shader->setVec3("objectColor", m_Color);
         shader->setBool("useMaterial", false);
         //shader->setFloat("material.shininess",m_Material.Shininess);
-
+        SetNormalMatrixUniform(shader, view);
 
         // Render using indexed drawing.
         renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);

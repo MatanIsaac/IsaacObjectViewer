@@ -449,6 +449,14 @@ namespace isaacObjectViewer
                     ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::SetNextItemWidth(-FLT_MIN);
 
+                    bool enabled = dirLight.IsEnabled();
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0); ImGui::Text("Enabled");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    if (ImGui::Checkbox("##Enabled", &enabled))
+                        dirLight.SetEnabled(enabled);
+
                     // Direction
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0); ImGui::Text("Direction");
@@ -691,129 +699,285 @@ namespace isaacObjectViewer
             strncpy(buffer, selected->GetName().c_str(), sizeof(buffer) - 1);
             lastName = selected->GetName();
         }
-        
-        ImGui::Text("Name");
-        // Now buffer persists across frames, and you don't lose changes!
-        if(ImGui::InputText("##SelectedName", buffer, sizeof(buffer)))
-        {
-            selected->SetName(std::string(buffer));
-            lastName = buffer;
+
+        ImGui::SeparatorText("Transform");
+        if (ImGui::BeginTable("TransformTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp)) 
+        {                
+            ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 120.0f);
+            ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+            // Position
+            glm::vec3 pos = selected->GetPosition();
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("Position");
+            ImGui::TableSetColumnIndex(1);
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            if (ImGui::DragFloat3("##Position", &pos.x, 0.01f))
+                selected->SetPosition(pos);
+
+            // Rotation (Euler in degrees)
+            glm::vec3 rot = selected->GetRotation();
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("Rotation");
+            ImGui::TableSetColumnIndex(1);
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            if (ImGui::DragFloat3("##Rotation", &rot.x, 0.01f))
+            {
+                selected->SetRotation(rot);
+                selected->SetOrientation(glm::quat(glm::radians(rot)));
+            }
+
+            // Scale
+            glm::vec3 scl = selected->GetScale();
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("Scale");
+            ImGui::TableSetColumnIndex(1);
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            if (ImGui::DragFloat3("##Scale", &scl.x, 0.01f))
+                selected->SetScale(scl);
+
+            ImGui::EndTable();
         }
 
-        if (ImGui::CollapsingHeader("Transform",ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::BeginTable("NameTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
         {
-            if (ImGui::BeginTable("TransformTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp)) 
-            {                
+            ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 120.0f);
+            ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+            // Name
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("Name");
+            ImGui::TableSetColumnIndex(1);
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            if (ImGui::InputText("##Name", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
+            {
+                selected->SetName(std::string(buffer));
+                lastName = selected->GetName();
+            }
+
+            ImGui::EndTable();
+        }
+
+        if (selected->GetType() == ObjectType::PointLight)
+        {
+            auto* light = dynamic_cast<PointLight*>(selected);
+
+            ImGui::SeparatorText("Point Light Settings");
+            if (ImGui::BeginTable("PointLightTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
+            {
                 ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 120.0f);
                 ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
+                bool enabled = light->IsEnabled();
                 ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0); ImGui::Text("Position");
+                ImGui::TableSetColumnIndex(0); ImGui::Text("Enabled");
+                ImGui::TableSetColumnIndex(1);
                 ImGui::SetNextItemWidth(-FLT_MIN);
-                ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Position", (float *)&selected->GetPosition(), 0.01f);
-                
+                if (ImGui::Checkbox("##Enabled", &enabled))
+                    light->SetEnabled(enabled);
+
+                glm::vec3 color = light->GetColor();
                 ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0); ImGui::Text("Rotation");
+                ImGui::TableSetColumnIndex(0); ImGui::Text("Color");
+                ImGui::TableSetColumnIndex(1);
                 ImGui::SetNextItemWidth(-FLT_MIN);
-                ImGui::TableSetColumnIndex(1); 
-                if(ImGui::DragFloat3("##Rotation", (float *)&selected->GetRotation(), 0.01f))
-                {
-                    selected->SetOrientation(glm::quat(glm::radians(selected->GetRotation())));
-                } 
+                if (ImGui::ColorEdit3("Color", (float *)&color, ImGuiColorEditFlags_NoLabel))
+                    light->SetColor(color);
+
+                glm::vec3 ambient = light->GetAmbientIntensity();
                 ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0); ImGui::Text("Scale");
+                ImGui::TableSetColumnIndex(0); ImGui::Text("Ambient");
+                ImGui::TableSetColumnIndex(1);
                 ImGui::SetNextItemWidth(-FLT_MIN);
-                ImGui::TableSetColumnIndex(1); ImGui::DragFloat3("##Scale", (float *)&selected->GetScale(), 0.01f);
+                if (ImGui::DragFloat3("##Ambient", (float *)&ambient, 0.01f, 0.0f, 1.0f, "%.3f"))
+                    light->SetAmbientIntensity(ambient);
+
+                glm::vec3 diffuse = light->GetDiffuseIntensity();
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::Text("Diffuse");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                if (ImGui::DragFloat3("##Diffuse", (float *)&diffuse, 0.01f, 0.0f, 1.0f, "%.3f"))
+                    light->SetDiffuseIntensity(diffuse);
+
+                glm::vec3 specular = light->GetSpecularIntensity();
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::Text("Specular");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                if (ImGui::DragFloat3("##Specular", (float *)&specular, 0.01f, 0.0f, 1.0f, "%.3f"))
+                    light->SetSpecularIntensity(specular);
+
+                ImGui::EndTable();
+            }
+
+            ImGui::SeparatorText("Attenuation");
+            if (ImGui::BeginTable("AttenuationTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
+            {
+                ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 120.0f);
+                ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+                // Position
+                float attConstant = light->GetAttConstant();
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::Text("Constant");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                if (ImGui::DragFloat("##Attenuation Constant", &attConstant, 0.01f, 0.0f, 1.0f, "%.3f"))
+                    light->SetAttConstant(attConstant);
+
+                float attLinear = light->GetAttLinear();
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::Text("Linear");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                if (ImGui::DragFloat("##Attenuation Linear", &attLinear, 0.01f, 0.0f, 1.0f, "%.3f"))
+                    light->SetAttLinear(attLinear);
+
+                float attQuadratic = light->GetAttQuadratic();
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::Text("Quadratic");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                if (ImGui::DragFloat("##Attenuation Quadratic", &attQuadratic, 0.01f, 0.0f, 1.0f, "%.3f"))
+                    light->SetAttQuadratic(attQuadratic);
+
                 ImGui::EndTable();
             }
         }
-
-        if(selected->GetType() == ObjectType::PointLight)
-        {
-            auto* light = dynamic_cast<PointLight*>(selected);
-            
-            ImGui::Text("PointLight Color");
-            ImGui::ColorEdit3("Color", (float *)&light->GetColor(), ImGuiColorEditFlags_NoLabel);
-            
-            ImGui::Text("Ambient Intensity");
-            ImGui::DragFloat3("##Ambient Intensity", (float *)&light->GetAmbientIntensity(), 0.01f, 0.0f, 1.0f, "%.3f");
-
-            ImGui::Text("Diffuse Intensity");
-            ImGui::DragFloat3("##Diffuse Intensity", (float *)&light->GetDiffuseIntensity(), 0.01f, 0.0f, 1.0f, "%.3f");
-
-            ImGui::Text("Specular Intensity");
-            ImGui::DragFloat3("##Specular Intensity", (float *)&light->GetSpecularIntensity(), 0.01f, 0.0f, 1.0f, "%.3f");
-        }
         
-        if (selected->GetType() == ObjectType::Cube ||
-        selected->GetType() == ObjectType::Plane || selected->GetType() == ObjectType::Imported)
+        if (selected->GetType() == ObjectType::Cube  ||
+            selected->GetType() == ObjectType::Plane || 
+            selected->GetType() == ObjectType::Imported)
         {
-            ImGui::Separator();
-            if (ImGui::CollapsingHeader("Material Settings"))    
-            {    
-                if (ImGui::Button(selected->GetUseMaterial() ? "Use Object Color" : "Use Material")) 
+            ImGui::SeparatorText("Material Settings");
+        
+            bool useMat = selected->GetUseMaterial();
+            if (ImGui::Button(useMat ? "Use Object Color" : "Use Material"))
+                selected->SetUseMaterial(!useMat);
+
+            // Show color picker when not using material
+            if (!selected->GetUseMaterial())
+            {
+                glm::vec3 color = selected->GetColor();
+                if (ImGui::ColorEdit3("Object Color", &color.x))
+                    selected->SetColor(color);
+            }
+
+            float shininess = selected->GetShininess();
+            ImGui::Text("Shininess");
+            if (ImGui::DragFloat("##Shininess", &shininess, 0.01f, 0.0f, 100.0f, "%.3f"))
+                selected->SetShininess(shininess);
+
+            if (ImGui::Button("Load Diffuse Texture"))
+            {
+                IGFD::FileDialogConfig cfg;
+                cfg.flags = ImGuiFileDialogFlags_Modal;
+                cfg.path  = ".";
+                m_DiffuseFileDialog.OpenDialog("LoadDiffuse", "Select Diffuse", m_ImageDialogFilters, cfg);
+            }
+            if(selected->GetMaterial().Diffuse)
+            {
+                std::string text = GetFileName(selected->GetMaterial().Diffuse->GetPath());
+                ImGui::Text("Diffuse Texture: ");
+                ImGui::SameLine();
+                char* buf = new char[text.size() + 1];
+                std::strcpy(buf, text.c_str());
+                ImGui::InputText("##DiffuseTexture", buf, text.size() + 1, ImGuiInputTextFlags_ReadOnly);
+                delete[] buf;
+            }
+
+            if (ImGui::Button("Load Normal Texture"))
+            {
+                IGFD::FileDialogConfig cfg;
+                cfg.flags = ImGuiFileDialogFlags_Modal;
+                cfg.path  = ".";
+                m_NormalFileDialog.OpenDialog("LoadNormal", "Select Normal", m_ImageDialogFilters, cfg);
+            }
+            if(selected->GetMaterial().Normal)
+            {
+                std::string text = GetFileName(selected->GetMaterial().Normal->GetPath());
+                ImGui::Text("Normal Texture: ");
+                ImGui::SameLine();
+                char* buf = new char[text.size() + 1];
+                std::strcpy(buf, text.c_str());
+                ImGui::InputText("##NormalTexture", buf, text.size() + 1, ImGuiInputTextFlags_ReadOnly);
+                delete[] buf;
+            }
+
+            if (ImGui::Button("Load Specular Texture"))
+            {
+                IGFD::FileDialogConfig cfg;
+                cfg.flags = ImGuiFileDialogFlags_Modal;
+                cfg.path  = ".";
+                m_SpecularFileDialog.OpenDialog("LoadSpecular", "Select Specular", m_ImageDialogFilters, cfg);
+            }
+            
+            if(selected->GetMaterial().Specular)
+            {
+                std::string text = GetFileName(selected->GetMaterial().Specular->GetPath());
+                ImGui::Text("Specular Texture: ");
+                ImGui::SameLine();
+                char* buf = new char[text.size() + 1];
+                std::strcpy(buf, text.c_str());
+                ImGui::InputText("##SpecularTexture", buf, text.size() + 1, ImGuiInputTextFlags_ReadOnly);
+                delete[] buf;
+            }
+            
+            if (m_DiffuseFileDialog.Display("LoadDiffuse",32,{100.f,100.f}))
+            {
+                if (m_DiffuseFileDialog.IsOk())
                 {
-                    selected->SetUseMaterial(!selected->GetUseMaterial());
-                }
-                // Show color picker when not using material
-                if (!selected->GetUseMaterial()) 
-                {
-                    ImGui::ColorEdit3("Object Color", (float*)&selected->GetColor());
-                }
-                ImGui::Text("Shininess");
-                ImGui::DragFloat("##Shininess", &selected->GetShininess(), 0.01f, 0.0f, 100.0f, "%.3f");
-                
-                if (ImGui::Button("Load Diffuse Texture"))
-                {
-                    IGFD::FileDialogConfig cfg;
-                    cfg.flags = ImGuiFileDialogFlags_Modal;
-                    cfg.path  = ".";
-                    m_DiffuseFileDialog.OpenDialog("LoadDiffuse", "Select Diffuse", m_ImageDialogFilters, cfg);
-                }
-                
-                if (ImGui::Button("Load Specular Texture"))
-                {
-                    IGFD::FileDialogConfig cfg;
-                    cfg.flags = ImGuiFileDialogFlags_Modal;
-                    cfg.path  = ".";
-                    m_SpecularFileDialog.OpenDialog("LoadSpecular", "Select Specular", m_ImageDialogFilters, cfg);
-                }
-                
-                if (m_DiffuseFileDialog.Display("LoadDiffuse",32,{100.f,100.f}))
-                {
-                    if (m_DiffuseFileDialog.IsOk())
+                    std::string path = m_DiffuseFileDialog.GetFilePathName();
+                    auto tex = TextureManager::LoadTexture(path,TextureType::DIFFUSE);
+                    
+                    auto type = selected->GetType();
+                    if (type == ObjectType::Cube || type == ObjectType::Plane || type == ObjectType::Imported)
                     {
-                        std::string path = m_DiffuseFileDialog.GetFilePathName();
-                        auto tex = TextureManager::LoadTexture(path,TextureType::DIFFUSE);
-                        
-                        auto type = selected->GetType();
-                        if (type == ObjectType::Cube || type == ObjectType::Plane || type == ObjectType::Imported)
-                        {
-                            selected->SetDiffuseTexture(tex);    
-                        }
+                        auto material = selected->GetMaterial();
+                        material.Diffuse = tex;
+                        selected->SetMaterial(material);
                     }
-                    m_DiffuseFileDialog.Close();
                 }
-                
-                if (m_SpecularFileDialog.Display("LoadSpecular",32,{100.f,100.f}))
+                m_DiffuseFileDialog.Close();
+            }
+
+            if (m_NormalFileDialog.Display("LoadNormal",32,{100.f,100.f}))
+            {
+                if (m_NormalFileDialog.IsOk())
                 {
-                    if (m_SpecularFileDialog.IsOk())
+                    std::string path = m_NormalFileDialog.GetFilePathName();
+                    auto tex = TextureManager::LoadTexture(path,TextureType::NORMAL);
+
+                    auto type = selected->GetType();
+                    if (type == ObjectType::Cube || type == ObjectType::Plane || type == ObjectType::Imported)
                     {
-                        std::string path = m_SpecularFileDialog.GetFilePathName();
-                        auto tex = TextureManager::LoadTexture(path,TextureType::SPECULAR);
-                        
-                        auto type = selected->GetType();
-                        if (type == ObjectType::Cube || type == ObjectType::Plane || type == ObjectType::Imported)
-                        {
-                            selected->SetSpecularTexture(tex);    
-                        }
+                        auto material = selected->GetMaterial();
+                        material.Normal = tex;
+                        selected->SetMaterial(material);
                     }
-                    m_SpecularFileDialog.Close();
                 }
-                ImGui::Separator();
+                m_NormalFileDialog.Close();
+            }
+            
+            if (m_SpecularFileDialog.Display("LoadSpecular",32,{100.f,100.f}))
+            {
+                if (m_SpecularFileDialog.IsOk())
+                {
+                    std::string path = m_SpecularFileDialog.GetFilePathName();
+                    auto tex = TextureManager::LoadTexture(path,TextureType::SPECULAR);
+                    
+                    auto type = selected->GetType();
+                    if (type == ObjectType::Cube || type == ObjectType::Plane || type == ObjectType::Imported)
+                    {
+                        auto material = selected->GetMaterial();
+                        material.Specular = tex;
+                        selected->SetMaterial(material);
+                    }
+                }
+                m_SpecularFileDialog.Close();
             }
         }
-    
     }
 
     void ImGuiLayer::LoadFont()
@@ -885,5 +1049,12 @@ namespace isaacObjectViewer
                 SetGizmoOperation(GizmoMode::NONE);
             }
         }
+    }
+    void ImGuiLayer::DrawBlankTableRow()
+    {
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::TableSetColumnIndex(1);
+        ImGui::SetNextItemWidth(-FLT_MIN);
     }
 }

@@ -7,6 +7,7 @@ namespace isaacObjectViewer
     Model::Model(const std::vector<Mesh>& meshes, const std::string& name)
         : m_ID(++s_NextModelID)
         , m_Name(name)
+        , m_Type(ObjectType::Imported)
         , m_FileType(ModelFileType::Unknown)
         , m_Position(DEFAULT_POSITION)
         , m_Rotation(DEFAULT_ROTATION)
@@ -17,18 +18,6 @@ namespace isaacObjectViewer
         , m_Shininess(32.0f)
         , m_Meshes(meshes)
     {}
-
-    void Model::SetDiffuseTexture(const std::shared_ptr<Texture>& tex)
-    {
-        for (auto& m : m_Meshes) 
-            m.SetDiffuseTexture(tex);
-    }
-
-    void Model::SetSpecularTexture(const std::shared_ptr<Texture>& tex)
-    {
-        for (auto& m : m_Meshes) 
-            m.SetSpecularTexture(tex);
-    }
 
     void Model::Render(const Renderer& renderer,
                    const glm::mat4& view,

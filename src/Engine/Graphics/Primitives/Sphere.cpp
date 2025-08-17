@@ -9,6 +9,7 @@ namespace isaacObjectViewer
     Sphere::Sphere(const glm::vec3& position) 
         : m_ID(GenerateUniqueID())
         , m_Name("Sphere_" + std::to_string(m_ID))
+        , m_Type(ObjectType::Sphere)
         , m_Position(position)
         , m_Rotation(DEFAULT_ROTATION)
         , m_Orientation(glm::quat(glm::radians(DEFAULT_ROTATION)))
@@ -72,6 +73,7 @@ namespace isaacObjectViewer
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
         shader->setVec3("objectColor", m_Color);
+        SetNormalMatrixUniform(shader, view);
         shader->setBool("useMaterial", false);
         shader->setFloat("material.shininess",m_Material.Shininess);
 

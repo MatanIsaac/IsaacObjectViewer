@@ -16,6 +16,10 @@ namespace isaacObjectViewer
     {
         /// @brief The diffuse texture of the material.
         std::shared_ptr<Texture> Diffuse   { }; 
+
+        /// @brief The normal texture of the material.
+        std::shared_ptr<Texture> Normal    { };
+
         /// @brief The specular texture of the material.
         std::shared_ptr<Texture> Specular  { };
         /// @brief The shininess factor of the material.
@@ -29,14 +33,17 @@ namespace isaacObjectViewer
         /// @param specular The specular texture of the material.
         /// @param shininess The shininess factor of the material.
         Material(std::shared_ptr<Texture> diffuse,
+                std::shared_ptr<Texture> normal    = nullptr,
                 std::shared_ptr<Texture> specular  = nullptr,
                 float                       shininess = 32.0f)
             : Diffuse (std::move(diffuse))
+            , Normal  (std::move(normal))
             , Specular(std::move(specular))
             , Shininess(shininess)
         {}
 
         /// @brief Destructor.
         ~Material() = default;
+
     };
 }

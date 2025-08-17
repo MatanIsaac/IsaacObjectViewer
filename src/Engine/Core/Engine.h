@@ -68,6 +68,14 @@ namespace isaacObjectViewer
             return s_Instance;
         }
 
+        // @brief initializes the engine's dependencies, resources and engine objects
+        /// @param title The title of the window.
+        /// @param width The width of the window.
+        /// @param height The height of the window.
+        /// @param fullscreen Whether to start in fullscreen mode.
+        /// @return True if initialization was successful, false otherwise.
+        bool Init(const char *title, int width, int height, bool fullscreen = false);
+
         /// @brief Starts the engine
         /// @param fullscreen Whether to start in fullscreen mode.
         void Run(bool fullscreen = false);
@@ -300,14 +308,6 @@ namespace isaacObjectViewer
 
     private:
         Engine();
-
-        // @brief initializes the engine's dependencies, resources and engine objects
-        /// @param title The title of the window.
-        /// @param width The width of the window.
-        /// @param height The height of the window.
-        /// @param fullscreen Whether to start in fullscreen mode.
-        /// @return True if initialization was successful, false otherwise.
-        bool Init(const char *title, int width, int height, bool fullscreen = false);
 
         /// @brief processes user input
         void ProcessInput();

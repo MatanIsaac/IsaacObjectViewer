@@ -41,6 +41,8 @@ namespace isaacObjectViewer
         /// @brief Virtual destructor for the IRenderable interface.
         virtual ~IRenderable() = default;
 
+        // Rendering
+        // ---------------------------------------------------------
         /// @brief Renders the object.
         /// @param renderer The renderer to use.
         /// @param view The view matrix.
@@ -48,70 +50,110 @@ namespace isaacObjectViewer
         /// @param shader The shader to use (optional).
         virtual void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader = nullptr) = 0;
 
+        // Identification
+        // ---------------------------------------------------------
         /// @brief Gets the ID of the object.
         /// @return The ID of the object.
-        virtual std::size_t GetID() const = 0;
+        virtual const std::size_t& GetID() const = 0;
         
         /// @brief Gets the name of the object.
         /// @return The name of the object.
         virtual const std::string& GetName() const = 0;
-
+        
         /// @brief Sets the name of the object.
         /// @param name The new name of the object.
         virtual void SetName(const std::string& name) = 0;
-
+        
         /// @brief Gets the type of the object.
         /// @return The type of the object.
-        virtual ObjectType GetType() const = 0;
+        virtual const ObjectType& GetType() const = 0;
 
+        /// @brief Generates a unique ID for the scene object.
+        /// @return The unique ID.
+        virtual std::size_t GenerateUniqueID() = 0;
+        // ---------------------------------------------------------
+        
+        // Transform
+        // ---------------------------------------------------------
+        // Getters
         /// @brief Gets the position of the object.
         /// @return The position of the object.
-        virtual glm::vec3& GetPosition() = 0;
+        virtual const glm::vec3& GetPosition() const = 0;
 
         /// @brief Gets the rotation of the object.
         /// @return The rotation of the object.
-        virtual glm::vec3& GetRotation() = 0;
+        virtual const glm::vec3& GetRotation() const = 0;
 
         /// @brief Gets the orientation of the object.
         /// @return The orientation of the object.
-        virtual glm::quat& GetOrientation() = 0;
+        virtual const glm::quat& GetOrientation() const = 0;
 
         /// @brief Gets the scale of the object.
         /// @return The scale of the object.
-        virtual glm::vec3& GetScale() = 0;
+        virtual const glm::vec3& GetScale() const = 0;
 
-        /// @brief Gets the color of the object.
-        /// @return The color of the object.
-        virtual glm::vec3& GetColor() = 0;
-
-        /// @brief Gets the material usage flag of the object.
-        /// @return The material usage flag of the object.
-        virtual bool& GetUseMaterial() = 0;
-
+        // Setters
         /// @brief Sets the position of the object.
         /// @param newPosition The new position of the object.
         virtual void SetPosition(const glm::vec3& newPosition) = 0;
-
+        
         /// @brief Sets the rotation of the object.
         /// @param newRotation The new rotation of the object.
         virtual void SetRotation(const glm::vec3& newRotation) = 0;
-
+        
         /// @brief Sets the orientation of the object.
         /// @param newOrientation The new orientation of the object.
         virtual void SetOrientation(const glm::quat& newOrientation) = 0;
-
+        
         /// @brief Sets the scale of the object.
         /// @param newScale The new scale of the object.
         virtual void SetScale(const glm::vec3& newScale) = 0;
+
+        /// @brief Sets the rotation of the object using Euler angles.
+        /// @param eulerDegrees The new rotation of the object in Euler angles (degrees).
+        //virtual void SetRotationEuler(const glm::vec3& eulerDegrees) = 0;
+
+        /// @brief Gets the rotation of the object in Euler angles.
+        /// @return The rotation of the object in Euler angles (degrees).
+        //virtual glm::vec3 GetRotationEuler() const = 0;
+        // ---------------------------------------------------------
+        
+        // Appearance        
+        // ---------------------------------------------------------
+        /// @brief Gets the color of the object.
+        /// @return The color of the object.
+        virtual const glm::vec3& GetColor() const = 0;
+
+        /// @brief Gets the material of the object.
+        /// @return The material of the object.
+        virtual const Material& GetMaterial() const = 0;
+
+        /// @brief Gets the material usage flag of the object.
+        /// @return The material usage flag of the object.
+        virtual const bool& GetUseMaterial() const = 0;
+
+        /// @brief Gets the shininess of the material.
+        virtual const float& GetShininess() const = 0;
 
         /// @brief Sets the color of the object.
         /// @param newColor The new color of the object.
         virtual void SetColor(const glm::vec3& newColor) = 0;
 
+        /// @brief Sets the material of the object.
+        /// @param material The new material of the object.
+        virtual void SetMaterial(const Material& material) = 0;
+
         /// @brief Sets the material usage flag of the object.
         /// @param useMaterial The new material usage flag of the object.
         virtual void SetUseMaterial(bool useMaterial) = 0;
 
+        /// @brief Sets the shininess of the material.
+        /// @param shininess The new shininess of the material.
+        virtual void SetShininess(float shininess) = 0;
+        // ---------------------------------------------------------
+
+        // Helpers
+        // ---------------------------------------------------------
         /// @brief Gets the model matrix of the object.
         /// @return The model matrix of the object.
         glm::mat4 GetModelMatrix()
@@ -120,6 +162,16 @@ namespace isaacObjectViewer
             model *= glm::toMat4(GetOrientation());
             model = glm::scale(model, GetScale());
             return model;
+        }
+
+        /// @brief Sets the normal matrix uniform for a given shader.
+        /// @param shader The shader to set the uniform for.
+        /// @param view The current view matrix.
+        void SetNormalMatrixUniform(Shader* shader, const glm::mat4& view)
+        {
+            glm::mat4 model = GetModelMatrix();
+            glm::mat4 normalMatrix = glm::transpose(glm::inverse(view * model));
+            shader->setMat4("normalMatrix", normalMatrix);
         }
 
         /// @brief Sets the transform of the object from a matrix.
@@ -135,18 +187,6 @@ namespace isaacObjectViewer
             this->SetOrientation(orientation);
             this->SetRotation(glm::degrees(glm::eulerAngles(orientation)));
         }
-
-        /// @brief Gets the default material for the object.
-        /// @return The default material for the object.
-        Material GetDefaultMaterial()
-        {
-            std::string diffuseMap = GetProjectRootPath("/src/Resources/Textures/wood-02/WoodOak_2K_albedo.png");
-            std::string specularMap = GetProjectRootPath("/src/Resources/Textures/wood-02/WoodOak_2K_roughness.png");
-
-            auto diffuse = TextureManager::LoadTexture(diffuseMap,TextureType::DIFFUSE);
-            auto specular = TextureManager::LoadTexture(specularMap,TextureType::SPECULAR);
-
-            return Material(std::shared_ptr<Texture>(diffuse),std::shared_ptr<Texture>(specular),32.f);
-        }
+        // ---------------------------------------------------------
     };
 }

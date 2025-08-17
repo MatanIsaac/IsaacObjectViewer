@@ -43,7 +43,7 @@ namespace isaacObjectViewer
 
         /// @brief Gets the cylinder's ID.
         /// @return The cylinder's ID.
-        std::size_t GetID() const { return m_ID; }
+        const std::size_t& GetID() const override { return m_ID; }
 
         /// @brief Gets the cylinder's name.
         /// @return The cylinder's name.
@@ -55,39 +55,39 @@ namespace isaacObjectViewer
 
         /// @brief Gets the cylinder's type.
         /// @return The cylinder's type.
-        ObjectType GetType() const { return ObjectType::Cylinder; }
+        const ObjectType& GetType() const override { return m_Type; }
 
         /// @brief Gets the cylinder's position.
         /// @return The cylinder's position.
-        glm::vec3& GetPosition() override { return m_Position; }
+        const glm::vec3& GetPosition() const override { return m_Position; }
 
         /// @brief Gets the cylinder's rotation.
         /// @return The cylinder's rotation.
-        glm::vec3& GetRotation() override { return m_Rotation; }
+        const glm::vec3& GetRotation() const override { return m_Rotation; }
 
         /// @brief Gets the cylinder's orientation.
         /// @return The cylinder's orientation.
-        glm::quat& GetOrientation() override { return m_Orientation; }
+        const glm::quat& GetOrientation() const override { return m_Orientation; }
 
         /// @brief Gets the cylinder's scale.
         /// @return The cylinder's scale.
-        glm::vec3& GetScale() override { return m_Scale; }
+        const glm::vec3& GetScale() const override { return m_Scale; }
 
         /// @brief Gets the cylinder's color.
         /// @return The cylinder's color.
-        glm::vec3& GetColor() override { return m_Color; }
-
-        /// @brief Gets whether the cylinder uses a material.
-        /// @return True if the cylinder uses a material, false otherwise.
-        bool& GetUseMaterial() override { return m_UseMaterial; }
-
-        /// @brief Gets the cylinder's shininess.
-        /// @return The cylinder's shininess.
-        float& GetShininess() override { return m_Material.Shininess; }
+        const glm::vec3& GetColor() const override { return m_Color; }
 
         /// @brief Gets the cylinder's material.
         /// @return The cylinder's material.
-        const Material& GetMaterial() const { return m_Material; }
+        const Material& GetMaterial() const override { return m_Material; }
+
+        /// @brief Gets whether the cylinder uses a material.
+        /// @return True if the cylinder uses a material, false otherwise.
+        const bool& GetUseMaterial() const override { return m_UseMaterial; }
+
+        /// @brief Gets the cylinder's shininess.
+        /// @return The cylinder's shininess.
+        const float& GetShininess() const override { return m_Material.Shininess; }
 
         /// @brief Resets the cylinder's position to the default.
         void ResetPosition() { m_Position = DEFAULT_POSITION; }
@@ -117,42 +117,18 @@ namespace isaacObjectViewer
         /// @brief Sets the cylinder's color.
         /// @param newColor The new color for the cylinder.
         inline void SetColor(const glm::vec3& newColor) override { m_Color = newColor; }
+        
+        /// @brief Sets the cylinder's material.
+        /// @param newMaterial The new material for the cylinder.
+        void SetMaterial(const Material& newMaterial) override { m_Material = newMaterial; }
 
         /// @brief Sets whether the cylinder uses a material.
         /// @param useMaterial True if the cylinder should use a material, false otherwise.
-        inline void SetUseMaterial(bool useMaterial) override { m_UseMaterial = useMaterial; }
+        inline void SetUseMaterial(bool useMaterial) override { m_UseMaterial = useMaterial; }        
 
-        /// @brief Sets the cylinder's material.
-        /// @param newMaterial The new material for the cylinder.
-        void SetMaterial(const Material& newMaterial) { m_Material = newMaterial; }
-
-        /// @brief Sets the cylinder's diffuse texture.
-        /// @param tex The new diffuse texture for the cylinder.
-        void SetDiffuseTexture(const std::shared_ptr<Texture>& tex) override { }
-
-        /// @brief Sets the cylinder's specular texture.
-        /// @param tex The new specular texture for the cylinder.
-        void SetSpecularTexture(const std::shared_ptr<Texture>& tex) override { }
-
-        /// @brief Gets the cylinder's vertex array.
-        /// @return The cylinder's vertex array.
-        inline const VertexArray    &GetVertexArray()   const override { return *m_VertexArray; }
-
-        /// @brief Gets the cylinder's vertex buffer.
-        /// @return The cylinder's vertex buffer.
-        inline const VertexBuffer   &GetVertexBuffer()  const override { return *m_VertexBuffer; }
-
-        /// @brief Gets the cylinder's index buffer.
-        /// @return The cylinder's index buffer.
-        inline const IndexBuffer    &GetIndexBuffer()   const override { return *m_IndexBuffer; }
-
-        /// @brief Gets the cylinder's index count.
-        /// @return The cylinder's index count.
-        unsigned inline int         GetIndexCount()     const override { return m_IndexCount; }
-
-        /// @brief Gets the cylinder's vertex count.
-        /// @return The cylinder's vertex count.
-        inline unsigned int GetVertexCount() const override{ return m_VertexCount; }
+        /// @brief Sets the cylinder's shininess.
+        /// @param newShininess The new shininess for the cylinder's material.
+        void SetShininess(float newShininess) override { m_Material.Shininess = newShininess; }
 
         /// @brief Checks for intersection between a ray and the cylinder.
         /// @param ray The ray to check for intersection.
@@ -243,7 +219,7 @@ namespace isaacObjectViewer
     private:
         std::size_t m_ID;
         std::string m_Name;
-
+        ObjectType m_Type;
         glm::vec3 m_Position;
         glm::vec3 m_Rotation;
         glm::quat m_Orientation;

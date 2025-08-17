@@ -19,4 +19,10 @@ namespace isaacObjectViewer
 
         return new_path;
     }
+
+    std::string GetFileName(const std::string& path)
+    {
+        std::filesystem::path filePath(path);
+        return filePath.filename().string();
+    }
 }

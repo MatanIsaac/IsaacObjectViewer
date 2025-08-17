@@ -17,7 +17,6 @@ namespace isaacObjectViewer
     class DirectionalLight
     {
     public:
-
         /// @brief Constructs a DirectionalLight.
         DirectionalLight();
 
@@ -26,6 +25,20 @@ namespace isaacObjectViewer
 
         /// @brief Updates the light's properties.
         void Update();
+
+        /// @brief Enables the light.
+        void Enable() { m_Enabled = true; m_Changed = true; }
+
+        /// @brief Disables the light.
+        void Disable() { m_Enabled = false; m_Changed = true; }
+
+        /// @brief Checks if the light is enabled.
+        /// @return True if the light is enabled, false otherwise.
+        bool IsEnabled() const { return m_Enabled; }
+
+        /// @brief Sets the light's enabled state.
+        /// @param enabled The new enabled state.
+        void SetEnabled(bool enabled) { m_Enabled = enabled; m_Changed = true; }
 
         /// @brief Sets the light's uniforms in the shader.
         /// @param shader The shader to set the uniforms for.
@@ -79,6 +92,7 @@ namespace isaacObjectViewer
         } 
     
     private:
+        bool m_Enabled; ///< Whether the light is enabled.
         glm::vec3 m_Direction; ///< The light's direction.
         glm::vec3 m_Ambient; ///< The light's ambient color.
         glm::vec3 m_Diffuse; ///< The light's diffuse color.

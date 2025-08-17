@@ -45,60 +45,60 @@ namespace isaacObjectViewer
         
         /// @brief  Gets the ID of the sphere.
         /// @return The ID of the sphere.
-        std::size_t GetID() const { return m_ID; }
+        const std::size_t& GetID() const override{ return m_ID; }
         
         /// @brief Gets the name of the sphere.
         /// @return The name of the sphere.
         const std::string& GetName() const override { return m_Name; };
         
-        /// @brief Sets the name of the sphere.
-        /// @param newName The new name for the sphere.
-        void SetName(const std::string& newName) override { m_Name = newName; }
-        
         /// @brief Gets the type of the sphere.
         /// @return The type of the sphere.
-        ObjectType GetType() const { return ObjectType::Sphere; }
-
+        const ObjectType& GetType() const override{ return m_Type; }
+        
         /// @brief Gets the position of the sphere.
         /// @return The position of the sphere.
-        glm::vec3& GetPosition() override { return m_Position; }
+        const glm::vec3& GetPosition() const override { return m_Position; }
         
         /// @brief Gets the rotation of the sphere.
         /// @return The rotation of the sphere.
-        glm::vec3& GetRotation() override { return m_Rotation; }
-        
+        const glm::vec3& GetRotation() const override { return m_Rotation; }
+
         /// @brief Gets the orientation of the sphere.
         /// @return The orientation of the sphere.
-        glm::quat& GetOrientation() override { return m_Orientation; }
-        
+        const glm::quat& GetOrientation() const override { return m_Orientation; }
+
         /// @brief Gets the scale of the sphere.
         /// @return The scale of the sphere.
-        glm::vec3& GetScale() override { return m_Scale; }
-        
+        const glm::vec3& GetScale() const override { return m_Scale; }
+
         /// @brief Gets the color of the sphere.
         /// @return The color of the sphere.
-        glm::vec3& GetColor() override { return m_Color; }
-        
-        /// @brief Gets whether the sphere uses a material.
-        /// @return True if the sphere uses a material, false otherwise.
-        bool& GetUseMaterial() override { return m_UseMaterial; }
-        
-        /// @brief Gets the shininess of the sphere's material.
-        /// @return The shininess of the sphere's material.
-        float& GetShininess() override { return m_Material.Shininess; }
-        
+        const glm::vec3& GetColor() const override { return m_Color; }
+
         /// @brief Gets the material of the sphere.
         /// @return The material of the sphere.
-        const Material& GetMaterial() const { return m_Material; }
+        const Material& GetMaterial() const override { return m_Material; }
+
+        /// @brief Gets whether the sphere uses a material.
+        /// @return True if the sphere uses a material, false otherwise.
+        const bool& GetUseMaterial() const override { return m_UseMaterial; }
+
+        /// @brief Gets the shininess of the sphere's material.
+        /// @return The shininess of the sphere's material.
+        const float& GetShininess() const override { return m_Material.Shininess; }
 
         /// @brief Resets the position of the sphere to the default.
         void ResetPosition() { m_Position = DEFAULT_POSITION; }
         
         /// @brief Resets the rotation of the sphere to the default.
         void ResetRotation() { m_Rotation = DEFAULT_ROTATION; }
-
+        
         /// @brief Resets the scale of the sphere to the default.
         void ResetScale() { m_Scale = DEFAULT_SCALE; }
+        
+        /// @brief Sets the name of the sphere.
+        /// @param newName The new name for the sphere.
+        void SetName(const std::string& newName) override { m_Name = newName; }
         
         /// @brief Sets the position of the sphere.
         /// @param newPosition The new position for the sphere.
@@ -120,41 +120,17 @@ namespace isaacObjectViewer
         /// @param newColor The new color for the sphere.
         inline void SetColor(const glm::vec3& newColor) override { m_Color = newColor; }
         
+        /// @brief Sets the material of the sphere.
+        /// @param newMaterial The new material for the sphere.
+        void SetMaterial(const Material& newMaterial) override { m_Material = newMaterial; }
+        
         /// @brief Sets whether the sphere uses a material.
         /// @param useMaterial True if the sphere should use a material, false otherwise.
         inline void SetUseMaterial(bool useMaterial) override { m_UseMaterial = useMaterial; }
-        
-        /// @brief Sets the material of the sphere.
-        /// @param newMaterial The new material for the sphere.
-        void SetMaterial(const Material& newMaterial) { m_Material = newMaterial; }
-        
-        /// @brief Sets the diffuse texture of the sphere.
-        /// @param tex The new diffuse texture for the sphere.
-        void SetDiffuseTexture(const std::shared_ptr<Texture>& tex) override { m_Material.Diffuse = tex; }
-        
-        /// @brief Sets the specular texture of the sphere.
-        /// @param tex The new specular texture for the sphere.
-        void SetSpecularTexture(const std::shared_ptr<Texture>& tex) override { m_Material.Specular = tex; }
 
-        /// @brief Gets the vertex array of the sphere.
-        /// @return The vertex array of the sphere.
-        inline const VertexArray    &GetVertexArray()   const override { return *m_VertexArray; }
-
-        /// @brief Gets the vertex buffer of the sphere.
-        /// @return The vertex buffer of the sphere.
-        inline const VertexBuffer   &GetVertexBuffer()  const override { return *m_VertexBuffer; }
-
-        /// @brief Gets the index buffer of the sphere.
-        /// @return The index buffer of the sphere.
-        inline const IndexBuffer    &GetIndexBuffer()   const override { return *m_IndexBuffer; }
-
-        /// @brief Gets the count of indices for the sphere.
-        /// @return The count of indices for the sphere.
-        unsigned inline int         GetIndexCount()     const override { return m_IndexCount; }
-
-        /// @brief Gets the count of vertices for the sphere.
-        /// @return The count of vertices for the sphere.
-        unsigned inline int         GetVertexCount()    const override { return m_VertexCount; }
+        /// @brief Sets the shininess of the sphere's material.
+        /// @param newShininess The new shininess value for the sphere's material.
+        void SetShininess(float newShininess) override { m_Material.Shininess = newShininess; }
 
         /// @brief Checks for intersection with a ray.
         /// @param ray The ray to check for intersection.
@@ -191,7 +167,7 @@ namespace isaacObjectViewer
     private:
         std::size_t m_ID;
         std::string m_Name; 
-
+        ObjectType m_Type;
         glm::vec3 m_Position;
         glm::vec3 m_Rotation;
         glm::quat m_Orientation;        

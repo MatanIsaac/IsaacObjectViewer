@@ -74,8 +74,6 @@ namespace isaacObjectViewer
         {
             engine->SetSelectedObject(selected); // Mark selected
             auto pos = selected->GetPosition();
-            //std::cout << "Selected an object at: " << '(' << pos.x << ',' << pos.y << ',' << pos.z << ')' << std::endl;
-            LOG_INFO("Selected an object at ({},{},{})",pos.x,pos.y,pos.z);
         }
     }
     

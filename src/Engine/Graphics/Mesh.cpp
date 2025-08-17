@@ -11,7 +11,9 @@ namespace isaacObjectViewer
             : m_Vertices(vertices)
             , m_Indices(indices)
             , m_Textures(textures)
+            , m_ID(GenerateUniqueID())
             , m_Name(name)
+            , m_Type(ObjectType::Imported)
             , m_Position(DEFAULT_POSITION)
             , m_Rotation(DEFAULT_ROTATION)
             , m_Orientation(glm::quat(glm::radians(m_Rotation)))
@@ -31,6 +33,7 @@ namespace isaacObjectViewer
         , m_Indices(other.m_Indices)
         , m_Textures(other.m_Textures)
         , m_Name(other.m_Name)
+        , m_Type(other.m_Type)
         , m_Position(other.m_Position)
         , m_Rotation(other.m_Rotation)
         , m_Orientation(other.m_Orientation)
@@ -53,12 +56,13 @@ namespace isaacObjectViewer
             m_Vertices      = other.m_Vertices;
             m_Indices       = other.m_Indices;
             m_Textures      = other.m_Textures;
-            m_Name          = other.m_Name;               
-            m_Position      = other.m_Position;           
-            m_Rotation      = other.m_Rotation;           
-            m_Orientation   = other.m_Orientation;        
-            m_Scale         = other.m_Scale;                  
-            m_Color         = other.m_Color;                  
+            m_Name          = other.m_Name;
+            m_Type          = other.m_Type;
+            m_Position      = other.m_Position;
+            m_Rotation      = other.m_Rotation;
+            m_Orientation   = other.m_Orientation;
+            m_Scale         = other.m_Scale;
+            m_Color         = other.m_Color;
             m_UseMaterial   = other.m_UseMaterial;
             m_Material      = other.m_Material;
             // Rebuild GL objects
@@ -77,12 +81,13 @@ namespace isaacObjectViewer
         : m_Vertices(std::move(other.m_Vertices))
         , m_Indices(std::move(other.m_Indices))
         , m_Textures(std::move(other.m_Textures))
-        , m_Name(std::move(other.m_Name))               
-        , m_Position(other.m_Position)                  
-        , m_Rotation(other.m_Rotation)                  
-        , m_Orientation(other.m_Orientation)            
-        , m_Scale(other.m_Scale)  
-        , m_Color(other.m_Color)  
+        , m_Name(std::move(other.m_Name))
+        , m_Type(ObjectType::Imported)
+        , m_Position(other.m_Position)
+        , m_Rotation(other.m_Rotation)
+        , m_Orientation(other.m_Orientation)
+        , m_Scale(other.m_Scale)
+        , m_Color(other.m_Color)
         , m_UseMaterial(other.m_UseMaterial)
         , m_Material(std::move(other.m_Material))
         , m_IndexBuffer(std::move(other.m_IndexBuffer))
@@ -95,6 +100,7 @@ namespace isaacObjectViewer
     {
         if (this != &other)
         {
+            m_Type          = other.m_Type;
             m_Vertices      = std::move(other.m_Vertices);
             m_Indices       = std::move(other.m_Indices);
             m_Textures      = std::move(other.m_Textures);
@@ -123,6 +129,7 @@ namespace isaacObjectViewer
 
         // Select material textures (prefer explicit Material, fallback to mesh textures)
         std::shared_ptr<Texture> diffuse = m_Material.Diffuse;
+        std::shared_ptr<Texture> normal  = m_Material.Normal;
         std::shared_ptr<Texture> specular = m_Material.Specular;
 
         if (!diffuse) 
@@ -134,6 +141,17 @@ namespace isaacObjectViewer
                     break;
                 }
         }
+
+        if (!normal) 
+        {
+            for (const auto& t : m_Textures)
+                if (t && t->GetType() == TextureType::NORMAL) 
+                { 
+                    normal = t; 
+                    break;
+                }
+        }
+
         if (!specular) 
         {
             for (const auto& t : m_Textures)
@@ -145,12 +163,14 @@ namespace isaacObjectViewer
         }
 
         const bool hasDiffuse  = (diffuse  != nullptr);
+        const bool hasNormal   = (normal   != nullptr);
         const bool hasSpecular = (specular != nullptr);
-        
-        const bool useMaterial = m_UseMaterial && (hasDiffuse || hasSpecular);
+
+        const bool useMaterial = m_UseMaterial && (hasDiffuse || hasSpecular || hasNormal);
 
         shader->setBool("useMaterial",   useMaterial);
         shader->setBool("hasDiffuseMap",  hasDiffuse);
+        shader->setBool("hasNormalMap",   hasNormal);
         shader->setBool("hasSpecularMap", hasSpecular);
         shader->setFloat("material.shininess", m_Material.Shininess);
 
@@ -168,6 +188,17 @@ namespace isaacObjectViewer
             shader->setInt("material.diffuse", 0);
 
             glActiveTexture(GL_TEXTURE1);
+            if (hasNormal) 
+            {
+                normal->Bind();
+            } 
+            else 
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+            shader->setInt("material.normal", 1);
+            
+            glActiveTexture(GL_TEXTURE2);
             if (hasSpecular) 
             {
                 specular->Bind();
@@ -176,7 +207,7 @@ namespace isaacObjectViewer
             {
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
-            shader->setInt("material.specular", 1);
+            shader->setInt("material.specular", 2);
         } 
         else 
         {
@@ -271,6 +302,13 @@ namespace isaacObjectViewer
 
         renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);
         glActiveTexture(GL_TEXTURE0);
+    }
+
+    std::size_t Mesh::GenerateUniqueID()
+    {
+        static std::size_t id = 0;
+        m_Name = "Mesh_" + std::to_string(id);
+        return id++;
     }
 
     void Mesh::SetupMesh()

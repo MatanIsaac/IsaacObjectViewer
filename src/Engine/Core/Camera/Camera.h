@@ -29,6 +29,8 @@ namespace isaacObjectViewer
         static constexpr float DEFAULT_CAMERA_PITCH       = 0.0f;
         static constexpr float DEFAULT_CAMERA_SPEED       = 5.0f;
         static constexpr float DEFAULT_CAMERA_ZOOM        = 45.0f;
+        static constexpr float DEFAULT_CAMERA_NEAR        = 0.1f;
+        static constexpr float DEFAULT_CAMERA_FAR         = 1000.0f;
 
         /// @brief Constructor with vector parameters.
         /// @param position The initial position of the camera.
@@ -125,13 +127,21 @@ namespace isaacObjectViewer
         /// @param newZoom The new zoom level of the camera.
         void SetZoom(float newZoom) { m_Zoom = newZoom; }
 
+        /// @brief Sets the near clipping plane distance of the camera.
+        /// @param newNear The new near clipping plane distance of the camera.
+        void SetNear(float newNear) { m_Near = newNear; }
+
+        /// @brief Sets the far clipping plane distance of the camera.
+        /// @param newFar The new far clipping plane distance of the camera.
+        void SetFar(float newFar) { m_Far = newFar; }
+
         /// @brief Gets the near clipping plane distance of the camera.
         /// @return The near clipping plane distance.
-        float GetNear() const { return m_Near; }
+        const float& GetNear() const { return m_Near; }
 
         /// @brief Gets the far clipping plane distance of the camera.
         /// @return The far clipping plane distance.
-        float GetFar() const { return m_Far; }
+        const float& GetFar() const { return m_Far; }
 
         /// @brief Adds to the pitch angle of the camera.
         /// @param amount The amount to add to the pitch angle.
@@ -178,5 +188,4 @@ namespace isaacObjectViewer
         float m_Near;
         float m_Far;
     };
-
 }

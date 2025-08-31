@@ -107,7 +107,16 @@ namespace isaacObjectViewer
 
         /// @brief Sets the material of the model.
         /// @param material The new material of the model.
-        void SetMaterial(const Material& material) override { m_Material = material; }
+        void SetMaterial(const Material& material) override 
+        { 
+            m_Material = material; 
+            for(auto& mesh : m_Meshes)
+            {
+                mesh.GetName();
+                LOG_INFO("Setting material for mesh: {}", mesh.GetName());
+                mesh.SetMaterial(material);
+            }
+        }
 
         /// @brief Sets the use material flag of the model.
         /// @param useMaterial The new use material flag of the model.
@@ -140,6 +149,16 @@ namespace isaacObjectViewer
         /// @brief Generates a unique ID for the model.
         /// @return The unique ID for the model.
         std::size_t GenerateUniqueID() override;                 // (kept for completeness)
+
+        /// @brief Sets the filter mode for the model.
+        /// @param filterMode The new filter mode for the model.
+        void SetFilterMode(TextureFilterMode filterMode) override
+        {
+            for (auto& mesh : m_Meshes)
+            {
+                mesh.SetFilterMode(filterMode);
+            }
+        }
 
     private:
         std::size_t         m_ID;

@@ -2,6 +2,7 @@
 #include "Utility/Log.hpp"
 #include "TextureManager.h"
 #include "Core/Engine.h"
+#include "Utility/Timer.h"
 
 namespace isaacObjectViewer
 {
@@ -14,9 +15,12 @@ namespace isaacObjectViewer
         , m_Orientation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f))
         , m_Scale(1.0f)
         , m_Color(DEFAULT_COLOR)
-        , m_UseMaterial(false)
+        , m_UseMaterial(true)
         ,m_Material(TextureManager::GetDefaultMaterial())
     {
+        Timer timer;
+        timer.Start();
+
         // Initialize vertex count for indexed drawing
         m_VertexCount = 4;
 
@@ -37,6 +41,8 @@ namespace isaacObjectViewer
 
         // Create the IndexBuffer with the index data
         m_IndexBuffer = std::make_unique<IndexBuffer>(m_PlaneIndices, m_IndicesCount);
+
+        LOG_INFO("Plane created in {} ms", timer.Stop());
     }
 
     Plane::~Plane()
@@ -84,6 +90,7 @@ namespace isaacObjectViewer
             }    
             else
             {
+                LOG_ERROR("Diffuse map is null!");
                 glBindTexture(GL_TEXTURE_2D, 0);
             }   
             shader->setInt("material.diffuse", 0);
@@ -95,6 +102,7 @@ namespace isaacObjectViewer
             }    
             else
             {
+                LOG_ERROR("Normal map is null!");
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
             shader->setInt("material.normal", 1);
@@ -106,12 +114,22 @@ namespace isaacObjectViewer
             } 
             else 
             {
+                LOG_ERROR("Specular map is null!");
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
             shader->setInt("material.specular", 2);
         } 
         else 
         {
+            // unbind textures
+            glActiveTexture(GL_TEXTURE0); 
+            glBindTexture(GL_TEXTURE_2D, 0);
+            
+            glActiveTexture(GL_TEXTURE1); 
+            glBindTexture(GL_TEXTURE_2D, 0);
+            
+            glActiveTexture(GL_TEXTURE2); 
+            glBindTexture(GL_TEXTURE_2D, 0);
             shader->setVec3("objectColor", m_Color);
         }
 

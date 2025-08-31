@@ -40,12 +40,10 @@ namespace isaacObjectViewer
         /// @brief Constructs a Mesh object.
         /// @param vertices The vertices of the mesh.
         /// @param indices The indices for the mesh.
-        /// @param textures The textures used by the mesh.
         /// @param material The material properties of the mesh.
         /// @param name The name of the mesh.
         Mesh(const std::vector<Vertex>& vertices,
              const std::vector<unsigned int>& indices,
-             const std::vector<std::shared_ptr<Texture>>& textures, 
              Material material, const std::string& name);
 
         /// @brief Copy constructor.
@@ -196,6 +194,16 @@ namespace isaacObjectViewer
         /// @brief Gets the maximum bounding box of the mesh.
         /// @return The maximum bounding box of the mesh.
         const glm::vec3& GetBBoxMax() const { return m_BBoxMax; }
+
+        /// @brief Sets the filter mode for the mesh.
+        /// @param filterMode The new filter mode for the mesh.
+        void SetFilterMode(TextureFilterMode filterMode)
+        {
+            m_Material.Diffuse->SetFilterMode(filterMode);
+            m_Material.Normal->SetFilterMode(filterMode);
+            m_Material.Specular->SetFilterMode(filterMode);
+        }
+
     private:
         /// @brief Sets up the mesh.
         /// Creating the vertex array, vertex buffer, and index buffer.
@@ -205,7 +213,6 @@ namespace isaacObjectViewer
 
         std::vector<Vertex> m_Vertices;
         std::vector<unsigned int> m_Indices;
-        std::vector<std::shared_ptr<Texture>> m_Textures;
 
         std::size_t m_ID;
         std::string m_Name;

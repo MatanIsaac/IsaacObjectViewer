@@ -5,14 +5,12 @@
 namespace isaacObjectViewer
 {
     Mesh::Mesh(const std::vector<Vertex>& vertices,
-             const std::vector<unsigned int>& indices,
-             const std::vector<std::shared_ptr<Texture>>& textures, 
+             const std::vector<unsigned int>& indices, 
              Material material, const std::string& name)
             : m_Vertices(vertices)
             , m_Indices(indices)
-            , m_Textures(textures)
             , m_ID(GenerateUniqueID())
-            , m_Name(name)
+            , m_Name(name + "_" + std::to_string(m_ID))
             , m_Type(ObjectType::Imported)
             , m_Position(DEFAULT_POSITION)
             , m_Rotation(DEFAULT_ROTATION)
@@ -31,7 +29,6 @@ namespace isaacObjectViewer
     Mesh::Mesh(const Mesh& other)
         : m_Vertices(other.m_Vertices)
         , m_Indices(other.m_Indices)
-        , m_Textures(other.m_Textures)
         , m_Name(other.m_Name)
         , m_Type(other.m_Type)
         , m_Position(other.m_Position)
@@ -55,7 +52,6 @@ namespace isaacObjectViewer
         {
             m_Vertices      = other.m_Vertices;
             m_Indices       = other.m_Indices;
-            m_Textures      = other.m_Textures;
             m_Name          = other.m_Name;
             m_Type          = other.m_Type;
             m_Position      = other.m_Position;
@@ -80,7 +76,6 @@ namespace isaacObjectViewer
     Mesh::Mesh(Mesh&& other) noexcept
         : m_Vertices(std::move(other.m_Vertices))
         , m_Indices(std::move(other.m_Indices))
-        , m_Textures(std::move(other.m_Textures))
         , m_Name(std::move(other.m_Name))
         , m_Type(ObjectType::Imported)
         , m_Position(other.m_Position)
@@ -103,7 +98,6 @@ namespace isaacObjectViewer
             m_Type          = other.m_Type;
             m_Vertices      = std::move(other.m_Vertices);
             m_Indices       = std::move(other.m_Indices);
-            m_Textures      = std::move(other.m_Textures);
             m_Material      = std::move(other.m_Material);
             m_IndexBuffer   = std::move(other.m_IndexBuffer);
             m_VertexBuffer  = std::move(other.m_VertexBuffer);
@@ -131,36 +125,6 @@ namespace isaacObjectViewer
         std::shared_ptr<Texture> diffuse = m_Material.Diffuse;
         std::shared_ptr<Texture> normal  = m_Material.Normal;
         std::shared_ptr<Texture> specular = m_Material.Specular;
-
-        if (!diffuse) 
-        {
-            for (const auto& t : m_Textures)
-                if (t && t->GetType() == TextureType::DIFFUSE) 
-                { 
-                    diffuse = t; 
-                    break;
-                }
-        }
-
-        if (!normal) 
-        {
-            for (const auto& t : m_Textures)
-                if (t && t->GetType() == TextureType::NORMAL) 
-                { 
-                    normal = t; 
-                    break;
-                }
-        }
-
-        if (!specular) 
-        {
-            for (const auto& t : m_Textures)
-                if (t && t->GetType() == TextureType::SPECULAR) 
-                { 
-                    specular = t; 
-                    break; 
-                }
-        }
 
         const bool hasDiffuse  = (diffuse  != nullptr);
         const bool hasNormal   = (normal   != nullptr);
@@ -238,36 +202,19 @@ namespace isaacObjectViewer
         shader->setMat4("view",       view);
         shader->setMat4("projection", projection);
 
-
         std::shared_ptr<Texture> diffuse  = m_Material.Diffuse;
+        std::shared_ptr<Texture> normal   = m_Material.Normal;
         std::shared_ptr<Texture> specular = m_Material.Specular;
         
-        if (!diffuse)
-        {
-            for (const auto& t : m_Textures)
-            if (t && t->GetType()==TextureType::DIFFUSE)
-            {
-                diffuse=t;  
-                break;
-            }
-        }
-        if (!specular)
-        {
-            for (const auto& t : m_Textures)
-            if (t && t->GetType()==TextureType::SPECULAR)
-            {
-                specular=t; 
-                break;
-            }
-        }
-        
         const bool hasDiffuse  = (diffuse  != nullptr);
+        const bool hasNormal   = (normal   != nullptr);
         const bool hasSpecular = (specular != nullptr);
-        
-        const bool useMat = useMaterial && (hasDiffuse || hasSpecular);
+
+        const bool useMat = useMaterial && (hasDiffuse || hasNormal || hasSpecular);
 
         shader->setBool("useMaterial",   useMat);
         shader->setBool("hasDiffuseMap",  hasDiffuse);
+        shader->setBool("hasNormalMap",   hasNormal);
         shader->setBool("hasSpecularMap", hasSpecular);
         shader->setFloat("material.shininess", m_Material.Shininess);
 
@@ -276,28 +223,66 @@ namespace isaacObjectViewer
             glActiveTexture(GL_TEXTURE0);
             if (hasDiffuse) 
             {
-                diffuse->Bind(); 
-            } 
-            else 
+                diffuse->Bind();
+            }    
+            else
             {
+                static bool once = true;
+                if(once)
+                {
+                    LOG_ERROR("Diffuse map is null for mesh: {}", m_Name);
+                    once = false;
+                }
                 glBindTexture(GL_TEXTURE_2D, 0);
-            }
+            }   
             shader->setInt("material.diffuse", 0);
 
             glActiveTexture(GL_TEXTURE1);
+            if (hasNormal) 
+            {
+                normal->Bind();
+            }    
+            else
+            {
+                static bool once = true;
+                if(once)
+                {
+                    LOG_ERROR("Normal map is null for mesh: {}", m_Name);
+                    once = false;
+                }
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+            shader->setInt("material.normal", 1);
+
+            glActiveTexture(GL_TEXTURE2);
             if (hasSpecular) 
             {
                 specular->Bind();
             } 
             else 
             {
+                static bool once = true;
+                if(once)
+                {
+                    LOG_ERROR("Specular map is null for mesh: {}", m_Name);
+                    once = false;
+                }
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
-            shader->setInt("material.specular", 1);
+            shader->setInt("material.specular", 2);
         } 
         else 
         {
-            shader->setVec3("objectColor", objectColor);
+            // unbind textures
+            glActiveTexture(GL_TEXTURE0); 
+            glBindTexture(GL_TEXTURE_2D, 0);
+            
+            glActiveTexture(GL_TEXTURE1); 
+            glBindTexture(GL_TEXTURE_2D, 0);
+            
+            glActiveTexture(GL_TEXTURE2); 
+            glBindTexture(GL_TEXTURE_2D, 0);
+            shader->setVec3("objectColor", m_Color);
         }
 
         renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);
@@ -307,7 +292,6 @@ namespace isaacObjectViewer
     std::size_t Mesh::GenerateUniqueID()
     {
         static std::size_t id = 0;
-        m_Name = "Mesh_" + std::to_string(id);
         return id++;
     }
 
@@ -335,7 +319,8 @@ namespace isaacObjectViewer
 
         m_VertexArray->Bind();
         m_VertexBuffer->Bind();
-        if (m_IndexBuffer) m_IndexBuffer->Bind();
+        if (m_IndexBuffer) 
+            m_IndexBuffer->Bind();
 
         VertexBufferLayout vb_layout;
         vb_layout.Push<float>(3);         // Position

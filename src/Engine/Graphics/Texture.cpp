@@ -8,8 +8,8 @@ namespace isaacObjectViewer
         , m_Height(0)
         , m_Wrap_S(GL_REPEAT)
         , m_Wrap_T(GL_REPEAT)
-        , m_Filter_Min(GL_LINEAR_MIPMAP_LINEAR)
-        , m_Filter_Max(GL_LINEAR)
+        , m_Filter_Min(GL_NEAREST_MIPMAP_NEAREST)
+        , m_Filter_Max(GL_NEAREST)
     {
         glGenTextures(1, &this->m_ID);
     }
@@ -42,7 +42,6 @@ namespace isaacObjectViewer
         }
         // unbind texture
         glBindTexture(GL_TEXTURE_2D, 0);
-
     }
 
     void Texture::Bind() const

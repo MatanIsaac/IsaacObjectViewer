@@ -2,6 +2,7 @@
 #include "Utility/Log.hpp"
 #include "TextureManager.h"
 #include "Core/Engine.h"
+#include "Utility/Timer.h"
 
 namespace isaacObjectViewer
 {
@@ -17,6 +18,9 @@ namespace isaacObjectViewer
         , m_UseMaterial(true)
         , m_Material(TextureManager::GetDefaultMaterial())
     {
+        Timer timer;
+        timer.Start();
+
         // Set index count for our cube (36 indices)
         m_IndicesCount = 36;
 
@@ -39,6 +43,7 @@ namespace isaacObjectViewer
         m_IndexBuffer = std::make_unique<IndexBuffer>(m_CubeIndices, m_IndicesCount);
 
         m_Material = TextureManager::GetDefaultMaterial();
+        LOG_INFO("Cube created in {} ms", timer.Stop());
     }
 
     Cube::~Cube()
@@ -83,6 +88,7 @@ namespace isaacObjectViewer
             }    
             else   
             {
+                LOG_ERROR("Diffuse map is null!");
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
             shader->setInt("material.diffuse", 0);
@@ -94,6 +100,7 @@ namespace isaacObjectViewer
             }    
             else   
             {
+                LOG_ERROR("Normal map is null!");
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
             shader->setInt("material.normal", 1);
@@ -105,12 +112,22 @@ namespace isaacObjectViewer
             } 
             else 
             {
+                LOG_ERROR("Specular map is null!");
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
             shader->setInt("material.specular", 2);
         } 
         else 
         {
+            // unbind textures
+            glActiveTexture(GL_TEXTURE0); 
+            glBindTexture(GL_TEXTURE_2D, 0);
+            
+            glActiveTexture(GL_TEXTURE1); 
+            glBindTexture(GL_TEXTURE_2D, 0);
+            
+            glActiveTexture(GL_TEXTURE2); 
+            glBindTexture(GL_TEXTURE_2D, 0);
             shader->setVec3("objectColor", m_Color);
         }
 

@@ -228,15 +228,18 @@ namespace isaacObjectViewer
         }
         if (m_ImportObjectDialog.Display("Import 3D Object",32,{500.f,500.f}))
         {
-            LOG_ERROR("Loading Model...");
             if (m_ImportObjectDialog.IsOk()) 
-            {
+            {    
                 std::string path = m_ImportObjectDialog.GetFilePathName();
                 auto* model = ModelManager::GetInstance().LoadModel(path);
                 if (model) 
                 {
-                    Engine::GetInstance()->GetSceneObjects().push_back(model);
-                    Engine::GetInstance()->SetSelectedObject(model);
+                    engine->GetSceneObjects().push_back(model);
+                    engine->SetSelectedObject(model);
+                }
+                else
+                {
+                    LOG_ERROR("Failed to load model from path: {}", path);
                 }
             } 
             else
@@ -343,6 +346,36 @@ namespace isaacObjectViewer
                 ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
                 ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
+                // Draw Calls, triangles, vertices
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); 
+                ImGui::TextUnformatted("Draw Calls");
+                auto frameStats = engine->GetFrameStats();
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                ImGui::Text("%u", frameStats.DrawCalls);
+                
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); 
+                ImGui::TextUnformatted("Triangles");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                ImGui::Text("%llu", frameStats.Triangles);
+                
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); 
+                ImGui::TextUnformatted("Vertices");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                ImGui::Text("%llu", frameStats.Vertices);
+
+                // Frametime
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); 
+                ImGui::TextUnformatted("Frame Time");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%.4f ms", engine->GetFrameTime() * 1000.0f);
+
                 // FPS
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0); 
@@ -377,6 +410,12 @@ namespace isaacObjectViewer
                     ImGui::DragInt("##CapValue", &engine->GetFrameCapFps(), 1, 30, 240);
                 }
 
+                /* 
+                 *  TODO: Add the following
+                 *  1. Frame time (ms) (primary) and FPS (secondary).
+                 *  2. Add Draw Calls, Batches, and Instance Rendering
+                 *  3. Triangles, Vertices, Indices
+                */
                 ImGui::EndTable();
             }
         }
@@ -402,6 +441,22 @@ namespace isaacObjectViewer
                 {
                     engine->SetBackgroundColor({0.0f, 0.0f, 0.0f});
                 }
+
+                // Wireframe Mode
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); 
+                ImGui::TextUnformatted("Wireframe Mode");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                if (ImGui::Checkbox("##WireframeMode", &engine->IsWireframeModeEnabled()))
+                {
+                    engine->ToggleWireframeMode();
+                }
+
+                /* 
+                 *  TODO:
+                 *  1. Add Anti-Aliasing
+                */
 
                 // Lighting settings
                 bool changed = false;
@@ -525,11 +580,17 @@ namespace isaacObjectViewer
             // snapshot current values
             glm::vec3 pos = cam->GetPosition();
             float speed   = cam->GetSpeed();
-            
+            float near_plane = cam->GetNear();
+            float far_plane = cam->GetFar();
 
             bool changed_pos   = false;
             bool changed_speed = false;
             bool changed_zoom  = false;
+            bool changed_near  = false;
+            bool changed_far   = false;
+
+            int display_w, display_h;
+            SDL_GetWindowSizeInPixels(engine->GetSDLWindow(), &display_w, &display_h);
 
             if (ImGui::BeginTable("CameraTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
             {
@@ -575,17 +636,57 @@ namespace isaacObjectViewer
                     changed_zoom = true;
                 }
 
+                // Near Plane
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::TextUnformatted("Near Plane");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                changed_near |= ImGui::DragFloat("##cam_near", &near_plane, 0.1f, 0.1f, 100.0f, "%.2f");
+                ImGui::SameLine();
+                if (ImGui::SmallButton("Reset##near"))
+                {
+                    cam->SetNear(Camera::DEFAULT_CAMERA_NEAR);
+                    changed_near = true;
+                }
+
+                // Far Plane
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::TextUnformatted("Far Plane");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                changed_far |= ImGui::DragFloat("##cam_far", &far_plane, 0.1f, 0.1f, 100'000.0f, "%.2f");
+                ImGui::SameLine();
+                if (ImGui::SmallButton("Reset##far"))
+                {
+                    cam->SetFar(Camera::DEFAULT_CAMERA_FAR);
+                    changed_far = true;
+                }
+
                 ImGui::EndTable();
             }
 
             // apply only if changed
-            if (changed_pos)   cam->SetPosition(pos);
-            if (changed_speed) cam->SetSpeed(speed);
+            if (changed_pos)   
+            {
+                cam->SetPosition(pos);
+            }
+            if (changed_speed) 
+            {
+                cam->SetSpeed(speed);
+            }
             if (changed_zoom)
             {
                 cam->SetZoom(cam->GetZoom());
-                int display_w, display_h;
-                SDL_GetWindowSizeInPixels(engine->GetSDLWindow(), &display_w, &display_h);
+                cam->SetProjection((float)display_w / (float)display_h);
+            }
+            if(changed_near) 
+            {
+                cam->SetNear(near_plane);
+                cam->SetProjection((float)display_w / (float)display_h);
+            }
+            if(changed_far)
+            {
+                cam->SetFar(far_plane);
                 cam->SetProjection((float)display_w / (float)display_h);
             }
         }
@@ -862,6 +963,26 @@ namespace isaacObjectViewer
                 glm::vec3 color = selected->GetColor();
                 if (ImGui::ColorEdit3("Object Color", &color.x))
                     selected->SetColor(color);
+            }
+
+            const char* filter_label = "Filter Mode \uf0d7"; // ▼
+
+            if (ImGui::Button(filter_label))
+                ImGui::OpenPopup("filter_popup");
+
+            if (ImGui::BeginPopup("filter_popup"))
+            {
+                if (ImGui::MenuItem("Linear mode"))       
+                {
+                    LOG_INFO("Switched to Linear mode");
+                    selected->SetFilterMode(TextureFilterMode::LINEAR);
+                }
+                if (ImGui::MenuItem("Nearest mode")) 
+                {
+                    LOG_INFO("Switched to Nearest mode");
+                    selected->SetFilterMode(TextureFilterMode::NEAREST);
+                }
+                ImGui::EndPopup();
             }
 
             float shininess = selected->GetShininess();

@@ -67,7 +67,8 @@ void main()
 {
     // Normal: from normal map if available, else interpolated world normal
     vec3 N = fs_in.NormalW;
-    if (hasNormalMap) {
+    if (useMaterial && hasNormalMap) 
+    {
         vec3 n_ts = texture(material.normal, fs_in.TexCoords).xyz * 2.0 - 1.0;
         N = normalize(fs_in.TBN * n_ts);
     } else {

@@ -10,6 +10,8 @@
 
 #include "Utility/config.h"
 #include "Graphics/Shader/Shader.h"
+#include "Graphics/Renderer/Renderer.h"
+#include "Graphics/Buffers/VertexArray.h"
 
 namespace isaacObjectViewer
 {
@@ -65,18 +67,17 @@ namespace isaacObjectViewer
         /// @param projection The projection matrix.
         /// @param screenWidth The width of the screen.
         /// @param screenHeight The height of the screen.
-        void Render(const glm::mat4& view, const glm::mat4& projection, int screenWidth, int screenHeight);
+        void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, int screenWidth, int screenHeight);
 
     private:
         GLuint m_SSBO = 0;
-        GLuint m_VAO = 0;
         glm::vec3 m_Start, m_End;
         float m_Thickness;
         glm::vec3 m_Color;
         Shader* m_ThickShader;
         float m_Duration;
         std::vector<glm::vec4> lineVertices;
-
+        std::unique_ptr<VertexArray> m_VertexArray;
 
 
         /// @brief Move constructor (deleted).
@@ -84,5 +85,12 @@ namespace isaacObjectViewer
 
         /// @brief Move assignment operator (deleted).
         Line& operator=(Line&& other) = delete;
+        
+        /// @brief Copy constructor (deleted).
+        Line(const Line&) = delete;
+
+        /// @brief  Copy assignment operator (deleted).
+        Line& operator=(const Line&) = delete;
+
     };
 }

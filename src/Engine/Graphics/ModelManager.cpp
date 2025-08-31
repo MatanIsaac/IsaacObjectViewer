@@ -5,6 +5,8 @@
 #include "Core/Engine.h"
 #include "Graphics/TextureManager.h"
 #include <filesystem>
+#include <functional>
+#include <exception>
 
 namespace isaacObjectViewer 
 {
@@ -24,262 +26,339 @@ namespace isaacObjectViewer
         return static_cast<unsigned char>(v * 255.f + 0.5f);
     }
 
-    std::string ModelManager::canonicalUnderBase(const std::filesystem::path& p) const
+    static const aiTexture* getEmbedded(const aiScene* scene, const aiString& path) 
     {
-        std::error_code ec;
-        auto full = (p.is_absolute() ? p : (m_BaseDir / p));
-        auto can  = std::filesystem::weakly_canonical(full, ec);
-        return (ec ? full : can).string();
+        return (path.length > 0 && path.C_Str()[0] == '*') ? scene->GetEmbeddedTexture(path.C_Str()) : nullptr;
     }
 
-    // Convert Assimp material → engine Material (textures or synthesized colors)
+    // --- unified tiny loader (handles embedded + sRGB) --------------------------
+    static std::shared_ptr<Texture> loadMaybeEmbedded(const aiScene* scene,
+                                                    const std::filesystem::path& baseDir,
+                                                    const std::string& path,
+                                                    const aiString& texPath,
+                                                    TextureType ttype,
+                                                    bool srgb)
+    {
+        LOG_INFO("texPath: {}", texPath.C_Str());
+        auto baseName = std::filesystem::path(path).stem().string() + "_";
+        std::filesystem::path ext = std::filesystem::path(texPath.C_Str()).extension();
+        
+        switch (ttype) 
+        {
+            case TextureType::DIFFUSE:      
+                baseName += "diffuse";
+                break;
+            case TextureType::SPECULAR:     
+                baseName += "specular"; 
+                break;
+            case TextureType::NORMAL:     
+                baseName += "normal"; 
+                break;
+            default:                  
+                LOG_WARN("Unknown texture type: {}", baseDir.string() + "\\textures\\" + baseName + ext.string());
+                break;
+        }
+        
+        auto finalPath = baseDir.string() + "\\textures\\" + baseName + ext.string();
+        LOG_INFO("Load2 FinalPath: {}", finalPath);
+
+        if (const aiTexture* emb = getEmbedded(scene, texPath)) 
+        {
+            // Compressed (PNG/JPG/etc.) case: mHeight == 0
+            if (emb->mHeight == 0) 
+            {
+                const unsigned char* bytes = reinterpret_cast<const unsigned char*>(emb->pcData);
+                size_t sz = static_cast<size_t>(emb->mWidth);
+                return TextureManager::LoadTextureFromMemory(bytes, sz, ttype, srgb, finalPath.c_str());
+            } 
+            else 
+            {
+                // Raw pixel data; you can add a fallback if you want later
+                LOG_WARN("Embedded raw pixel texture not handled yet: {}", finalPath.c_str());
+                return nullptr;
+            }
+        }
+
+        return TextureManager::LoadTexture(finalPath, ttype);
+    }
+
+    // --- Convert Assimp material → engine Material ------------------------------
     static Material toEngineMaterial(const aiMaterial* mat,
-                                     const std::filesystem::path& baseDir)
+                                    const aiScene* scene,
+                                    const std::filesystem::path& baseDir,
+                                    const std::string& path)
     {
         Material out{};
+
+        // Shininess: clamp to something sane; do NOT scale down
         float shininess = 32.0f;
         mat->Get(AI_MATKEY_SHININESS, shininess);
-        out.Shininess = std::max(1.0f, std::min(shininess, 1000.0f) * 0.128f);
+        if (!(shininess > 0.0f && std::isfinite(shininess))) 
+            shininess = 32.0f;
+        out.Shininess = std::clamp(shininess, 1.0f, 256.0f);
 
+        aiString texPath;
+
+        // Diffuse (sRGB)
         aiColor3D kd(1.0f, 1.0f, 1.0f);
         mat->Get(AI_MATKEY_COLOR_DIFFUSE, kd);
 
-        aiString texPath;
         if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0 &&
             mat->GetTexture(aiTextureType_DIFFUSE, 0, &texPath) == AI_SUCCESS)
         {
-            auto path = (baseDir / texPath.C_Str()).string();
-            out.Diffuse = TextureManager::LoadTexture(path, TextureType::DIFFUSE);
+            out.Diffuse = loadMaybeEmbedded(scene, baseDir, path, texPath, TextureType::DIFFUSE, /*srgb=*/true);
         }
-        else
+        if (!out.Diffuse) 
         {
             out.Diffuse = makeSolidTexture(to8bit(kd.r), to8bit(kd.g), to8bit(kd.b), TextureType::DIFFUSE);
         }
 
-        aiColor3D ks(0.0f, 0.0f, 0.0f);
+        // Normal map: try NORMALS -> HEIGHT -> DISPLACEMENT (linear)
+        auto loadNormal = [&](aiTextureType t) -> std::shared_ptr<Texture> 
+        {
+            if (mat->GetTextureCount(t) == 0) 
+            {
+                LOG_WARN("No normal map texture found");
+                return nullptr;
+            }
+            if (mat->GetTexture(t, 0, &texPath) != AI_SUCCESS) 
+            {
+                LOG_WARN("Failed to load normal map texture: {}", texPath.C_Str());
+                return nullptr;
+            }
+            return loadMaybeEmbedded(scene, baseDir, path, texPath, TextureType::NORMAL, /*srgb=*/false);
+        };
+
+        out.Normal = loadNormal(aiTextureType_NORMALS);
+        
+        // NOTE: no fake normal map here; shader should disable tangent-space normal mapping if absent
+
+        // Specular: map if present, else constant dielectric 0.04 (linear)
+        aiColor3D ks(0,0,0);
         mat->Get(AI_MATKEY_COLOR_SPECULAR, ks);
 
         if (mat->GetTextureCount(aiTextureType_SPECULAR) > 0 &&
             mat->GetTexture(aiTextureType_SPECULAR, 0, &texPath) == AI_SUCCESS)
         {
-            auto path = (baseDir / texPath.C_Str()).string();
-            out.Specular = TextureManager::LoadTexture(path, TextureType::SPECULAR);
+            out.Specular = loadMaybeEmbedded(scene, baseDir, path, texPath, TextureType::SPECULAR, /*srgb=*/false);
         }
-        else
+        if (!out.Specular) 
         {
             float s = std::max({ks.r, ks.g, ks.b});
-            if (s > 0.f)
-            {
-                auto v = to8bit(s);
-                out.Specular = makeSolidTexture(v, v, v, TextureType::SPECULAR);
-            }
+            unsigned char v = to8bit(s > 0.0f ? s : 0.04f);
+            out.Specular = makeSolidTexture(v, v, v, TextureType::SPECULAR);
         }
+
         return out;
     }
 
-    // ------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
 
-    Model* ModelManager::LoadModel(const std::string &path)
+    Model* ModelManager::LoadModel(const std::string& path)
     {
         m_Meshes.clear();
 
-        // robust base dir
         std::filesystem::path p(path);
         m_BaseDir = p.parent_path();
 
         Assimp::Importer import;
 
-        // IMPORTANT: add safe flags for normals/tangents
-        const unsigned int flags =
-            aiProcess_Triangulate
-          | aiProcess_FlipUVs
-          | aiProcess_JoinIdenticalVertices
-          | aiProcess_ImproveCacheLocality
-          | aiProcess_LimitBoneWeights
-          | aiProcess_GenSmoothNormals
-          | aiProcess_CalcTangentSpace;
+        const unsigned int flags = aiProcess_Triangulate
+                                    | aiProcess_FlipUVs
+                                    | aiProcess_JoinIdenticalVertices
+                                    | aiProcess_ImproveCacheLocality
+                                    | aiProcess_LimitBoneWeights
+                                    | aiProcess_GenSmoothNormals
+                                    | aiProcess_CalcTangentSpace;
 
-        const aiScene *scene = import.ReadFile(path, flags);
-
-        if(!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode) 
+        LOG_INFO("Loading model: {}", path);
+        const aiScene* scene = import.ReadFile(path, flags);
+        if (!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode) 
         {
             LOG_ERROR("ERROR::ASSIMP::{}", import.GetErrorString());
             return nullptr;
         }
 
-        ProcessNode(scene->mRootNode, scene);
+        ProcessNode(scene->mRootNode, scene, path);
 
         std::string modelName = p.stem().string();
         auto model = new Model(m_Meshes, modelName);
-        
-        if (path.ends_with(".fbx") || path.ends_with(".dae"))
+
+        if (path.ends_with(".fbx") || path.ends_with(".dae")) 
         {
-            // FBX/DAE models are Z-up, convert to Y-up
             model->SetOrientation(glm::quat(glm::vec3(glm::radians(-90.0f), 0.0f, 0.0f)));
         }
 
         return model;
     }
 
-    void ModelManager::ProcessNode(aiNode *node, const aiScene *scene)
+    void ModelManager::ProcessNode(aiNode* node, const aiScene* scene, const std::string& path)
     {
-        for(unsigned int i = 0; i < node->mNumMeshes; i++)
+        for (unsigned int i = 0; i < node->mNumMeshes; ++i) 
         {
-            aiMesh *mesh = scene->mMeshes[node->mMeshes[i]]; 
-            Mesh m = ProcessMesh(mesh, scene);
-            if (m.GetIndexCount() > 0 || m.GetVertexCount() > 0) // skip empty
+            aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+            Mesh m = ProcessMesh(mesh, scene, path);
+            if (m.GetIndexCount() > 0 || m.GetVertexCount() > 0)
                 m_Meshes.push_back(std::move(m));
         }
-        for(unsigned int i = 0; i < node->mNumChildren; i++)
-            ProcessNode(node->mChildren[i], scene);
-    }  
-    
-    Mesh ModelManager::ProcessMesh(aiMesh *mesh, const aiScene *scene)
+        for (unsigned int i = 0; i < node->mNumChildren; ++i)
+            ProcessNode(node->mChildren[i], scene, path);
+    }
+
+    Mesh ModelManager::ProcessMesh(aiMesh* mesh, const aiScene* scene, const std::string& path)
     {
         std::string meshName = mesh->mName.C_Str();
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
 
+        // build vertices (unchanged)
         vertices.reserve(mesh->mNumVertices);
-        for(unsigned int i = 0; i < mesh->mNumVertices; i++)
+        for (unsigned int i = 0; i < mesh->mNumVertices; ++i) 
         {
             Vertex v{};
-
-            // positions
-            v.Position.x = mesh->mVertices[i].x;
-            v.Position.y = mesh->mVertices[i].y;
-            v.Position.z = mesh->mVertices[i].z;
-
-            // normals (assimp flag will generate if missing)
-            if (mesh->HasNormals())
+            v.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+            v.Normal   = mesh->HasNormals() ? glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z) : glm::vec3(0);
+            if (mesh->mTextureCoords[0]) 
             {
-                v.Normal.x = mesh->mNormals[i].x;
-                v.Normal.y = mesh->mNormals[i].y;
-                v.Normal.z = mesh->mNormals[i].z;
-            }
-            else
-            {
-                v.Normal = glm::vec3(0.0f);
-            }
-
-            // UVs + tangents/bitangents
-            if (mesh->mTextureCoords[0])
-            {
-                v.TexCoords.x = mesh->mTextureCoords[0][i].x; 
-                v.TexCoords.y = mesh->mTextureCoords[0][i].y;
-
-                if (mesh->HasTangentsAndBitangents())
+                v.TexCoords = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+                if (mesh->HasTangentsAndBitangents()) 
                 {
-                    v.Tangent.x   = mesh->mTangents[i].x;
-                    v.Tangent.y   = mesh->mTangents[i].y;
-                    v.Tangent.z   = mesh->mTangents[i].z;
-
-                    v.Bitangent.x = mesh->mBitangents[i].x;
-                    v.Bitangent.y = mesh->mBitangents[i].y;
-                    v.Bitangent.z = mesh->mBitangents[i].z;
-                }
-                else
+                    v.Tangent   = { mesh->mTangents[i].x,   mesh->mTangents[i].y,   mesh->mTangents[i].z   };
+                    v.Bitangent = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
+                } 
+                else 
                 {
-                    v.Tangent   = glm::vec3(0.0f);
-                    v.Bitangent = glm::vec3(0.0f);
+                    v.Tangent = v.Bitangent = glm::vec3(0);
                 }
-            }
-            else
+            } 
+            else 
             {
-                v.TexCoords = glm::vec2(0.0f);
-                v.Tangent   = glm::vec3(0.0f);
-                v.Bitangent = glm::vec3(0.0f);
+                v.TexCoords = glm::vec2(0);
+                v.Tangent = v.Bitangent = glm::vec3(0);
             }
-
             vertices.push_back(v);
         }
 
-        // indices
-        for(unsigned int i = 0; i < mesh->mNumFaces; i++)
+        // indices (unchanged)
+        for (unsigned int i = 0; i < mesh->mNumFaces; ++i) 
         {
             const aiFace& face = mesh->mFaces[i];
-            for(unsigned int j = 0; j < face.mNumIndices; j++)
+            for (unsigned int j = 0; j < face.mNumIndices; ++j)
                 indices.push_back(face.mIndices[j]);
         }
 
-        // materials → textures
+        // --- Materials → textures & engine material -----------------------------
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-        auto diffuse  = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "diffuse");
-        auto specular = LoadMaterialTextures(material, aiTextureType_SPECULAR, "specular");
-
-        // normals: prefer NORMALS, then fallback to HEIGHT or DISPLACEMENT (quirky exporters)
-        auto normals  = LoadMaterialTextures(material, aiTextureType_NORMALS, "normal");
-        if (normals.empty())
-            normals = LoadMaterialTextures(material, aiTextureType_HEIGHT, "normal(height)");
-        if (normals.empty())
-            normals = LoadMaterialTextures(material, aiTextureType_DISPLACEMENT, "normal(disp)");
-
-        // height/displacement (optional)
-        auto height   = LoadMaterialTextures(material, aiTextureType_HEIGHT, "height");
-        if (height.empty())
-            height = LoadMaterialTextures(material, aiTextureType_DISPLACEMENT, "height(disp)");
-
-        // combine
+        // sRGB only for DIFFUSE
+        auto diffuse  = LoadMaterialTexture(material, scene, aiTextureType_DIFFUSE, true, path);
+        auto normals  = LoadMaterialTexture(material, scene, aiTextureType_NORMALS,  false, path);
+        auto specular = LoadMaterialTexture(material, scene, aiTextureType_SPECULAR, false, path);
+   
         std::vector<std::shared_ptr<Texture>> textures;
-        textures.reserve(diffuse.size() + specular.size() + normals.size() + height.size());
-        textures.insert(textures.end(), diffuse.begin(),  diffuse.end());
-        textures.insert(textures.end(), specular.begin(), specular.end());
-        textures.insert(textures.end(), normals.begin(),  normals.end());
-        textures.insert(textures.end(), height.begin(),   height.end());
+        textures.push_back(diffuse);
+        textures.push_back(normals);
+        textures.push_back(specular);
 
-        // engine Material (includes solid-color fallbacks)
-        Material engineMaterial = toEngineMaterial(material, m_BaseDir);
+        Material engineMaterial = toEngineMaterial(material, scene, m_BaseDir, path);
 
-        //LOG_INFO("ModelManager::ProcessMesh - Mesh: {}, V:{} I:{} Tex:{}",
-        //         meshName, vertices.size(), indices.size(), textures.size());
-
-        return Mesh(vertices, indices, textures, engineMaterial, meshName);
+        return Mesh(vertices, indices, engineMaterial, meshName);
     }
 
-    std::vector<std::shared_ptr<Texture>> ModelManager::LoadMaterialTextures(
-        aiMaterial *mat, aiTextureType type, const char* /*debugTypeName*/)
+    std::shared_ptr<Texture> ModelManager::LoadMaterialTexture(
+        aiMaterial* mat, const aiScene* scene, aiTextureType type, const std::string& path)
     {
-        std::vector<std::shared_ptr<Texture>> out;
-
+        std::shared_ptr<Texture> out;
         const unsigned int count = mat->GetTextureCount(type);
-        for(unsigned int i = 0; i < count; i++)
+        for (unsigned int i = 0; i < count; ++i) 
         {
             aiString rel;
-            if (mat->GetTexture(type, i, &rel) != AI_SUCCESS) continue;
-
-            // canonical full path (handles relative vs absolute and / vs \)
-            const std::string canon = canonicalUnderBase(rel.C_Str());
-
-            // cache check
-            if (auto it = m_TextureCache.find(canon); it != m_TextureCache.end())
+            if (mat->GetTexture(type, i, &rel) != AI_SUCCESS)
             {
-                if (auto sp = it->second.lock())
+                LOG_WARN("Failed to get texture: {}", rel.C_Str());
+                continue;
+            } 
+
+            std::filesystem::path newPath = path;
+            std::string texName = newPath.stem().string() + "_";
+            auto finalPath = newPath.parent_path().string() + "\\textures\\";
+
+            // TextureType mapping 
+            TextureType ttype = TextureType::DIFFUSE;
+            switch (type) 
+            {
+                case aiTextureType_DIFFUSE:      
+                    ttype = TextureType::DIFFUSE;  
+                    texName += "diffuse";
+                    break;
+                case aiTextureType_SPECULAR:     
+                    ttype = TextureType::SPECULAR; 
+                    texName += "specular"; 
+                    break;
+                case aiTextureType_NORMALS:     
+                    ttype = TextureType::NORMAL;    
+                    texName += "normal"; 
+                    break;
+                default:                          
+                    ttype = TextureType::DIFFUSE;  
+                    break;
+            }
+
+            std::filesystem::path ext = std::filesystem::path(rel.C_Str()).extension();
+            
+            LOG_INFO("LoadTexture: {}", finalPath + texName + ext.string());
+            auto tex = TextureManager::LoadTexture(finalPath + texName + ext.string(), ttype);
+            if (tex) 
+                out = tex;
+        }
+        if(count == 0) 
+        {                
+            LOG_INFO("Path: {}", path);
+            std::filesystem::path newPath = path;
+            std::string texName = newPath.stem().string() + "_";
+            auto finalPath = newPath.parent_path().string() + "\\textures\\";
+        
+            // TextureType mapping 
+            TextureType ttype = TextureType::DIFFUSE;
+            switch (type) 
+            {
+                case aiTextureType_DIFFUSE:      
+                    ttype = TextureType::DIFFUSE;  
+                    texName += "diffuse";
+                    break;
+                case aiTextureType_SPECULAR:     
+                    ttype = TextureType::SPECULAR; 
+                    texName += "specular"; 
+                    break;
+                case aiTextureType_NORMALS:     
+                    ttype = TextureType::NORMAL;    
+                    texName += "normal"; 
+                    break;
+                default:                          
+                    ttype = TextureType::DIFFUSE;  
+                    break;
+            }
+
+            std::string ext = ".jpg";
+
+            LOG_INFO("LoadTexture: {}", finalPath + texName + ext);
+            
+            std::shared_ptr<Texture> tex = TextureManager::LoadTexture(finalPath + texName + ext, ttype);
+            if(!tex)
+            {
+                LOG_INFO("Failed to load texture: {}, trying with .png", finalPath + texName + ext);
+                ext = ".png";
+                tex = TextureManager::LoadTexture(finalPath + texName + ext, ttype);
+                if (!tex)
                 {
-                    out.push_back(sp);
-                    continue;
+                    LOG_ERROR("No textures found for: {}", texName);
+                    return makeSolidTexture(255, 0, 0, ttype); // return red texture if none found
                 }
             }
 
-            // decide TextureType
-            TextureType ttype = TextureType::DIFFUSE;
-            switch (type)
-            {
-                case aiTextureType_DIFFUSE:       ttype = TextureType::DIFFUSE;       break;
-                case aiTextureType_SPECULAR:      ttype = TextureType::SPECULAR;      break;
-                case aiTextureType_NORMALS:       ttype = TextureType::NORMAL;        break;
-                case aiTextureType_HEIGHT:        ttype = TextureType::HEIGHT;        break;
-                case aiTextureType_DISPLACEMENT:  ttype = TextureType::HEIGHT;        break;
-                default:                          ttype = TextureType::DIFFUSE;       break;
-            }
-
-            auto tex = TextureManager::LoadTexture(canon, ttype);
-            if (tex)
-            {
-                m_TextureCache[canon] = tex;   // store weak_ptr
-                out.push_back(tex);
-            }
+            out = tex;
         }
+
         return out;
     }
 }

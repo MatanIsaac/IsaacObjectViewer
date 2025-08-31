@@ -47,12 +47,15 @@ namespace isaacObjectViewer
             if (deltaSeconds <= 0.0f) 
                 deltaSeconds = 1.0f / 60.0f;
 
-            m_DeltaTime = deltaSeconds;
-            m_FPS = 1.0f / deltaSeconds;
+            m_DeltaTime = std::min(deltaSeconds, 0.1f); // avoid giant dt after alt-tab
+            m_FPS = 1.0f / m_DeltaTime;
+            m_FrameTime = m_DeltaTime;
 
             m_ImGuiLayer.Begin();
             m_ImGuiLayer.DrawUI();
-            
+            m_Renderer.BeginFrame();
+            m_Renderer.Clear();
+
             // input
             ProcessInput();
             Update(m_DeltaTime);
@@ -101,10 +104,10 @@ namespace isaacObjectViewer
         glEnable(GL_DEPTH_TEST); // Enable depth testing
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        
-        std::string colors_vs = GetProjectRootPath("src/Resources/Shaders/main.vs"); 
-        std::string colors_fs = GetProjectRootPath("src/Resources/Shaders/main.fs"); 
-        
+
+        std::string colors_vs = GetProjectRootPath("src/Resources/Shaders/main.vs");
+        std::string colors_fs = GetProjectRootPath("src/Resources/Shaders/main.fs");
+
         m_MainShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
         m_MainShader->Bind();
                                         
@@ -256,8 +259,7 @@ namespace isaacObjectViewer
         {
             obj->Render(m_Renderer, view, projection, m_MainShader); 
         }
-
-        Tracer::GetInstance()->Render(view, projection, display_w, display_h);
+        Tracer::GetInstance()->Render(m_Renderer, view, projection, display_w, display_h);
     }
 
     // @brief cleans all of the engine resources.

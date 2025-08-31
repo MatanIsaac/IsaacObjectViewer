@@ -14,6 +14,7 @@
 #include "Graphics/Buffers/IndexBuffer.h"
 #include "Graphics/Shader/Shader.h"
 #include "Graphics/Buffers/VertexArray.h"
+#include "FrameStats.h"
 
 namespace isaacObjectViewer
 {
@@ -35,7 +36,15 @@ public:
     /// @param shader The shader to use.
     void Render(const VertexArray& va, int count, const Shader& shader) const;
 
+    /// @brief Begins a new frame for rendering.
+    void BeginFrame();
+
+    // Read-only access for the UI
+    const FrameStats& GetStats() const { return m_FrameStats; }
+
 private:
+    // methods are const, stats are mutable to allow increments
+    mutable FrameStats m_FrameStats;
 };
 
-}  // namespace isaacGraphicsEngine
+}  // namespace isaacObjectViewer

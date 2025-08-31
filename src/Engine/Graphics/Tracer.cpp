@@ -40,14 +40,14 @@ namespace isaacObjectViewer
         }
     }
 
-    void Tracer::Render(const glm::mat4& view, const glm::mat4& projection, int w, int h)
+    void Tracer::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, int w, int h)
     {
         if (m_lines.empty())
             return;
 
         for (auto& line : m_lines)
         {
-            line->Render(view, projection, w, h);
+            line->Render(renderer, view, projection, w, h);
         }
     }
 }

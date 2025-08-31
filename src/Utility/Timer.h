@@ -11,7 +11,7 @@
 // Example Usage:
 //
 // @code
-// venture::Timer myTimer;
+// isaacObjectViewer::Timer myTimer;
 // myTimer.SetTimer(5, []() {
 //     std::cout << "Timer callback called!" << std::endl;
 // });

@@ -16,7 +16,7 @@ namespace isaacObjectViewer
         m_Pitch             = pitch;
         UpdateVectors();
         m_Near              = 0.1f;
-        m_Far               = 100.0f;
+        m_Far               = 1000.0f;
     }
 
     Camera::Camera(float posX, float posY, float posZ,float upX, 

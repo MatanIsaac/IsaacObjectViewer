@@ -20,6 +20,12 @@ namespace isaacObjectViewer
         TOTAL
     };
 
+    enum class TextureFilterMode
+    {
+        NEAREST = 0,
+        LINEAR
+    };
+
     class Texture
     {
     public:
@@ -54,6 +60,26 @@ namespace isaacObjectViewer
         /// @brief Sets the path of the texture.
         /// @param newPath The new path of the texture.
         void SetPath(const std::string& newPath) { m_Path = newPath; }
+
+        /// @brief Sets the filter mode of the texture.
+        /// @param minFilter The filter mode for minification.
+        /// @param maxFilter The filter mode for magnification.
+        void SetFilterMode(TextureFilterMode filterMode)
+        {
+            switch (filterMode)
+            {
+            case TextureFilterMode::NEAREST:
+                m_Filter_Min = GL_NEAREST_MIPMAP_NEAREST;
+                m_Filter_Max = GL_NEAREST;
+                break;
+            case TextureFilterMode::LINEAR:
+                m_Filter_Min = GL_LINEAR_MIPMAP_LINEAR;
+                m_Filter_Max = GL_LINEAR;
+                break;
+            }
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, this->m_Filter_Min);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, this->m_Filter_Max);
+        }
 
     private:
         // holds the ID of the texture object, used for all texture operations to reference to this particular texture

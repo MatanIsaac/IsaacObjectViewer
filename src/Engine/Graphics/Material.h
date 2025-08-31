@@ -42,6 +42,47 @@ namespace isaacObjectViewer
             , Shininess(shininess)
         {}
 
+        /// @brief Move constructor.
+        Material(Material&& other) noexcept
+            : Diffuse(std::move(other.Diffuse))
+            , Normal(std::move(other.Normal))
+            , Specular(std::move(other.Specular))
+            , Shininess(other.Shininess)
+        {}
+
+        /// @brief Move assignment operator.
+        Material& operator=(Material&& other) noexcept
+        {
+            if (this != &other)
+            {
+                Diffuse   = std::move(other.Diffuse);
+                Normal    = std::move(other.Normal);
+                Specular  = std::move(other.Specular);
+                Shininess = other.Shininess;
+            }
+            return *this;
+        }
+
+        /// @brief Copy constructor.
+        Material(const Material& other)
+            : Diffuse(other.Diffuse)
+            , Normal(other.Normal)
+            , Specular(other.Specular)
+            , Shininess(other.Shininess)
+        {}
+
+        /// @brief Copy assignment operator.
+        Material& operator=(const Material& other)
+        {
+            if (this != &other)
+            {
+                Diffuse   = other.Diffuse;
+                Normal    = other.Normal;
+                Specular  = other.Specular;
+                Shininess = other.Shininess;
+            }
+            return *this;
+        }
         /// @brief Destructor.
         ~Material() = default;
 

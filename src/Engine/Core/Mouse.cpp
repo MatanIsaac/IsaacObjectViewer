@@ -72,8 +72,7 @@ namespace isaacObjectViewer
         
         if (selected)
         {
-            engine->SetSelectedObject(selected); // Mark selected
-            auto pos = selected->GetPosition();
+            engine->SetSelectedObject(selected);
         }
     }
     

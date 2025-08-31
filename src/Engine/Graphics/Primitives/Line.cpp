@@ -15,7 +15,7 @@ namespace isaacObjectViewer
         glBufferData(GL_SHADER_STORAGE_BUFFER, lineVertices.size() * sizeof(glm::vec4), lineVertices.data(), GL_DYNAMIC_DRAW);
 
         // VAO is needed (but no attributes, we're using gl_VertexID)
-        glGenVertexArrays(1, &m_VAO);
+        m_VertexArray = std::make_unique<VertexArray>();
 
         std::string line_vs  = GetProjectRootPath("src/Resources/Shaders/line.vs");
         std::string line_fs  = GetProjectRootPath("src/Resources/Shaders/line.fs");
@@ -27,14 +27,14 @@ namespace isaacObjectViewer
     Line::~Line()
     {
         glDeleteBuffers(1, &m_SSBO);
-        glDeleteVertexArrays(1, &m_VAO);
+        m_VertexArray.reset();
         delete m_ThickShader;
     }
 
     void Line::SetThickness(float thickness) { m_Thickness = thickness; }
     void Line::SetColor(const glm::vec3& color) { m_Color = color; }
 
-    void Line::Render(const glm::mat4& view, const glm::mat4& projection, int screenWidth, int screenHeight)
+    void Line::Render(const Renderer& renderer,const glm::mat4& view, const glm::mat4& projection, int screenWidth, int screenHeight)
     {
         m_ThickShader->Bind();
 
@@ -44,11 +44,10 @@ namespace isaacObjectViewer
         m_ThickShader->setVec2("u_resolution", glm::vec2(float(screenWidth), float(screenHeight)));
         m_ThickShader->setFloat("u_thickness", m_Thickness);
         m_ThickShader->setVec3("objectColor", m_Color);
-        glBindVertexArray(m_VAO);
+        
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_SSBO);
 
-        // Draw 6 vertices (two triangles)
-        glDrawArrays(GL_TRIANGLES, 0,  6);
+        renderer.Render(*m_VertexArray, 6, *m_ThickShader);
 
         glBindVertexArray(0);
     }

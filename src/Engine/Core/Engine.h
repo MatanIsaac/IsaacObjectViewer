@@ -123,6 +123,14 @@ namespace isaacObjectViewer
         /// @return The frame cap FPS.
         int& GetFrameCapFps() { return m_FrameCapFps; }
 
+        /// @brief Gets the frame time.
+        /// @return The frame time.
+        float GetFrameTime() const { return m_FrameTime; }
+
+        /// @brief Gets the frame statistics.
+        /// @return The frame statistics.
+        const FrameStats& GetFrameStats() const { return m_Renderer.GetStats(); }
+
         /// @brief Gets the mouse mode state.
         /// @return The mouse mode state.
         bool& IsMouseModeEnabled() { return m_MouseModeEnabled; }
@@ -158,6 +166,15 @@ namespace isaacObjectViewer
             SDL_GL_SetSwapInterval(m_VSyncEnabled ? 1 : 0);
         }
 
+        /// @brief Checks if wireframe mode is enabled.
+        /// @return True if wireframe mode is enabled, false otherwise.
+        bool& IsWireframeModeEnabled() { return m_UseWireframeMode; }
+
+        /// @brief Toggles wireframe mode.
+        void ToggleWireframeMode()
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, (m_UseWireframeMode) ? GL_LINE : GL_FILL);
+        }
 
         // Scene Objects
         //-----------------------------------------------------------------------
@@ -353,6 +370,7 @@ namespace isaacObjectViewer
         float m_DeltaTime = 0.0f; // time between current frame and last frame
         float m_LastFrame = 0.0f;
         float m_FPS = 0.0f; // Stores the calculated FPS
+        float m_FrameTime = 0.0f;
 
         glm::vec3 m_BackgroundColor;
         
@@ -360,6 +378,8 @@ namespace isaacObjectViewer
         bool m_FrameCapEnabled = false; // only used when VSync is OFF
         int  m_FrameCapFps = 60;
         isaacObjectViewer::Timer m_FrameTimer;  
+
+        bool m_UseWireframeMode = false;
 
         /// @brief Deleted copy/move constructors and assignment operators.
         Engine(const Engine &other) = delete;

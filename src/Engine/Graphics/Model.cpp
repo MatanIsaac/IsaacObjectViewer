@@ -17,7 +17,8 @@ namespace isaacObjectViewer
         , m_UseMaterial(true)
         , m_Shininess(32.0f)
         , m_Meshes(meshes)
-    {}
+    {
+    }
 
     void Model::Render(const Renderer& renderer,
                    const glm::mat4& view,
@@ -33,6 +34,13 @@ namespace isaacObjectViewer
             }
             mesh.RenderWithParent(renderer, parentModel, view, projection, shader, 
                                     m_UseMaterial, m_Color);
+        }
+
+        if (m_Material.Diffuse && m_Material.Normal && m_Material.Specular)
+        {
+            LOG_INFO("Diffuse: {}", m_Material.Diffuse->GetPath());
+            LOG_INFO("Normal: {}", m_Material.Normal->GetPath());
+            LOG_INFO("Specular: {}", m_Material.Specular->GetPath());
         }
     }
 

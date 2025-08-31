@@ -150,6 +150,9 @@ namespace isaacObjectViewer
         /// @brief Sets the shininess of the material.
         /// @param shininess The new shininess of the material.
         virtual void SetShininess(float shininess) = 0;
+
+        virtual void SetFilterMode(TextureFilterMode filterMode) {}
+        
         // ---------------------------------------------------------
 
         // Helpers

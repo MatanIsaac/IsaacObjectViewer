@@ -3,6 +3,7 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Utility/Log.hpp"
+#include "Utility/Timer.h"
 
 namespace isaacObjectViewer
 {
@@ -17,6 +18,9 @@ namespace isaacObjectViewer
         , m_Color(DEFAULT_COLOR)
         , m_UseMaterial(false)
     {
+        Timer timer;
+        timer.Start();
+
         // Generate cylinder data
         std::vector<float> vertices;
         std::vector<unsigned int> indices;
@@ -39,6 +43,8 @@ namespace isaacObjectViewer
 
         m_VertexArray->AddBuffer(*m_VertexBuffer, layout);
         m_VertexArray->Unbind();
+
+        LOG_INFO("Cylinder created in {} ms", timer.Stop());
     }
 
     Cylinder::~Cylinder()
@@ -68,9 +74,69 @@ namespace isaacObjectViewer
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
         shader->setVec3("objectColor", m_Color);
-        shader->setBool("useMaterial", false);
-        //shader->setFloat("material.shininess",m_Material.Shininess);
-        SetNormalMatrixUniform(shader, view);
+        bool hasDiffuse  = (m_Material.Diffuse  != nullptr);
+        bool hasNormal   = (m_Material.Normal   != nullptr);
+        bool hasSpecular = (m_Material.Specular != nullptr);
+
+        const bool useMaterial = m_UseMaterial && (hasDiffuse || hasSpecular || hasNormal);
+
+        shader->setBool("useMaterial",   useMaterial);
+        shader->setBool("hasDiffuseMap",  hasDiffuse);
+        shader->setBool("hasNormalMap",   hasNormal);
+        shader->setBool("hasSpecularMap", hasSpecular);
+        shader->setFloat("material.shininess",m_Material.Shininess);
+        
+        if (useMaterial) 
+        {
+            glActiveTexture(GL_TEXTURE0);
+            if (hasDiffuse) 
+            {
+                m_Material.Diffuse->Bind(); 
+            }    
+            else
+            {
+                LOG_ERROR("Diffuse map is null!");
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }   
+            shader->setInt("material.diffuse", 0);
+
+            glActiveTexture(GL_TEXTURE1);
+            if (hasNormal) 
+            {
+                m_Material.Normal->Bind(); 
+            }    
+            else
+            {
+                LOG_ERROR("Normal map is null!");
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+            shader->setInt("material.normal", 1);
+
+            glActiveTexture(GL_TEXTURE2);
+            if (hasSpecular) 
+            {
+                m_Material.Specular->Bind(); 
+            } 
+            else 
+            {
+                LOG_ERROR("Specular map is null!");
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+            shader->setInt("material.specular", 2);
+        } 
+        else 
+        {
+            // unbind textures
+            glActiveTexture(GL_TEXTURE0); 
+            glBindTexture(GL_TEXTURE_2D, 0);
+            
+            glActiveTexture(GL_TEXTURE1); 
+            glBindTexture(GL_TEXTURE_2D, 0);
+            
+            glActiveTexture(GL_TEXTURE2); 
+            glBindTexture(GL_TEXTURE_2D, 0);
+            shader->setVec3("objectColor", m_Color);
+        }
 
         // Render using indexed drawing.
         renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);

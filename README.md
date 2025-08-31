@@ -120,6 +120,35 @@ Alternatively, execute the binaries directly from the build directory:
 
 ## <div align="center"> Usage Overview </div>
 
+### Important Notes
+
+**Loading 3D Objects**
+- Imported models (currently) use the same diff/norm/spec textures for all sub-meshes.
+- When importing an OBJ model, the corresponding .mtl file (if present) is automatically loaded to apply materials and texture maps.
+- When you import an FBX type model, the viewer will automatically attempt to load any associated textures (diffuse, normal, specular, etc.) from a `textures` subfolder located in the same directory as the model file. The folder name is case-sensitive.
+- Texture filenames must match the references inside the model file, or follow standard naming conventions (e.g., `*_diffuse`, `*_normal`, `*_specular`).
+- Supported texture formats include PNG, JPG, and BMP.
+- If a referenced texture is missing, the engine will use a fallback color or default material.
+- Embedded textures (textures stored inside the model file) are not currently supported.
+- Textures can be edited after import via the Object Settings panel.
+- The engine does not currently support PBR (physically-based rendering) textures or advanced material workflows—Phong/Blinn-Phong shading only.
+- For best results, keep your model and its textures organized as follows:
+
+Example:
+```
+Resources/Models/
+├─Object-01/
+│   ├─ object.fbx
+│   └─ textures/
+│        ├─ object_diffuse.png
+│        ├─ object_normal.png
+│        └─ object_specular.png
+├─Object-02/
+└─Object-03/
+```
+
+- **Tip:** You can use the UI to toggle between using imported materials/textures and a flat object color for any object.
+
 The 3D Viewer runs in two distinct modes
 
 | Mode               | Enter Shortcut | Exit Shortcut | What It’s For                                          |

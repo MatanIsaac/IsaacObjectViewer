@@ -8,6 +8,7 @@
 #include "Utility/config.h"
 #include "Graphics/Shader/Shader.h"
 #include "Graphics/Primitives/Line.h"
+#include "Graphics/Renderer/Renderer.h"
 
 namespace isaacObjectViewer
 {
@@ -40,7 +41,7 @@ namespace isaacObjectViewer
         /// @param projection The projection matrix.
         /// @param w The width of the viewport.
         /// @param h The height of the viewport.
-        void Render(const glm::mat4& view, const glm::mat4& projection, int w, int h);
+        void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, int w, int h);
 
     private:
         Tracer();

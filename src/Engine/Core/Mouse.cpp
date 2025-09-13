@@ -35,14 +35,14 @@ namespace isaacObjectViewer
     
     void Mouse::ProcessZoom(float yoffset, Camera* camera)
     {
-        camera->AddZoom(-yoffset);
-        if (camera->GetZoom() < 1.0f)
+        camera->AddFOV(-yoffset);
+        if (camera->GetFOV() < 1.0f)
         {
-            camera->SetZoom(1.0f);
+            camera->SetFOV(1.0f);
         }
-        if (camera->GetZoom() > 45.0f)
+        if (camera->GetFOV() > 45.0f)
         {
-            camera->SetZoom(45.0f);
+            camera->SetFOV(45.0f);
         }
     }
 

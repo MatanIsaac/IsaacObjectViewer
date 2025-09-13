@@ -7,7 +7,7 @@ namespace isaacObjectViewer
         : 
         m_Front(glm::vec3(0.0f, 0.0f, -1.0f)), 
         m_MovementSpeed(DEFAULT_CAMERA_SPEED), 
-        m_Zoom(DEFAULT_CAMERA_ZOOM)
+        m_FOV(DEFAULT_CAMERA_FOV)
     {
         m_Position          = position;
         m_InitialPosition   = position;
@@ -24,7 +24,7 @@ namespace isaacObjectViewer
         : 
         m_Front(glm::vec3(0.0f, 0.0f, -1.0f)), 
         m_MovementSpeed(DEFAULT_CAMERA_SPEED), 
-        m_Zoom(DEFAULT_CAMERA_ZOOM)
+        m_FOV(DEFAULT_CAMERA_FOV)
     {
         m_Position          = glm::vec3(posX, posY, posZ);
         m_InitialPosition   = glm::vec3(posX, posY, posZ);

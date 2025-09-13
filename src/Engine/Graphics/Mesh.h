@@ -199,9 +199,18 @@ namespace isaacObjectViewer
         /// @param filterMode The new filter mode for the mesh.
         void SetFilterMode(TextureFilterMode filterMode)
         {
-            m_Material.Diffuse->SetFilterMode(filterMode);
-            m_Material.Normal->SetFilterMode(filterMode);
-            m_Material.Specular->SetFilterMode(filterMode);
+            if (m_Material.Diffuse)
+                m_Material.Diffuse->SetFilterMode(filterMode);
+            else
+                LOG_ERROR("Diffuse texture is not set");
+            if (m_Material.Normal)
+                m_Material.Normal->SetFilterMode(filterMode);
+            else
+                LOG_ERROR("Normal texture is not set");
+            if (m_Material.Specular)
+                m_Material.Specular->SetFilterMode(filterMode);
+            else
+                LOG_ERROR("Specular texture is not set");
         }
 
     private:

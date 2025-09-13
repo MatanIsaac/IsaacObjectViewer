@@ -34,7 +34,5 @@ namespace isaacObjectViewer
         /// @param outDistance The distance to the intersection point (if not null).
         /// @return True if the ray intersects the object, false otherwise.
         virtual bool IntersectRay(const Ray& ray, float* outDistance) = 0;
-
-        
     };
 }

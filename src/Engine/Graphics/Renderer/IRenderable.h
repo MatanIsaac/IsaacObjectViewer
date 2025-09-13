@@ -96,15 +96,15 @@ namespace isaacObjectViewer
         /// @brief Sets the position of the object.
         /// @param newPosition The new position of the object.
         virtual void SetPosition(const glm::vec3& newPosition) = 0;
-        
+
         /// @brief Sets the rotation of the object.
         /// @param newRotation The new rotation of the object.
         virtual void SetRotation(const glm::vec3& newRotation) = 0;
-        
+
         /// @brief Sets the orientation of the object.
         /// @param newOrientation The new orientation of the object.
         virtual void SetOrientation(const glm::quat& newOrientation) = 0;
-        
+
         /// @brief Sets the scale of the object.
         /// @param newScale The new scale of the object.
         virtual void SetScale(const glm::vec3& newScale) = 0;
@@ -151,7 +151,7 @@ namespace isaacObjectViewer
         /// @param shininess The new shininess of the material.
         virtual void SetShininess(float shininess) = 0;
 
-        virtual void SetFilterMode(TextureFilterMode filterMode) {}
+        virtual void SetFilterMode([[maybe_unused]] TextureFilterMode filterMode) {}
         
         // ---------------------------------------------------------
 

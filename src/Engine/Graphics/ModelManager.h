@@ -68,8 +68,7 @@ namespace isaacObjectViewer
         /// @param type The type of texture to load.
         /// @param debugTypeName A debug name for the texture type.
         /// @return A shared pointer to the loaded texture.
-        std::shared_ptr<Texture> LoadMaterialTexture(aiMaterial* mat, const aiScene* scene,
-                                                                aiTextureType type, const std::string& path);
+        std::shared_ptr<Texture> LoadMaterialTexture(aiMaterial* mat, aiTextureType type, const std::string& path);
 
     private:
         /// @brief Constructs a ModelManager object.

@@ -159,13 +159,13 @@ namespace isaacObjectViewer
         /// @param position The new position.
         void SetPosition(const glm::vec3& position) override { m_Sphere.SetPosition(position); }
 
-        /// @brief Sets the light's rotation.
-        /// @param rotation The new rotation.
-        void SetRotation(const glm::vec3& rotation) override {}
+        /// @brief Sets the rotation of the point light.
+        /// @param newRotation The new rotation of the point light.
+        virtual void SetRotation(const glm::vec3& newRotation) override { m_Sphere.SetRotation(newRotation); }
 
-        /// @brief Sets the light's orientation.
-        /// @param newOrientation The new orientation.
-        void SetOrientation(const glm::quat& newOrientation) override {}
+        /// @brief Sets the orientation of the point light.
+        /// @param newOrientation The new orientation of the point light.
+        virtual void SetOrientation(const glm::quat& newOrientation) override { m_Sphere.SetOrientation(newOrientation); }
 
         /// @brief Sets the light's scale.
         /// @param scale The new scale.

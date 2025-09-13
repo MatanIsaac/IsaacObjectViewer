@@ -27,7 +27,7 @@
 - [Contributing](#contributing)
                                                                           
 ---                                                                                                                                                                                                           
-## <div align="center"> General Overview </div>
+## General Overview 
 
 This project is a simple graphics engine created as a side project during my pursuit of a Computer Science degree.                            
 While its still a work-in-progress, its purpose is to experiment with and learn 3D graphics programming and rendering techniques.                               
@@ -35,7 +35,7 @@ Built with modern C++ and OpenGL, it offers a simple framework for loading, view
 
 
 
-## <div align="center"> Goals </div>
+## Goals
 
 The primary goal of this project is to create a simple tool to load, view, and debug 3D objects and 2D textures.    
 It aims to serve as:
@@ -45,7 +45,7 @@ It aims to serve as:
     - A debugging tool for inspecting 3D object structures and textures.
 
 
-## <div align="center"> Features </div>
+## Features 
 
 - Rendering
   - Real-time rendering with OpenGL 4.6 Core Profile.
@@ -78,13 +78,13 @@ Limitations (current WIP)
 - No skeletal animation/skin weights, PBR, or HDR pipeline.
 - UI layout is fixed (no drag-reorder of panels).
 
-## <div align="center"> Prerequisites </div>
+## Prerequisites 
 
 Before getting started, make sure you have:
 
     C++ Compiler: Must support C++17 or later.
     OpenGL: Your graphics drivers should support OpenGL 4.6 or higher 
-## <div align="center"> Getting Started </div>
+## Getting Started
 
 ### Cloning the Repository
 
@@ -104,21 +104,34 @@ To Build The Tests run
 To Clean The Tests run 
     
     make clean_tests
+    
+To Build The Program & The Tests run 
+    
+    make all
+
+To Clean The Program & The Tests run 
+    
+    make clean_all
 
 
 ### Running the Application
 
-Once built, you can start the application with:
+Once built, you can run the application with:
 
     Windows: Run run.bat
     Linux:   Run run.sh
 
+You can run the application's tests with:
+
+    Windows: Run run_tests.bat
+    Linux:   Run run_tests.sh
+
 Alternatively, execute the binaries directly from the build directory:
 
-    Application: iov.exe
-    Tests: tests/test_runner.exe
+    Application: build/iov.exe
+    Tests: build/tests/test_runner.exe
 
-## <div align="center"> Usage Overview </div>
+## Usage Overview
 
 ### Important Notes
 
@@ -207,6 +220,10 @@ Note: The UI uses a fixed tab layout; tabs cannot be rearranged.
   - Material (for primitives and imported models):
     - Use Material / Use Object Color toggle.
     - Object Color picker (shown when Use Material is off).
+    - Filter Mode drop down menu to switch between linear and nearest texture filter mode 
+    ```    
+    NOTE: Filtering only applies when sampling a texture, does not work for solid colors, I.E when using mtl that has only solid colors.
+    ```
     - Shininess slider (specular power for Phong/Blinn-Phong).
     - Load Diffuse / Load Specular textures.
   - Light (when a Point Light is selected):
@@ -227,7 +244,7 @@ Note: The UI uses a fixed tab layout; tabs cannot be rearranged.
 ---
 
 
-## <div align="center"> Project Structure </div>  
+## Project Structure  
 
 
     Isaac-Object-Viewer/
@@ -254,7 +271,7 @@ Note: The UI uses a fixed tab layout; tabs cannot be rearranged.
     ├── └── Utility/            # Utility functions and tools
 
 
-## <div align="center"> Contributing </div>
+## Contributing
 Thanks for your interest in helping with Isaac's Graphics Engine! I'm just a second-year CS student working on this project as a hobby, so every bit of help is greatly appreciated.
 
 ### How to Contribute

@@ -82,9 +82,19 @@ namespace isaacObjectViewer
     // @brief initializes the engine's dependencies, resources and objects
     bool Engine::Init(const char *title, int width, int height, bool fullscreen)
     {
+        // Make sure we have valid dimensions
+        if (width <= 0 || height <= 0)
+        {
+            LOG_ERROR("Invalid window dimensions: {}x{}", width, height);
+            return false;
+        }
+
+        if(m_IsRunning) 
+            return true; // Prevent double init
+
         Log::Init();
 
-        LOG_INFO("Welcome to Isaac's Graphics Engine!");
+        LOG_INFO("Welcome to Isaac's Object Viewer!");
 
         m_Window = new Window(title,width,height,fullscreen);
 
@@ -265,14 +275,27 @@ namespace isaacObjectViewer
     // @brief cleans all of the engine resources.
     void Engine::Clean()
     {
+        if(!m_IsRunning) 
+            return; // Prevent double clean
+            
+        Exit();
         TextureManager::UnloadAll();
         ClearSceneObjects();
+        ClearLightObjects();
         if(m_SelectedObject)
             delete m_SelectedObject;
         delete m_Camera;
         delete m_Shader;
         delete m_MainShader;
         delete m_Window;
+
+        m_SelectedObject = nullptr;
+        m_Camera = nullptr;
+        m_Shader = nullptr;
+        m_MainShader = nullptr;
+        m_Window = nullptr;
+        m_IsRunning = false;
+
         SDL_Quit();
     }
 

@@ -1,5 +1,5 @@
 # --------------------- Compiler ---------------------
-CXX = g++
+CXX = g++  
 
 # --------------------- Third-Party Paths ---------------------
 IMGUI_DIR = dependencies/imgui
@@ -57,7 +57,7 @@ INCLUDE = \
 	-I$(IMGUIZMO_DIR) \
 	-I$(ImGuiFileDialog_DIR)
 
-CXXFLAGS = -std=c++20 -g -Wall -Wextra -DIMGUI_DEFINE_MATH_OPERATORS $(INCLUDE)
+CXXFLAGS = -std=c++20 -O0 -g -Wall -Wextra -DIMGUI_DEFINE_MATH_OPERATORS $(INCLUDE)
 GLAD_SRC = dependencies/glad/src/glad.c
 
 # --------------------- Build Layout ---------------------
@@ -83,7 +83,8 @@ OBJS    := $(OBJ_CPP) $(OBJ_C)
 .PHONY: all clean tests clean_tests run
 
 # --------------------- App Build ---------------------
-all: $(BINDIR)/$(EXE)
+first: $(BINDIR)/$(EXE)
+all: $(BINDIR)/$(EXE) tests
 
 # Ensure build root exists 
 $(BUILD_DIR):
@@ -118,12 +119,21 @@ TEST_BIN      := $(BINDIR)/tests/$(TEST_EXE)
 TEST_CXXFLAGS = -std=c++20 -g -Wall -Wextra -DIMGUI_DEFINE_MATH_OPERATORS $(GTEST_HEADERS) $(INCLUDE)
 TEST_LDFLAGS  = $(LDFLAGS)
 
+TEST_COPY_RUNTIME =
+ifeq ($(OS),Windows_NT)
+  TEST_COPY_RUNTIME = \
+	cp dependencies/SDL3/x86_64-w64-mingw32/bin/SDL3.dll $(BUILD_DIR)/tests/ && \
+	cp dependencies/assimp/bin/libassimp-6.dll $(BUILD_DIR)/tests/
+else
+  TEST_COPY_RUNTIME = cp dependencies/assimp/lib/libassimp.so.6 $(BUILD_DIR)/tests/
+endif
+
 tests: $(TEST_BIN)
 
 $(TEST_BIN): $(TEST_OBJS) $(OBJS) $(GTEST_SRC) | $(BUILD_DIR)
 	@mkdir -p $(dir $@)
 	$(CXX) $(TEST_CXXFLAGS) $^ -o $@ $(TEST_LDFLAGS)
-	@$(COPY_RUNTIME)
+	@$(TEST_COPY_RUNTIME)
 
 $(OBJDIR)/tests/%.o: tests/%.cpp
 	@mkdir -p $(dir $@)
@@ -131,3 +141,35 @@ $(OBJDIR)/tests/%.o: tests/%.cpp
 
 clean_tests:
 	rm -f $(TEST_OBJS) $(TEST_BIN)
+
+clean_all: clean clean_tests
+
+# --------------------- Help ---------------------
+.PHONY: help
+help:
+	@echo "Usage: make [target] [VAR=VALUE]..."
+	@echo ""
+	@echo "Targets:"
+	@echo "  help         Show this help"
+	@echo "  make         Build the application binary (default)"
+	@echo "  all          Build the application binary (default) & the tests"
+	@echo "  tests        Build the GoogleTest runner"
+	@echo "  clean        Remove all build artifacts"
+	@echo "  clean_tests  Remove only test artifacts"
+	@echo "  clean_all    Remove all artifacts"
+	@echo ""
+	@echo "Artifacts:"
+	@echo "  App:   $(BINDIR)/$(EXE)"
+	@echo "  Tests: $(TEST_BIN)"
+	@echo ""
+	@echo "Variables (override on command line):"
+	@echo "  CXX=$(CXX)"
+	@echo "  BUILD_DIR=$(BUILD_DIR)"
+	@echo "  CXXFLAGS=$(CXXFLAGS)"
+	@echo "  LDFLAGS=$(LDFLAGS)"
+	@echo "  INCLUDE=$(INCLUDE)"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make"
+	@echo "  make tests"
+	@echo "  make CXX=clang++ BUILD_DIR=out -j4"

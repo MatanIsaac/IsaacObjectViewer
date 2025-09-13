@@ -57,6 +57,7 @@ namespace isaacObjectViewer
 
     class Engine
     {
+        friend class TestableEngine;
     public:
         /// @brief Gets the singleton instance of the Engine.
         static Engine *GetInstance()
@@ -82,6 +83,17 @@ namespace isaacObjectViewer
         
         /// @brief Stops the engine.
         inline void Exit() { m_IsRunning = false; }
+
+        /// @brief calls destructor, which cleans all of the engine resources.
+        void Clean();
+
+        /// @brief Checks if the engine is running.
+        /// @return True if the engine is running, false otherwise.
+        bool IsRunning() const { return m_IsRunning; }
+
+        /// @brief Gets the maximum number of lights supported by the engine.
+        /// @return The maximum number of lights.
+        int GetMaxLights() const { return MAX_LIGHTS; };
 
         /// @brief Gets the main camera.
         /// @return The main camera.
@@ -202,6 +214,13 @@ namespace isaacObjectViewer
         /// @note if its a light, it will be added to the light object list as well.
         inline void AddSceneObject(ObjectType type,const glm::vec3& position = {0.0f, 0.0f, 0.0f})
         {
+            int currentLightCount = static_cast<int>(m_LightObjects.size());
+            if(currentLightCount >= MAX_LIGHTS && type == ObjectType::PointLight)
+            {
+                LOG_WARN("Max number of lights reached. Can't add more lights {}.\n", MAX_LIGHTS);
+                return;
+            }
+            
             IObject* obj = nullptr;
             switch(type)
             {
@@ -244,7 +263,7 @@ namespace isaacObjectViewer
                 return;                     
             }
 
-            if (m_SelectedObject == object)
+            if(m_SelectedObject == object)
                 m_SelectedObject = nullptr;
             m_ImGuiLayer.ResetSelectedObject();
 
@@ -259,9 +278,7 @@ namespace isaacObjectViewer
             m_SceneObjects.erase(std::remove(m_SceneObjects.begin(),
                                             m_SceneObjects.end(),
                                             object),
-                                m_SceneObjects.end());
-
-            delete object;                           // finally free the memory
+                                m_SceneObjects.end());                          
         }
 
         /// @brief Clears all scene objects from the engine.
@@ -281,6 +298,16 @@ namespace isaacObjectViewer
         std::vector<PointLight*> GetLightObjects()
         {
             return m_LightObjects;
+        }
+
+        void ClearLightObjects() 
+        {
+            for (auto light : m_LightObjects)
+            {
+                if(light != nullptr)
+                    delete light;
+            }
+            m_LightObjects.clear();
         }
 
         /// @brief Gets the currently selected scene object.
@@ -335,9 +362,6 @@ namespace isaacObjectViewer
 
         /// @brief renders all of the engine textures, sounds and engine objects.
         void Render();
-
-        /// @brief calls destructor, which cleans all of the engine resources.
-        void Clean();
 
         /// @brief loads up needed resources such as textures, sfx, music etc..
         bool LoadResources();

@@ -39,7 +39,6 @@ namespace isaacObjectViewer
                                                     TextureType ttype,
                                                     bool srgb)
     {
-        LOG_INFO("texPath: {}", texPath.C_Str());
         auto baseName = std::filesystem::path(path).stem().string() + "_";
         std::filesystem::path ext = std::filesystem::path(texPath.C_Str()).extension();
         
@@ -60,7 +59,6 @@ namespace isaacObjectViewer
         }
         
         auto finalPath = baseDir.string() + "\\textures\\" + baseName + ext.string();
-        LOG_INFO("Load2 FinalPath: {}", finalPath);
 
         if (const aiTexture* emb = getEmbedded(scene, texPath)) 
         {
@@ -171,7 +169,6 @@ namespace isaacObjectViewer
                                     | aiProcess_GenSmoothNormals
                                     | aiProcess_CalcTangentSpace;
 
-        LOG_INFO("Loading model: {}", path);
         const aiScene* scene = import.ReadFile(path, flags);
         if (!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode) 
         {
@@ -251,10 +248,10 @@ namespace isaacObjectViewer
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
         // sRGB only for DIFFUSE
-        auto diffuse  = LoadMaterialTexture(material, scene, aiTextureType_DIFFUSE, true, path);
-        auto normals  = LoadMaterialTexture(material, scene, aiTextureType_NORMALS,  false, path);
-        auto specular = LoadMaterialTexture(material, scene, aiTextureType_SPECULAR, false, path);
-   
+        auto diffuse  = LoadMaterialTexture(material, aiTextureType_DIFFUSE, path);
+        auto normals  = LoadMaterialTexture(material, aiTextureType_NORMALS, path);
+        auto specular = LoadMaterialTexture(material, aiTextureType_SPECULAR, path);
+
         std::vector<std::shared_ptr<Texture>> textures;
         textures.push_back(diffuse);
         textures.push_back(normals);
@@ -266,7 +263,7 @@ namespace isaacObjectViewer
     }
 
     std::shared_ptr<Texture> ModelManager::LoadMaterialTexture(
-        aiMaterial* mat, const aiScene* scene, aiTextureType type, const std::string& path)
+        aiMaterial* mat,  aiTextureType type, const std::string& path)
     {
         std::shared_ptr<Texture> out;
         const unsigned int count = mat->GetTextureCount(type);
@@ -306,14 +303,12 @@ namespace isaacObjectViewer
 
             std::filesystem::path ext = std::filesystem::path(rel.C_Str()).extension();
             
-            LOG_INFO("LoadTexture: {}", finalPath + texName + ext.string());
             auto tex = TextureManager::LoadTexture(finalPath + texName + ext.string(), ttype);
             if (tex) 
                 out = tex;
         }
         if(count == 0) 
         {                
-            LOG_INFO("Path: {}", path);
             std::filesystem::path newPath = path;
             std::string texName = newPath.stem().string() + "_";
             auto finalPath = newPath.parent_path().string() + "\\textures\\";
@@ -341,7 +336,6 @@ namespace isaacObjectViewer
 
             std::string ext = ".jpg";
 
-            LOG_INFO("LoadTexture: {}", finalPath + texName + ext);
             
             std::shared_ptr<Texture> tex = TextureManager::LoadTexture(finalPath + texName + ext, ttype);
             if(!tex)

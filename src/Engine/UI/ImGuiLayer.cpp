@@ -585,7 +585,7 @@ namespace isaacObjectViewer
 
             bool changed_pos   = false;
             bool changed_speed = false;
-            bool changed_zoom  = false;
+            bool changed_fov   = false;
             bool changed_near  = false;
             bool changed_far   = false;
 
@@ -623,17 +623,17 @@ namespace isaacObjectViewer
                     changed_speed = true;
                 }
 
-                // Zoom (FOV)
+                // FOV
                 ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0); ImGui::TextUnformatted("Zoom (FOV)");
+                ImGui::TableSetColumnIndex(0); ImGui::TextUnformatted("FOV");
                 ImGui::TableSetColumnIndex(1);
                 ImGui::SetNextItemWidth(-FLT_MIN);
-                changed_zoom |= ImGui::DragFloat("##cam_zoom", &cam->GetZoom(), 0.1f, 1.0f, 90.0f, "%.2f");
+                changed_fov |= ImGui::DragFloat("##cam_fov", &cam->GetFOV(), 0.1f, 1.0f, 90.0f, "%.2f");
                 ImGui::SameLine();
-                if (ImGui::SmallButton("Reset##zoom"))
+                if (ImGui::SmallButton("Reset##fov"))
                 {
-                    cam->SetZoom(Camera::DEFAULT_CAMERA_ZOOM);
-                    changed_zoom = true;
+                    cam->SetFOV(Camera::DEFAULT_CAMERA_FOV);
+                    changed_fov = true;
                 }
 
                 // Near Plane
@@ -674,9 +674,9 @@ namespace isaacObjectViewer
             {
                 cam->SetSpeed(speed);
             }
-            if (changed_zoom)
+            if (changed_fov)
             {
-                cam->SetZoom(cam->GetZoom());
+                cam->SetFOV(cam->GetFOV());
                 cam->SetProjection((float)display_w / (float)display_h);
             }
             if(changed_near) 

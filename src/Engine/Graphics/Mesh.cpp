@@ -187,7 +187,7 @@ namespace isaacObjectViewer
                             const glm::mat4& projection,
                             Shader* shader,
                             bool useMaterial,
-                            const glm::vec3& objectColor)
+                            [[maybe_unused]] const glm::vec3& objectColor)
     {
         if (!shader || !m_VertexArray || !m_IndexBuffer)
         {

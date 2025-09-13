@@ -25,19 +25,20 @@ namespace isaacObjectViewer
     {
     public:
         // Default camera values
-        static constexpr float DEFAULT_CAMERA_YAW         = -90.0f;
-        static constexpr float DEFAULT_CAMERA_PITCH       = 0.0f;
-        static constexpr float DEFAULT_CAMERA_SPEED       = 5.0f;
-        static constexpr float DEFAULT_CAMERA_ZOOM        = 45.0f;
-        static constexpr float DEFAULT_CAMERA_NEAR        = 0.1f;
-        static constexpr float DEFAULT_CAMERA_FAR         = 1000.0f;
+        static constexpr float DEFAULT_CAMERA_YAW           = -90.0f;
+        static constexpr float DEFAULT_CAMERA_PITCH         = 0.0f;
+        static constexpr float DEFAULT_CAMERA_SPEED         = 5.0f;
+        static constexpr float DEFAULT_CAMERA_FOV           = 45.0f;
+        static constexpr float DEFAULT_CAMERA_NEAR          = 0.1f;
+        static constexpr float DEFAULT_CAMERA_FAR           = 1000.0f;
+        static constexpr glm::vec3 DEFAULT_CAMERA_POSITION  = glm::vec3(0.0f, 0.0f, 0.0f);
 
         /// @brief Constructor with vector parameters.
         /// @param position The initial position of the camera.
         /// @param up The up vector of the camera.
         /// @param yaw The initial yaw angle of the camera.
         /// @param pitch The initial pitch angle of the camera.
-        Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
+        Camera(glm::vec3 position = DEFAULT_CAMERA_POSITION,
             glm::vec3 up       = glm::vec3(0.0f, 1.0f, 0.0f),
             float     yaw      = DEFAULT_CAMERA_YAW,
             float     pitch    = DEFAULT_CAMERA_PITCH);
@@ -69,7 +70,7 @@ namespace isaacObjectViewer
         /// @param aspect The aspect ratio of the viewport.
         void SetProjection(float aspect)
         {
-            m_Projection = glm::perspective(glm::radians(m_Zoom), aspect, m_Near, m_Far);
+            m_Projection = glm::perspective(glm::radians(m_FOV), aspect, m_Near, m_Far);
         }
 
         /// @brief Gets the projection matrix of the camera.
@@ -89,9 +90,9 @@ namespace isaacObjectViewer
         /// @return The yaw angle.
         const float&     GetYaw() { return m_Yaw; }
 
-        /// @brief Gets the zoom level of the camera.
-        /// @return The zoom level.
-        float&     GetZoom() { return m_Zoom; } 
+        /// @brief Gets the FOV level of the camera.
+        /// @return The FOV level.
+        float&     GetFOV() { return m_FOV; } 
 
         /// @brief Gets the movement speed of the camera.
         /// @return The movement speed.
@@ -123,9 +124,9 @@ namespace isaacObjectViewer
         /// @param newYaw The new yaw angle of the camera.
         void SetYaw(float newYaw) { m_Yaw = newYaw; }
 
-        /// @brief Sets the zoom level of the camera.
-        /// @param newZoom The new zoom level of the camera.
-        void SetZoom(float newZoom) { m_Zoom = newZoom; }
+        /// @brief Sets the FOV level of the camera.
+        /// @param newFOV The new FOV level of the camera.
+        void SetFOV(float newFOV) { m_FOV = newFOV; }
 
         /// @brief Sets the near clipping plane distance of the camera.
         /// @param newNear The new near clipping plane distance of the camera.
@@ -151,9 +152,9 @@ namespace isaacObjectViewer
         /// @param amount The amount to add to the yaw angle.
         void AddYaw(float amount) { m_Yaw += amount; }
 
-        /// @brief Adds to the zoom level of the camera.
-        /// @param amount The amount to add to the zoom level.
-        void AddZoom(float amount) { m_Zoom += amount; }
+        /// @brief Adds to the FOV level of the camera.
+        /// @param amount The amount to add to the FOV level.
+        void AddFOV(float amount) { m_FOV += amount; }
 
         /// @brief Adds to the movement speed of the camera.
         /// @param amount The amount to add to the movement speed.
@@ -184,7 +185,7 @@ namespace isaacObjectViewer
         float m_Pitch;
         // camera options
         float m_MovementSpeed;
-        float m_Zoom;
+        float m_FOV;
         float m_Near;
         float m_Far;
     };

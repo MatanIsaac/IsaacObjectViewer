@@ -3,7 +3,7 @@
 
 using namespace isaacObjectViewer;
 
-int main(int argc, char* argv[])
+int main([[maybe_unused]] int argc,[[maybe_unused]] char* argv[])
 {   
     auto engine = Engine::GetInstance();
     if (engine)

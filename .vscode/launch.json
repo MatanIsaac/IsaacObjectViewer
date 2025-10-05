@@ -5,7 +5,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/iov.exe",
+            "program": "${workspaceFolder}/build/iov",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

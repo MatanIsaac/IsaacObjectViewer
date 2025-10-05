@@ -18,6 +18,7 @@ IMGUI_SRC = \
 	$(IMGUI_BACKEND)/imgui_impl_sdl3.cpp \
 	$(IMGUI_BACKEND)/imgui_impl_opengl3.cpp
 
+
 # --------------------- OS-Specific ---------------------
 EXE =
 TEST_EXE =
@@ -59,6 +60,12 @@ INCLUDE = \
 
 CXXFLAGS = -std=c++20 -O0 -g -Wall -Wextra -DIMGUI_DEFINE_MATH_OPERATORS $(INCLUDE)
 GLAD_SRC = dependencies/glad/src/glad.c
+
+ifeq ($(OS),Windows_NT)
+  CXXFLAGS += -D_CRT_SECURE_NO_WARNINGS -D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+else
+  CXXFLAGS += -pthread
+endif
 
 # --------------------- Build Layout ---------------------
 BUILD_DIR := build
@@ -128,9 +135,13 @@ else
   TEST_COPY_RUNTIME = cp dependencies/assimp/lib/libassimp.so.6 $(BUILD_DIR)/tests/
 endif
 
+# A variable for all main application object files *except* for main.o
+MAIN_APP_OBJS_NO_MAIN := $(filter-out $(OBJDIR)/src/main.o,$(OBJS))
+
 tests: $(TEST_BIN)
 
-$(TEST_BIN): $(TEST_OBJS) $(OBJS) $(GTEST_SRC) | $(BUILD_DIR)
+# $(TEST_BIN): $(TEST_OBJS) $(OBJS) $(GTEST_SRC) | $(BUILD_DIR)
+$(TEST_BIN): $(TEST_OBJS) $(MAIN_APP_OBJS_NO_MAIN) $(GTEST_SRC) | $(BUILD_DIR)
 	@mkdir -p $(dir $@)
 	$(CXX) $(TEST_CXXFLAGS) $^ -o $@ $(TEST_LDFLAGS)
 	@$(TEST_COPY_RUNTIME)

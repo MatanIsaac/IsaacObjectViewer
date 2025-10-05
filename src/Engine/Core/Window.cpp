@@ -3,7 +3,6 @@
 
 namespace isaacObjectViewer 
 {
-
     Window::Window(const char *title, int width, int height, bool fullscreen)
     {
         SDL_InitFlags init_flags = SDL_INIT_VIDEO;

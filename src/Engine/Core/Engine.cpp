@@ -17,6 +17,8 @@ namespace isaacObjectViewer
           m_MainShader(nullptr),
           m_Camera(nullptr),
           m_SelectedObject(nullptr),
+          m_SceneObjects({}),
+          m_LightObjects({}),
           m_DirLight(nullptr),
           m_BlinnPhongShading(true),
           m_UseMaterial(true),
@@ -275,8 +277,8 @@ namespace isaacObjectViewer
     // @brief cleans all of the engine resources.
     void Engine::Clean()
     {
-        if(!m_IsRunning) 
-            return; // Prevent double clean
+        //if(!m_IsRunning) 
+            //return; // Prevent double clean
             
         Exit();
         TextureManager::UnloadAll();

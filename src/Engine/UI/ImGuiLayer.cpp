@@ -360,14 +360,14 @@ namespace isaacObjectViewer
                 ImGui::TextUnformatted("Triangles");
                 ImGui::TableSetColumnIndex(1);
                 ImGui::SetNextItemWidth(-FLT_MIN);
-                ImGui::Text("%llu", frameStats.Triangles);
+                ImGui::Text("%lu", frameStats.Triangles);
                 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0); 
                 ImGui::TextUnformatted("Vertices");
                 ImGui::TableSetColumnIndex(1);
                 ImGui::SetNextItemWidth(-FLT_MIN);
-                ImGui::Text("%llu", frameStats.Vertices);
+                ImGui::Text("%lu", frameStats.Vertices);
 
                 // Frametime
                 ImGui::TableNextRow();

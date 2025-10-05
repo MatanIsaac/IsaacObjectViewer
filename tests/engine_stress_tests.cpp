@@ -4,12 +4,15 @@
 
 using namespace isaacObjectViewer;
 
+
+
 //-------------------------
 // Max Lights Overflow
 //-------------------------
 TEST(EngineStressTest, MaxLightsOverflow) 
 {
     const auto& engine = Engine::GetInstance();
+    engine->Init("Test Window", 800, 600, false);
     int initialLights = static_cast<int>(engine->GetLightObjects().size());
     for (int i = 0; i < engine->GetMaxLights() + 5; ++i) 
     {
@@ -26,6 +29,7 @@ TEST(EngineStressTest, MaxLightsOverflow)
 TEST(EngineStressTest, DoubleAddRemoveObjects) 
 {
     const auto& engine = Engine::GetInstance();
+    engine->Init("Test Window", 800, 600, false);
 
     auto* obj1 = new Cube({0.0f, 0.0f, 0.0f});
     auto* obj2 = new Cube({0.0f, 0.0f, 0.0f});
@@ -49,6 +53,7 @@ TEST(EngineStressTest, DoubleAddRemoveObjects)
 TEST(EngineStressTest, CleanAfterFailedInit) 
 {
     Engine* badEngine = Engine::GetInstance();
+    badEngine->Init("Test Window", 800, 600, false);
     bool ok = badEngine->Init("Bad Init", -1, -1, false); // fail intentionally
     ASSERT_FALSE(ok);
     //EXPECT_NO_THROW(badEngine->Clean());
@@ -60,6 +65,8 @@ TEST(EngineStressTest, CleanAfterFailedInit)
 TEST(EngineStressTest, RapidModeToggle) 
 {
     const auto& engine = Engine::GetInstance();
+    engine->Init("Test Window", 800, 600, false);
+
     for (int i = 0; i < 100; ++i) 
     {
         engine->EnableFreeCameraMode();
@@ -74,6 +81,7 @@ TEST(EngineStressTest, RapidModeToggle)
 TEST(EngineStressTest, BackgroundColorExtremes) 
 {
     const auto& engine = Engine::GetInstance();
+    engine->Init("Test Window", 800, 600, false);
 
     engine->SetBackgroundColor({2.0f, -1.0f, 100.0f});
     auto color = engine->GetBackgroundColor();
@@ -88,6 +96,8 @@ TEST(EngineStressTest, BackgroundColorExtremes)
 TEST(EngineStressTest, FrameCapWeirdness) 
 {
     const auto& engine = Engine::GetInstance();
+    engine->Init("Test Window", 800, 600, false);
+    
     engine->GetFrameCapFps() = 0;
     engine->GetFrameCapFps() = -60;
     SUCCEED();

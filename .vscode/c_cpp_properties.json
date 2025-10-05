@@ -12,10 +12,11 @@
                 "${workspaceFolder}/dependencies/**",
                 "${workspaceFolder}/dependencies/assimp/**",
                 "${workspaceFolder}/dependencies/imgui",
-                "${workspaceFolder}/dependencies/imGuizmo",
-                "${workspaceFolder}/dependencies/imGuiFileDialog",
+                "${workspaceFolder}/dependencies/ImGuizmo",
+                "${workspaceFolder}/dependencies/ImGuiFileDialog",
                 "${workspaceFolder}/dependencies/googletest/googletest/include",
-                "${workspaceFolder}/dependencies/SDL3/x86_64-w64-mingw32/include/**"
+                "${workspaceFolder}/dependencies/SDL3/x86_64-w64-mingw32/include/**",
+                "/usr/include/gtk-3.0/**" // Added for GTK
             ],
             "defines": [
                 "_DEBUG",

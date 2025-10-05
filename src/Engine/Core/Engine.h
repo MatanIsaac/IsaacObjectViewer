@@ -290,6 +290,8 @@ namespace isaacObjectViewer
                     delete obj;
             }
             m_SceneObjects.clear();
+            m_LightObjects.clear();
+            m_SelectedObject = nullptr;
         }
 
         /// @brief Gets all scene objects in the engine.
@@ -304,8 +306,8 @@ namespace isaacObjectViewer
         {
             for (auto light : m_LightObjects)
             {
-                if(light != nullptr)
-                    delete light;
+                delete light;
+                light = nullptr;    
             }
             m_LightObjects.clear();
         }
@@ -371,13 +373,13 @@ namespace isaacObjectViewer
         Window* m_Window;
         Shader* m_Shader;
         Shader* m_MainShader;
-        
         Camera* m_Camera;
-        
+
         IObject* m_SelectedObject;
         std::vector<IObject*> m_SceneObjects;
-        std::vector<PointLight*> m_LightObjects;
+        
         const int MAX_LIGHTS = 8;
+        std::vector<PointLight*> m_LightObjects;
         DirectionalLight* m_DirLight;
         bool m_BlinnPhongShading;
         bool m_UseMaterial = true;

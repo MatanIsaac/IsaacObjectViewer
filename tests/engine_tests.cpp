@@ -23,7 +23,6 @@ TEST(EngineTest, ReinitializationDoesNotCrash)
     << "Engine should handle being initialized twice without failure.";
 }
     
-/*
 TEST(EngineTest, InvalidWindowSize) 
 {
     const auto& engine = Engine::GetInstance();
@@ -31,14 +30,11 @@ TEST(EngineTest, InvalidWindowSize)
     EXPECT_FALSE(result) << "Engine should reject negative dimensions.";    
     engine->Clean();
 }
-*/ 
 
-/*
+
 //---------------------------------------------------------
 // SHUTDOWN & STATE HANDLING TESTS
 //---------------------------------------------------------
-NOTE: These tests cause crashes, which results in segmentation faults AKA memory leaks. Needs investigation.
-FIXME: 
 
 TEST(EngineTest, ShutdownStopsRunning) 
 {
@@ -48,6 +44,7 @@ TEST(EngineTest, ShutdownStopsRunning)
     EXPECT_FALSE(engine->IsRunning())
     << "Engine should not be running after Clean.";
 }
+
 TEST(EngineTest, DoubleCleanIsSafe) 
 {
     const auto& engine = Engine::GetInstance();
@@ -56,7 +53,7 @@ TEST(EngineTest, DoubleCleanIsSafe)
     EXPECT_NO_THROW(engine->Clean())
     << "Calling Clean twice should not throw or crash.";
 }
-*/
+
 
 //---------------------------------------------------------
 // SCENE OBJECT MANAGEMENT TESTS

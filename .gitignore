@@ -47,3 +47,7 @@ src/Resources/Models/**
 
 # VSCode settings
 .vscode/
+
+# UN-IGNORE specific files you need to share (e.g., extensions list)
+!.vscode/extensions.json
+!.vscode/launch.json

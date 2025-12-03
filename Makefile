@@ -37,7 +37,7 @@ else
   EXE       = iov
   TEST_EXE  = test_runner
   # Load shared libs from the exe directory
-  LDFLAGS   = -Ldependencies/assimp/lib -Wl,-rpath,'$$ORIGIN' \
+  LDFLAGS   = -Wl,-rpath,'$$ORIGIN' \
               -lSDL3 -lassimp -lGL -ldl -lpthread -g
   COPY_RUNTIME = cp dependencies/assimp/lib/libassimp.so.6 $(BUILD_DIR)/
 endif

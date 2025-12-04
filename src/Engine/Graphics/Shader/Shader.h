@@ -25,6 +25,9 @@ public:
     /// @param fragmentPath The file path to the fragment shader source.
     Shader(const char* vertexPath, const char* fragmentPath);
 
+    /// @brief Destructor.
+    ~Shader() = default;
+
     /// @brief Binds the shader program.
     void Bind() const;
 

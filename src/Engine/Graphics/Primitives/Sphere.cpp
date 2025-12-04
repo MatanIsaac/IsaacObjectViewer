@@ -62,7 +62,7 @@ namespace isaacObjectViewer
         // Update logic (animations, physics, etc.) goes here.
     }
 
-    void Sphere::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader)
+    void Sphere::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, std::unique_ptr<Shader>& shader)
     {        
         if(shader == nullptr)
         {

@@ -134,7 +134,7 @@ namespace isaacObjectViewer
         void Render(const Renderer& renderer,
                     const glm::mat4& view,
                     const glm::mat4& projection,
-                    Shader* shader) override;
+                    std::unique_ptr<Shader>& shader) override;
 
         /// @brief Checks if a ray intersects with the model.
         /// @param ray The ray to check for intersection.

@@ -97,11 +97,11 @@ namespace isaacObjectViewer
 
         /// @brief Gets the main camera.
         /// @return The main camera.
-        Camera *GetCamera() { return m_Camera; }
+        std::unique_ptr<Camera>& GetCamera() { return m_Camera; }
 
         /// @brief Gets the directional light.
         /// @return The directional light.
-        DirectionalLight& GetDirectionalLight() const { return *m_DirLight; }
+        std::unique_ptr<DirectionalLight>& GetDirectionalLight() { return m_DirLight; }
         
         /// @brief Gets the SDL window.
         /// @return The SDL window.
@@ -203,9 +203,14 @@ namespace isaacObjectViewer
             }
             
             m_SelectedObject = obj;
-            m_SceneObjects.push_back(obj);
             if (obj->GetType() == ObjectType::PointLight)
-                m_LightObjects.push_back(static_cast<PointLight*>(obj));
+            {
+                m_LightObjects.push_back(std::unique_ptr<PointLight>(static_cast<PointLight*>(obj)));
+            }
+            else
+            {
+                m_SceneObjects.push_back(obj);
+            }
         }
 
         /// @brief Adds a scene object to the engine.
@@ -246,9 +251,14 @@ namespace isaacObjectViewer
             if(obj)
             {
                 m_SelectedObject = obj;
-                m_SceneObjects.push_back(obj);
                 if (type == ObjectType::PointLight)
-                    m_LightObjects.push_back(static_cast<PointLight*>(obj));
+                {
+                    m_LightObjects.push_back(std::unique_ptr<PointLight>(static_cast<PointLight*>(obj)));
+                }
+                else
+                {
+                    m_SceneObjects.push_back(obj);
+                }
             }
         }
 
@@ -269,10 +279,16 @@ namespace isaacObjectViewer
 
             // If it’s a light, prune that list too
             if (object->GetType() == ObjectType::PointLight)
-                m_LightObjects.erase(std::remove(m_LightObjects.begin(),
-                                                m_LightObjects.end(),
-                                                static_cast<PointLight*>(object)),
-                                    m_LightObjects.end());
+            {
+                // Use std::remove_if with a lambda to compare the raw pointer
+                // held by the unique_ptr (.get()) to the pointer being removed (object).
+                m_LightObjects.erase(std::remove_if(m_LightObjects.begin(),
+                                                    m_LightObjects.end(),
+                                                    [&](const std::unique_ptr<PointLight>& light_ptr) {
+                                                        return light_ptr.get() == object;
+                                                    }),
+                                                m_LightObjects.end());
+            }
 
             // Remove pointer from the main list
             m_SceneObjects.erase(std::remove(m_SceneObjects.begin(),
@@ -290,26 +306,15 @@ namespace isaacObjectViewer
                     delete obj;
             }
             m_SceneObjects.clear();
-            m_LightObjects.clear();
             m_SelectedObject = nullptr;
         }
 
         /// @brief Gets all scene objects in the engine.
         /// @return A vector of pointers to all scene objects.
-        std::vector<IObject*>& GetSceneObjects() { return m_SceneObjects; }
-        std::vector<PointLight*> GetLightObjects()
+        std::vector<IObject*> GetSceneObjects() { return m_SceneObjects; }
+        std::vector<std::unique_ptr<PointLight>>& GetLightObjects()
         {
             return m_LightObjects;
-        }
-
-        void ClearLightObjects() 
-        {
-            for (auto light : m_LightObjects)
-            {
-                delete light;
-                light = nullptr;    
-            }
-            m_LightObjects.clear();
         }
 
         /// @brief Gets the currently selected scene object.
@@ -370,17 +375,15 @@ namespace isaacObjectViewer
 
     private:
         static Engine* s_Instance;
-        Window* m_Window;
-        Shader* m_Shader;
-        Shader* m_MainShader;
-        Camera* m_Camera;
+        std::unique_ptr<Window> m_Window;
+        std::unique_ptr<Camera> m_Camera;
+        std::unique_ptr<Shader> m_MainShader;
 
         IObject* m_SelectedObject;
         std::vector<IObject*> m_SceneObjects;
-        
         const int MAX_LIGHTS = 8;
-        std::vector<PointLight*> m_LightObjects;
-        DirectionalLight* m_DirLight;
+        std::vector<std::unique_ptr<PointLight>> m_LightObjects;
+        std::unique_ptr<DirectionalLight> m_DirLight;
         bool m_BlinnPhongShading;
         bool m_UseMaterial = true;
 

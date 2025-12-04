@@ -65,14 +65,14 @@ namespace isaacObjectViewer
         void Render(const Renderer& renderer, 
                     const glm::mat4& view, 
                     const glm::mat4& projection, 
-                    Shader* shader = nullptr) override;
+                    std::unique_ptr<Shader>& shader) override;
 
         /// @brief Renders the mesh with a parent model transformation.
         void RenderWithParent(const Renderer& renderer,
                               const glm::mat4& parentModel,
                               const glm::mat4& view,
                               const glm::mat4& projection,
-                              Shader* shader = nullptr,
+                              std::unique_ptr<Shader>& shader,
                               bool useMaterial = false,
                               const glm::vec3& objectColor = glm::vec3(DEFAULT_COLOR));
 

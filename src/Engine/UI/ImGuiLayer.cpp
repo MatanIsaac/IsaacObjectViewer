@@ -476,7 +476,7 @@ namespace isaacObjectViewer
 
             if (ImGui::CollapsingHeader("Directional Light")) 
             {
-                DirectionalLight& dirLight = engine->GetDirectionalLight();
+                auto& dirLight = engine->GetDirectionalLight();
 
                 // Persist UI state across frames
                 static bool init = true;
@@ -487,13 +487,13 @@ namespace isaacObjectViewer
 
                 if (init) 
                 {
-                    baseAmbient  = dirLight.GetAmbient(); 
-                    baseDiffuse  = dirLight.GetDiffuse();
-                    baseSpecular = dirLight.GetSpecular();
+                    baseAmbient  = dirLight->GetAmbient(); 
+                    baseDiffuse  = dirLight->GetDiffuse();
+                    baseSpecular = dirLight->GetSpecular();
                     init = false;
                 }
 
-                glm::vec3 direction = dirLight.GetDirection();
+                glm::vec3 direction = dirLight->GetDirection();
 
                 bool changed = false;
                 ImGui::PushID("DirLight");
@@ -504,13 +504,13 @@ namespace isaacObjectViewer
                     ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::SetNextItemWidth(-FLT_MIN);
 
-                    bool enabled = dirLight.IsEnabled();
+                    bool enabled = dirLight->IsEnabled();
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0); ImGui::Text("Enabled");
                     ImGui::TableSetColumnIndex(1);
                     ImGui::SetNextItemWidth(-FLT_MIN);
                     if (ImGui::Checkbox("##Enabled", &enabled))
-                        dirLight.SetEnabled(enabled);
+                        dirLight->SetEnabled(enabled);
 
                     // Direction
                     ImGui::TableNextRow();
@@ -561,10 +561,10 @@ namespace isaacObjectViewer
 
                 if (changed) 
                 {
-                    dirLight.SetDirection(direction);
-                    dirLight.SetAmbient (baseAmbient  * ambient_mult);
-                    dirLight.SetDiffuse (baseDiffuse  * diffuse_mult);
-                    dirLight.SetSpecular(baseSpecular * specular_mult);
+                    dirLight->SetDirection(direction);
+                    dirLight->SetAmbient (baseAmbient  * ambient_mult);
+                    dirLight->SetDiffuse (baseDiffuse  * diffuse_mult);
+                    dirLight->SetSpecular(baseSpecular * specular_mult);
                 }
             }
 
@@ -575,7 +575,7 @@ namespace isaacObjectViewer
 
         if (ImGui::CollapsingHeader("Camera Settings"))
         {
-            Camera* cam = engine->GetCamera();
+            std::unique_ptr<Camera>& cam = engine->GetCamera();
 
             // snapshot current values
             glm::vec3 pos = cam->GetPosition();

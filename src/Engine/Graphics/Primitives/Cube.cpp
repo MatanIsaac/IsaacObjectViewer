@@ -52,7 +52,7 @@ namespace isaacObjectViewer
     void Cube::Update()
     {}
 
-    void Cube::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader)
+    void Cube::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, std::unique_ptr<Shader>& shader)
     {
         if(shader == nullptr)
         {

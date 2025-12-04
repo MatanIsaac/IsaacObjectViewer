@@ -74,7 +74,7 @@ namespace isaacObjectViewer
         glm::vec3 m_Start, m_End;
         float m_Thickness;
         glm::vec3 m_Color;
-        Shader* m_ThickShader;
+        std::unique_ptr<Shader> m_ThickShader;
         float m_Duration;
         std::vector<glm::vec4> lineVertices;
         std::unique_ptr<VertexArray> m_VertexArray;

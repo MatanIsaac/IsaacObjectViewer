@@ -21,7 +21,7 @@ namespace isaacObjectViewer
         DirectionalLight();
 
         /// @brief Destroys the DirectionalLight.
-        ~DirectionalLight();
+        ~DirectionalLight() = default;
 
         /// @brief Updates the light's properties.
         void Update();
@@ -42,7 +42,7 @@ namespace isaacObjectViewer
 
         /// @brief Sets the light's uniforms in the shader.
         /// @param shader The shader to set the uniforms for.
-        void SetUniforms(Shader* shader);
+        void SetUniforms(std::unique_ptr<Shader>& shader);
 
         /// @brief Gets the light's direction.
         /// @return The light's direction.

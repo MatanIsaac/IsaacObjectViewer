@@ -108,7 +108,7 @@ namespace isaacObjectViewer
         return *this;
     }
 
-    void Mesh::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader)
+    void Mesh::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, std::unique_ptr<Shader>& shader)
     {
         if (!m_VertexArray || !m_VertexBuffer || (!m_IndexBuffer && GetIndexCount() > 0))
         {
@@ -178,14 +178,15 @@ namespace isaacObjectViewer
             shader->setVec3("objectColor", m_Color);
         }
 
-        renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader);
+        renderer.Render(*m_VertexArray, *m_IndexBuffer, *shader.get());
         glActiveTexture(GL_TEXTURE0);
     }
+    
     void Mesh::RenderWithParent(const Renderer& renderer,
                             const glm::mat4& parentModel,
                             const glm::mat4& view,
                             const glm::mat4& projection,
-                            Shader* shader,
+                            std::unique_ptr<Shader>& shader,
                             bool useMaterial,
                             [[maybe_unused]] const glm::vec3& objectColor)
     {

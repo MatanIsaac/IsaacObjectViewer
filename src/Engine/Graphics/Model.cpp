@@ -23,7 +23,7 @@ namespace isaacObjectViewer
     void Model::Render(const Renderer& renderer,
                    const glm::mat4& view,
                    const glm::mat4& projection,
-                   Shader* shader)
+                   std::unique_ptr<Shader>& shader)
     {
         const glm::mat4 parentModel = GetModelMatrix();
         for (auto& mesh : m_Meshes)

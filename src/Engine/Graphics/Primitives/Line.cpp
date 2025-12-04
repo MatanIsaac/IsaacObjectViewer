@@ -21,14 +21,14 @@ namespace isaacObjectViewer
         std::string line_fs  = GetProjectRootPath("src/Resources/Shaders/line.fs");
 
         // Compile shader from source (or load from file)
-        m_ThickShader = new Shader(line_vs.c_str(), line_fs.c_str());
+        m_ThickShader = std::make_unique<Shader>(line_vs.c_str(), line_fs.c_str());
+        
     }
 
     Line::~Line()
     {
         glDeleteBuffers(1, &m_SSBO);
         m_VertexArray.reset();
-        delete m_ThickShader;
     }
 
     void Line::SetThickness(float thickness) { m_Thickness = thickness; }
@@ -47,7 +47,7 @@ namespace isaacObjectViewer
         
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_SSBO);
 
-        renderer.Render(*m_VertexArray, 6, *m_ThickShader);
+        renderer.Render(*m_VertexArray, 6, *m_ThickShader.get());
 
         glBindVertexArray(0);
     }

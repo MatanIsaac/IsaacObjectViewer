@@ -7,8 +7,9 @@
  * NOTE: 
  * 1. Imported models use the same diff/norm/spec textures for all sub-meshes.
  * 2. Importing an OBJ model, the corresponding .mtl file (if present) is automatically loaded to apply materials and texture maps.
- * 3. Importing an FBX model file will also load its associated textures
- * from the same directory, assuming they are inside a "textures" folder (case sensitive).
+ * 3. Importing an FBX model file will also load its associated textures from the same directory, 
+ * assuming they are inside a "textures" folder (case sensitive), and named appropriately: 
+ * <name>.fbx: <name>_diffuse, <name>_normal,<name>_specular suffixes.
  *
  * Example:
  *   Resources/Models/

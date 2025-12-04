@@ -38,7 +38,7 @@ namespace isaacObjectViewer
         /// @param view The view matrix.
         /// @param projection The projection matrix.
         /// @param shader The shader to use.
-        void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader = nullptr) override;
+        void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, std::unique_ptr<Shader>& shader) override;
 
         /// @brief Gets the ID of the Plane.
         /// @return The ID of the Plane.

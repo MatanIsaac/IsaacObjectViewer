@@ -15,14 +15,10 @@ namespace isaacObjectViewer
         , m_Changed(true)
     {}
 
-    DirectionalLight::~DirectionalLight()
-    {
-    }
-
     void DirectionalLight::Update()
     { }
 
-    void DirectionalLight::SetUniforms(Shader* shader)
+    void DirectionalLight::SetUniforms(std::unique_ptr<Shader>& shader)
     {
         if(shader == nullptr)
         {

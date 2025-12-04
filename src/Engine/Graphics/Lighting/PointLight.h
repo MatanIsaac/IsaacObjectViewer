@@ -49,7 +49,7 @@ namespace isaacObjectViewer
         /// @param view The view matrix.
         /// @param projection The projection matrix.
         /// @param shader The shader to use for rendering.
-        void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader = nullptr) override;
+        void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, std::unique_ptr<Shader>& shader) override;
 
         /// @brief Gets the light's ID.
         /// @return The light's ID.
@@ -204,7 +204,7 @@ namespace isaacObjectViewer
         /// @brief Sets the uniforms for this point light in the given shader.
         /// @param shader The shader to set the uniforms for.
         /// @param lightIndex The index of this light in the uniform array.
-        void SetLightUniforms(Shader* shader, const std::string& uniformName) const;
+        void SetLightUniforms(std::unique_ptr<Shader>& shader, const std::string& uniformName) const;
         
     private:
         std::size_t m_ID;

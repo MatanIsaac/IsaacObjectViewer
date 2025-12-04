@@ -48,7 +48,7 @@ namespace isaacObjectViewer
         /// @param view The view matrix.
         /// @param projection The projection matrix.
         /// @param shader The shader to use (optional).
-        virtual void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader = nullptr) = 0;
+        virtual void Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, std::unique_ptr<Shader>& shader) = 0;
 
         // Identification
         // ---------------------------------------------------------
@@ -170,7 +170,7 @@ namespace isaacObjectViewer
         /// @brief Sets the normal matrix uniform for a given shader.
         /// @param shader The shader to set the uniform for.
         /// @param view The current view matrix.
-        void SetNormalMatrixUniform(Shader* shader, const glm::mat4& view)
+        void SetNormalMatrixUniform(std::unique_ptr<Shader>& shader, const glm::mat4& view)
         {
             glm::mat4 model = GetModelMatrix();
             glm::mat4 normalMatrix = glm::transpose(glm::inverse(view * model));

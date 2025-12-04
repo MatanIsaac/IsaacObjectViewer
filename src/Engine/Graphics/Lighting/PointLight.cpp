@@ -46,7 +46,7 @@ namespace isaacObjectViewer
     void PointLight::Update()
     { }
 
-    void PointLight::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, Shader* shader)
+    void PointLight::Render(const Renderer& renderer, const glm::mat4& view, const glm::mat4& projection, std::unique_ptr<Shader>& shader)
     {
         if(shader == nullptr)
         {
@@ -60,10 +60,10 @@ namespace isaacObjectViewer
         m_Shader->setMat4("projection", projection);
         m_Shader->setVec3("lightColor", m_Color);
 
-        m_Sphere.Render(renderer, view, projection, m_Shader.get());
+        m_Sphere.Render(renderer, view, projection, shader);
     }
     
-    void PointLight::SetLightUniforms(Shader* shader, const std::string& uniformName) const
+    void PointLight::SetLightUniforms(std::unique_ptr<Shader>& shader, const std::string& uniformName) const
     {
         shader->setBool(uniformName + ".enabled", m_Enabled);
         shader->setVec3(uniformName + ".position", GetPosition());

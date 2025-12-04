@@ -1,52 +1,52 @@
 #include "Window.h"
 #include <SDL3/SDL_video.h>
+#include <Utility/Log.hpp>
 
 namespace isaacObjectViewer 
 {
-    Window::Window(const char *title, int width, int height, bool fullscreen)
+    Window::Window(const Config& config)
     {
-        SDL_InitFlags init_flags = SDL_INIT_VIDEO;
-        if (!SDL_Init(init_flags)) 
-        {
-            throw std::runtime_error("Failed to initialize SDL.");
-        }
-        
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-
-        // Create window with graphics context
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-        //SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
-
-        SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
-        m_Window = SDL_CreateWindow(title, width, height, window_flags);
-        if (!m_Window) 
+        auto raw_window = SDL_CreateWindow(config.title.c_str(), config.width, config.height, config.flags);
+        if (!raw_window) 
         {
             throw std::runtime_error("Failed to Create an SDL Window.");
         }
-        SDL_SetWindowFullscreen(m_Window,fullscreen);          
+        m_Window = UniqueSDLWindow(raw_window);
+
+        SDL_SetWindowFullscreen(m_Window.get(), config.fullscreen);          
        
-        m_GL_Context = SDL_GL_CreateContext(m_Window);
+        m_GL_Context = SDL_GL_CreateContext(m_Window.get());
         if (m_GL_Context == nullptr)
         {
             throw std::runtime_error("Failed to create SDL_GL_CreateContext.");
         }
 
-        SDL_SetWindowPosition(m_Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-        SDL_GL_MakeCurrent(m_Window, m_GL_Context);
+        SDL_SetWindowPosition(m_Window.get(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        SDL_GL_MakeCurrent(m_Window.get(), m_GL_Context);
         SDL_GL_SetSwapInterval(1); // Enable vsync
-        SDL_SetWindowPosition(m_Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-        SDL_ShowWindow(m_Window);
+        SDL_SetWindowPosition(m_Window.get(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        SDL_ShowWindow(m_Window.get());
     }
 
     Window::~Window() 
     {
+        LOG_INFO("Window Destructor Called!...");
         SDL_GL_DestroyContext(m_GL_Context);
-        SDL_DestroyWindow(m_Window);
-        m_Window = nullptr;
     }
+
+    int Window::GetWidth() const 
+    {
+        int w = 0, h = 0;
+        // Always use the handle returned by m_window.get()
+        SDL_GetWindowSize(m_Window.get(), &w, &h); 
+        return w;
+    }
+
+    int Window::GetHeight() const 
+    {
+        int w = 0, h = 0;
+        SDL_GetWindowSize(m_Window.get(), &w, &h);
+        return h;
+    }
+
 }

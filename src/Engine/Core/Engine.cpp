@@ -13,22 +13,17 @@ namespace isaacObjectViewer
 
     Engine::Engine()
         : m_Window(nullptr),
-          m_Shader(nullptr),
-          m_MainShader(nullptr),
           m_Camera(nullptr),
+          m_MainShader(nullptr),
           m_SelectedObject(nullptr),
-          m_SceneObjects({}),
-          m_LightObjects({}),
-          m_DirLight(nullptr),
+          m_DirLight(std::make_unique<DirectionalLight>()),
           m_BlinnPhongShading(true),
           m_UseMaterial(true),
           m_MouseModeEnabled(true),
           m_FreeCameraModeEnabled(false),
           m_KeyPressed(false),
           m_IsRunning(false)
-    {
-        m_DirLight = new DirectionalLight();
-    }
+    { }
 
     void Engine::Run(bool fullscreen)
     {
@@ -98,7 +93,25 @@ namespace isaacObjectViewer
 
         LOG_INFO("Welcome to Isaac's Object Viewer!");
 
-        m_Window = new Window(title,width,height,fullscreen);
+SDL_InitFlags init_flags = SDL_INIT_VIDEO;
+        if (!SDL_Init(init_flags)) 
+        {
+            throw std::runtime_error("Failed to initialize SDL.");
+        }
+        
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+
+        // Create window with graphics context
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+        //SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+
+        SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
+        m_Window = std::make_unique<Window>(Window::Config{title, width, height, fullscreen, window_flags});
 
         m_MouseModeEnabled = true;
         SDL_ShowCursor();
@@ -120,7 +133,7 @@ namespace isaacObjectViewer
         std::string colors_vs = GetProjectRootPath("src/Resources/Shaders/main.vs");
         std::string colors_fs = GetProjectRootPath("src/Resources/Shaders/main.fs");
 
-        m_MainShader = new Shader(colors_vs.c_str(), colors_fs.c_str());
+        m_MainShader = std::make_unique<Shader>(colors_vs.c_str(), colors_fs.c_str());
         m_MainShader->Bind();
                                         
         m_BackgroundColor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -128,7 +141,7 @@ namespace isaacObjectViewer
         int display_w, display_h;
         SDL_GetWindowSizeInPixels(m_Window->GetSDLWindow(), &display_w, &display_h);
 
-        m_Camera = new Camera(glm::vec3(-4.0f, 3.0f, 4.0f));
+        m_Camera = std::make_unique<Camera>(glm::vec3(-4.0f, 3.0f, 4.0f));
         m_Camera->LookAtTarget(glm::vec3(1.0f, 0.0f, 0.0f)); 
         m_Camera->SetProjection((float)display_w / (float)display_h);
 
@@ -184,13 +197,13 @@ namespace isaacObjectViewer
                     float xoffset = static_cast<float>(MainEvent.motion.xrel);
                     float yoffset = static_cast<float>(MainEvent.motion.yrel);
 
-                    MouseRef->ProcessMotion(m_Camera, xoffset, -yoffset);
+                    MouseRef->ProcessMotion(m_Camera.get(), xoffset, -yoffset);
                 }
 
                 if(MainEvent.type == SDL_EVENT_MOUSE_WHEEL)
                 {
                     float yoffset = static_cast<float>(MainEvent.wheel.y);
-                    MouseRef->ProcessZoom(yoffset,m_Camera);
+                    MouseRef->ProcessZoom(yoffset,m_Camera.get());
 
                      // Camera caches the projection matrix, so we refresh it here
                     int w, h; SDL_GetWindowSizeInPixels(m_Window->GetSDLWindow(), &w, &h);
@@ -204,7 +217,7 @@ namespace isaacObjectViewer
                 {
                     if(!m_ImGuiLayer.isMouseOverGizmo() && MainEvent.button.button == SDL_BUTTON_LEFT)
                     {
-                        MouseRef->ProcessMouseClick(mouseState.first,mouseState.second, m_Camera);
+                        MouseRef->ProcessMouseClick(mouseState.first,mouseState.second, m_Camera.get());
                     }
                 }
                 if(MainEvent.type == SDL_EVENT_KEY_DOWN)
@@ -267,7 +280,7 @@ namespace isaacObjectViewer
         glm::mat4 view = m_Camera->GetViewMatrix(); // VIEW
         glm::mat4 projection = m_Camera->GetProjectionMatrix(); 
 
-        for (auto& obj : m_SceneObjects)
+        for (auto* obj : m_SceneObjects)
         {
             obj->Render(m_Renderer, view, projection, m_MainShader); 
         }
@@ -283,21 +296,9 @@ namespace isaacObjectViewer
         Exit();
         TextureManager::UnloadAll();
         ClearSceneObjects();
-        ClearLightObjects();
-        if(m_SelectedObject)
-            delete m_SelectedObject;
-        delete m_Camera;
-        delete m_Shader;
-        delete m_MainShader;
-        delete m_Window;
-
-        m_SelectedObject = nullptr;
-        m_Camera = nullptr;
-        m_Shader = nullptr;
-        m_MainShader = nullptr;
-        m_Window = nullptr;
+        m_LightObjects.clear();
+        
         m_IsRunning = false;
-
         SDL_Quit();
     }
 

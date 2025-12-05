@@ -25,7 +25,7 @@ namespace isaacObjectViewer
         PointLight(const glm::vec3& position, const glm::vec3& color);
 
         /// @brief Destroys the PointLight.
-        ~PointLight();
+        ~PointLight() = default;
 
         /// @brief Updates the PointLight.
         void Update();
@@ -226,5 +226,6 @@ namespace isaacObjectViewer
         float m_AttQuadratic;
 
         std::unique_ptr<Shader> m_Shader;
+        std::unique_ptr<Shader> m_UnlitShader;
     };
 }

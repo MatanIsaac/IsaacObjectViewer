@@ -234,7 +234,8 @@ namespace isaacObjectViewer
                 auto* model = ModelManager::GetInstance().LoadModel(path);
                 if (model) 
                 {
-                    engine->GetSceneObjects().push_back(model);
+                    engine->AddSceneObject(model);
+                    LOG_INFO("Size: {}", engine->GetSceneObjects().size());
                     engine->SetSelectedObject(model);
                 }
                 else
@@ -449,6 +450,17 @@ namespace isaacObjectViewer
                 ImGui::TableSetColumnIndex(1);
                 ImGui::SetNextItemWidth(-FLT_MIN);
                 if (ImGui::Checkbox("##WireframeMode", &engine->IsWireframeModeEnabled()))
+                {
+                    engine->ToggleWireframeMode();
+                }
+
+                // Wireframe Mode
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); 
+                ImGui::TextUnformatted("Unlit");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetNextItemWidth(-FLT_MIN);
+                if (ImGui::Checkbox("##Unlit", &engine->SceneUnlit()))
                 {
                     engine->ToggleWireframeMode();
                 }
@@ -765,7 +777,7 @@ namespace isaacObjectViewer
 
         ImGui::Begin("Scene Hierarchy Panel", nullptr, windowFlags);
                     
-        auto sceneObjects = engine->GetSceneObjects();
+        auto& sceneObjects = engine->GetSceneObjects();
         selected = engine->GetSelectedObject();
 
         for (size_t i = 0; i < sceneObjects.size(); ++i) 

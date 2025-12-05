@@ -282,22 +282,31 @@ SDL_InitFlags init_flags = SDL_INIT_VIDEO;
 
         for (auto* obj : m_SceneObjects)
         {
-            obj->Render(m_Renderer, view, projection, m_MainShader); 
+            if(!m_SceneUnlit || obj->GetType() == ObjectType::Imported)
+            {
+                obj->Render(m_Renderer, view, projection, m_MainShader); 
+            }
+            else
+            {
+                // makes sure unlit fragment shader is loaded if not already loaded.
+                if(!obj->IsUnlit() && 
+                    !obj->EnableUnlit("src/Resources/Shaders/main.vs",GetProjectRootPath("src/Resources/Shaders/unlit.fs")))
+                {
+                    LOG_ERROR("Failed to enable unlit shader for Cylinder.");   
+                }
+                obj->GetUnlitShader()->Bind();
+                obj->Render(m_Renderer, view, projection, obj->GetUnlitShader()); 
+            }
         }
         Tracer::GetInstance()->Render(m_Renderer, view, projection, display_w, display_h);
     }
 
     // @brief cleans all of the engine resources.
     void Engine::Clean()
-    {
-        //if(!m_IsRunning) 
-            //return; // Prevent double clean
-            
+    {       
         Exit();
         TextureManager::UnloadAll();
         ClearSceneObjects();
-        m_LightObjects.clear();
-        
         m_IsRunning = false;
         SDL_Quit();
     }

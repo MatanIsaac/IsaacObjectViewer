@@ -25,23 +25,24 @@ namespace isaacObjectViewer
         // Scale down the cube representation for the light.
         m_Sphere.SetScale(glm::vec3(0.2f));
         m_Sphere.SetColor(color);
+        
 
         // Build paths to the light cube shader files.
-        std::string lightCubeVS = GetProjectRootPath("src/Resources/Shaders/light_cube.vs");
-        std::string lightCubeFS = GetProjectRootPath("src/Resources/Shaders/light_cube.fs");
+        std::string pointlightVS = GetProjectRootPath("src/Resources/Shaders/pointlight.vs");
+        std::string pointlightFS = GetProjectRootPath("src/Resources/Shaders/pointlight.fs");
         
-        GetProjectRootPath(lightCubeFS);
-
         // Create the shader using a unique pointer.
-        m_Shader = std::make_unique<Shader>(lightCubeVS.c_str(), lightCubeFS.c_str());
+        m_Shader = std::make_unique<Shader>(pointlightVS.c_str(), pointlightFS.c_str());
         if(m_Shader == nullptr)
         {
-            LOG_ERROR("Failed to create parse light cube shader!\n");
+            LOG_ERROR("Failed to create parse point light shader!\n");
+        }
+
+        if(!m_Sphere.IsUnlit() && !m_Sphere.EnableUnlit("src/Resources/Shaders/pointlight.vs",GetProjectRootPath("src/Resources/Shaders/unlit.fs")))
+        {
+            LOG_ERROR("Failed to enable unlit shader for PointLight sphere.");
         }
     }
-
-    PointLight::~PointLight()
-    { }
 
     void PointLight::Update()
     { }
@@ -60,7 +61,10 @@ namespace isaacObjectViewer
         m_Shader->setMat4("projection", projection);
         m_Shader->setVec3("lightColor", m_Color);
 
-        m_Sphere.Render(renderer, view, projection, shader);
+        if(IsUnlit())
+            m_Sphere.Render(renderer, view, projection, GetUnlitShader());
+        else
+            m_Sphere.Render(renderer, view, projection, m_Shader);
     }
     
     void PointLight::SetLightUniforms(std::unique_ptr<Shader>& shader, const std::string& uniformName) const

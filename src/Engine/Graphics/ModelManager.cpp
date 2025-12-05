@@ -58,8 +58,11 @@ namespace isaacObjectViewer
                 break;
         }
         
+#if defined(_WIN32)
         auto finalPath = baseDir.string() + "\\textures\\" + baseName + ext.string();
-
+#elif defined(__linux__) || defined(__APPLE__)
+        auto finalPath = baseDir.string() + "/textures/" + baseName + ext.string();
+#endif
         if (const aiTexture* emb = getEmbedded(scene, texPath)) 
         {
             // Compressed (PNG/JPG/etc.) case: mHeight == 0
@@ -278,7 +281,13 @@ namespace isaacObjectViewer
 
             std::filesystem::path newPath = path;
             std::string texName = newPath.stem().string() + "_";
+
+#if defined(_WIN32)
             auto finalPath = newPath.parent_path().string() + "\\textures\\";
+#elif defined(__linux__) || defined(__APPLE__)
+            auto finalPath = newPath.parent_path().string() + "/textures/";
+#endif
+            
 
             // TextureType mapping 
             TextureType ttype = TextureType::DIFFUSE;
@@ -311,7 +320,12 @@ namespace isaacObjectViewer
         {                
             std::filesystem::path newPath = path;
             std::string texName = newPath.stem().string() + "_";
+
+#if defined(_WIN32)
             auto finalPath = newPath.parent_path().string() + "\\textures\\";
+#elif defined(__linux__) || defined(__APPLE__)
+            auto finalPath = newPath.parent_path().string() + "/textures/";
+#endif
         
             // TextureType mapping 
             TextureType ttype = TextureType::DIFFUSE;

@@ -3,7 +3,6 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Utility/Log.hpp"
-#include "Utility/Timer.h"
 
 namespace isaacObjectViewer
 {
@@ -18,9 +17,6 @@ namespace isaacObjectViewer
         , m_Color(DEFAULT_COLOR)
         , m_UseMaterial(false)
     {
-        Timer timer;
-        timer.Start();
-
         // Generate cylinder data
         std::vector<float> vertices;
         std::vector<unsigned int> indices;
@@ -43,8 +39,6 @@ namespace isaacObjectViewer
 
         m_VertexArray->AddBuffer(*m_VertexBuffer, layout);
         m_VertexArray->Unbind();
-
-        LOG_INFO("Cylinder created in {} ms", timer.Stop());
     }
 
     Cylinder::~Cylinder()

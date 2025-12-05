@@ -3,7 +3,6 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Utility/Log.hpp"
-#include "Utility/Timer.h"
 
 namespace isaacObjectViewer
 {
@@ -18,9 +17,6 @@ namespace isaacObjectViewer
         , m_Color(DEFAULT_COLOR)
         , m_UseMaterial(false)
     {
-        Timer timer;
-        timer.Start();
-
         // Adjust these parameters as needed for detail
         float radius = 0.5f;
         int sectorCount = 36; // longitude divisions
@@ -48,8 +44,6 @@ namespace isaacObjectViewer
 
         m_VertexArray->AddBuffer(*m_VertexBuffer, layout);
         m_VertexArray->Unbind();
-
-        LOG_INFO("Sphere created in {} ms", timer.Stop());
     }
 
     Sphere::~Sphere()

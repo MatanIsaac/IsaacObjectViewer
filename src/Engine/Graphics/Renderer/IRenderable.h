@@ -31,7 +31,13 @@ namespace isaacObjectViewer
 
     class IRenderable
     {
-        public:
+    private: 
+        
+        // unlit condition
+        bool isUnlit = false;
+        std::unique_ptr<Shader> m_UnlitShader;
+
+    public:
         /// @brief Default values for the object's properties.
         static constexpr glm::vec3 DEFAULT_POSITION = {0.0f, 0.0f, 0.0f};
         static constexpr glm::vec3 DEFAULT_ROTATION = {0.0f, 0.0f, 0.0f};
@@ -151,8 +157,42 @@ namespace isaacObjectViewer
         /// @param shininess The new shininess of the material.
         virtual void SetShininess(float shininess) = 0;
 
+        /// @brief Sets the texture filter mode for all textures in the material.
+        /// @param filterMode The new texture filter mode.
         virtual void SetFilterMode([[maybe_unused]] TextureFilterMode filterMode) {}
         
+        /// @brief Sets whether the object is unlit.
+        /// @param unlit True if the object is unlit, false otherwise.
+        virtual void DisableUnlit() 
+        { 
+            isUnlit = false; 
+        }
+
+        /// @brief Enables the unlit shader for the object.
+        /// @param vertexPath The path to the vertex shader.
+        /// @param fragmentPath The path to the fragment shader.
+        /// @return A unique pointer to the created unlit shader, or nullptr if creation failed.
+        /// @note Ownership of the created shader is transferred to the caller.
+        virtual bool EnableUnlit(const std::string& vertexPath, const std::string& fragmentPath) 
+        { 
+            isUnlit = true; 
+            m_UnlitShader = std::make_unique<Shader>(vertexPath.c_str(), fragmentPath.c_str());
+            if(m_UnlitShader == nullptr)
+            {
+                LOG_ERROR("Failed to create parse unlit shader!\n");
+                return false;
+            }
+            return true;
+        }
+
+        /// @brief Gets whether the object is unlit.
+        /// @return True if the object is unlit, false otherwise.
+        virtual const bool& IsUnlit() const { return isUnlit; }
+
+        /// @brief Gets the unlit shader of the object.
+        /// @return A unique pointer to the unlit shader.
+        virtual std::unique_ptr<Shader>& GetUnlitShader() { return m_UnlitShader; }
+
         // ---------------------------------------------------------
 
         // Helpers

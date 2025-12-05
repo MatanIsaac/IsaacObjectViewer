@@ -15,8 +15,7 @@ namespace isaacObjectViewer
         , m_Orientation(glm::quat(glm::radians(m_Rotation)))
         , m_Scale(1.0f)
         , m_Color(DEFAULT_COLOR)
-        , m_UseMaterial(true)
-        , m_Material(TextureManager::GetDefaultMaterial())
+        , m_UseMaterial(false)
     {
         Timer timer;
         timer.Start();
@@ -42,7 +41,7 @@ namespace isaacObjectViewer
         // Create the IndexBuffer with our index data
         m_IndexBuffer = std::make_unique<IndexBuffer>(m_CubeIndices, m_IndicesCount);
 
-        m_Material = TextureManager::GetDefaultMaterial();
+        //m_Material = TextureManager::GetDefaultMaterial();
         LOG_INFO("Cube created in {} ms", timer.Stop());
     }
 

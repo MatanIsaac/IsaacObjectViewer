@@ -15,8 +15,7 @@ namespace isaacObjectViewer
         , m_Orientation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f))
         , m_Scale(1.0f)
         , m_Color(DEFAULT_COLOR)
-        , m_UseMaterial(true)
-        ,m_Material(TextureManager::GetDefaultMaterial())
+        , m_UseMaterial(false)
     {
         Timer timer;
         timer.Start();

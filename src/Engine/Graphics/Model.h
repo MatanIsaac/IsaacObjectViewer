@@ -159,7 +159,6 @@ namespace isaacObjectViewer
                 mesh.SetFilterMode(filterMode);
             }
         }
-
     private:
         std::size_t         m_ID;
         std::string         m_Name;

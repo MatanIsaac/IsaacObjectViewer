@@ -203,13 +203,10 @@ namespace isaacObjectViewer
             }
             
             m_SelectedObject = obj;
+            m_SceneObjects.push_back(obj);
             if (obj->GetType() == ObjectType::PointLight)
             {
                 m_LightObjects.push_back(std::unique_ptr<PointLight>(static_cast<PointLight*>(obj)));
-            }
-            else
-            {
-                m_SceneObjects.push_back(obj);
             }
         }
 
@@ -251,13 +248,10 @@ namespace isaacObjectViewer
             if(obj)
             {
                 m_SelectedObject = obj;
+                m_SceneObjects.push_back(obj);
                 if (type == ObjectType::PointLight)
                 {
                     m_LightObjects.push_back(std::unique_ptr<PointLight>(static_cast<PointLight*>(obj)));
-                }
-                else
-                {
-                    m_SceneObjects.push_back(obj);
                 }
             }
         }
@@ -300,18 +294,19 @@ namespace isaacObjectViewer
         /// @brief Clears all scene objects from the engine.
         inline void ClearSceneObjects()
         {
-            for (auto obj : m_SceneObjects)
+            for (auto* obj : m_SceneObjects)
             {
-                if(obj != nullptr)
+                if(obj != nullptr && obj->GetType() != ObjectType::PointLight)
                     delete obj;
             }
-            m_SceneObjects.clear();
             m_SelectedObject = nullptr;
+            m_LightObjects.clear();
+            m_SceneObjects.clear();
         }
 
         /// @brief Gets all scene objects in the engine.
         /// @return A vector of pointers to all scene objects.
-        std::vector<IObject*> GetSceneObjects() { return m_SceneObjects; }
+        std::vector<IObject*>& GetSceneObjects() { return m_SceneObjects; }
         std::vector<std::unique_ptr<PointLight>>& GetLightObjects()
         {
             return m_LightObjects;
@@ -355,6 +350,16 @@ namespace isaacObjectViewer
             m_MainShader->Bind(); 
             m_MainShader->setBool("useBlinnPhong", m_BlinnPhongShading); 
         }
+
+        /// @brief Gets the scene unlit state.
+        /// @return A reference to the scene unlit state.
+        bool& SceneUnlit() { return m_SceneUnlit; }
+
+        /// @brief Toggles wireframe mode.
+        void ToggleUnlit()
+        {
+            m_SceneUnlit = !m_SceneUnlit;
+        }
         //-----------------------------------------------------------------------
 
     private:
@@ -386,7 +391,7 @@ namespace isaacObjectViewer
         std::unique_ptr<DirectionalLight> m_DirLight;
         bool m_BlinnPhongShading;
         bool m_UseMaterial = true;
-
+        bool m_SceneUnlit = false;
         Renderer m_Renderer;
 
         ImGuiLayer m_ImGuiLayer;

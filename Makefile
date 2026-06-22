@@ -26,13 +26,24 @@ COPY_RUNTIME =
 LDFLAGS =
 
 ifeq ($(OS),Windows_NT)
+  # On Windows make runs recipes through cmd.exe. Force it explicitly so the
+  # build behaves the same whether launched from PowerShell, cmd, or a Unix-like
+  # shell, and use cmd-native file operations instead of Unix mkdir/cp/rm.
+  SHELL := cmd.exe
+  .SHELLFLAGS := /c
+
   EXE       = iov.exe
   TEST_EXE  = test_runner.exe
   LDFLAGS   = -Ldependencies/SDL3/x86_64-w64-mingw32/lib -lmingw32 -lSDL3 \
               -Ldependencies/assimp/lib -lassimp -lgdi32 -lopengl32 -limm32 -g
   COPY_RUNTIME = \
-    cp dependencies/SDL3/x86_64-w64-mingw32/bin/SDL3.dll $(BUILD_DIR)/ && \
-    cp dependencies/assimp/bin/libassimp-6.dll $(BUILD_DIR)/
+    copy /y "dependencies\SDL3\x86_64-w64-mingw32\bin\SDL3.dll" "$(BUILD_DIR)" >nul && \
+    copy /y "dependencies\assimp\bin\libassimp-6.dll" "$(BUILD_DIR)" >nul
+
+  # Portable command helpers ($1 = path, forward slashes accepted)
+  mkdir_p = if not exist "$(subst /,\,$(patsubst %/,%,$1))" mkdir "$(subst /,\,$(patsubst %/,%,$1))"
+  rm_rf   = if exist "$(subst /,\,$1)" rmdir /s /q "$(subst /,\,$1)"
+  rm_f    = del /q /f $(subst /,\,$1) 2>nul
 else
   EXE       = iov
   TEST_EXE  = test_runner
@@ -40,6 +51,10 @@ else
   LDFLAGS   = -Wl,-rpath,'$$ORIGIN' \
               -lSDL3 -lassimp -lGL -ldl -lpthread -g
   COPY_RUNTIME = cp dependencies/assimp/lib/libassimp.so.6 $(BUILD_DIR)/
+
+  mkdir_p = mkdir -p $1
+  rm_rf   = rm -rf $1
+  rm_f    = rm -f $1
 endif
 
 # --------------------- Includes & Flags ---------------------
@@ -95,24 +110,24 @@ all: $(BINDIR)/$(EXE) tests
 
 # Ensure build root exists 
 $(BUILD_DIR):
-	@mkdir -p $(BUILD_DIR)
+	@$(call mkdir_p,$(BUILD_DIR))
 
 $(BINDIR)/$(EXE): $(OBJS) | $(BUILD_DIR)
-	@mkdir -p $(dir $@)
+	@$(call mkdir_p,$(dir $@))
 	$(CXX) -o $@ $^ $(LDFLAGS)
 	@$(COPY_RUNTIME)
 
 # compile into mirrored build/ path; auto-create subdirs
 $(OBJDIR)/%.o: %.cpp
-	@mkdir -p $(dir $@)
+	@$(call mkdir_p,$(dir $@))
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: %.c
-	@mkdir -p $(dir $@)
+	@$(call mkdir_p,$(dir $@))
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)
+	$(call rm_rf,$(BUILD_DIR))
 
 # --------------------- GoogleTest ---------------------
 GTEST_DIR     = dependencies/googletest/googletest
@@ -129,8 +144,8 @@ TEST_LDFLAGS  = $(LDFLAGS)
 TEST_COPY_RUNTIME =
 ifeq ($(OS),Windows_NT)
   TEST_COPY_RUNTIME = \
-	cp dependencies/SDL3/x86_64-w64-mingw32/bin/SDL3.dll $(BUILD_DIR)/tests/ && \
-	cp dependencies/assimp/bin/libassimp-6.dll $(BUILD_DIR)/tests/
+	copy /y "dependencies\SDL3\x86_64-w64-mingw32\bin\SDL3.dll" "$(BUILD_DIR)\tests" >nul && \
+	copy /y "dependencies\assimp\bin\libassimp-6.dll" "$(BUILD_DIR)\tests" >nul
 else
   TEST_COPY_RUNTIME = cp dependencies/assimp/lib/libassimp.so.6 $(BUILD_DIR)/tests/
 endif
@@ -142,16 +157,16 @@ tests: $(TEST_BIN)
 
 # $(TEST_BIN): $(TEST_OBJS) $(OBJS) $(GTEST_SRC) | $(BUILD_DIR)
 $(TEST_BIN): $(TEST_OBJS) $(MAIN_APP_OBJS_NO_MAIN) $(GTEST_SRC) | $(BUILD_DIR)
-	@mkdir -p $(dir $@)
+	@$(call mkdir_p,$(dir $@))
 	$(CXX) $(TEST_CXXFLAGS) $^ -o $@ $(TEST_LDFLAGS)
 	@$(TEST_COPY_RUNTIME)
 
 $(OBJDIR)/tests/%.o: tests/%.cpp
-	@mkdir -p $(dir $@)
+	@$(call mkdir_p,$(dir $@))
 	$(CXX) $(TEST_CXXFLAGS) -c $< -o $@
 
 clean_tests:
-	rm -f $(TEST_OBJS) $(TEST_BIN)
+	-$(call rm_f,$(TEST_OBJS) $(TEST_BIN))
 
 clean_all: clean clean_tests
 

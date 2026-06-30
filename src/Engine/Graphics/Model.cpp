@@ -36,12 +36,18 @@ namespace isaacObjectViewer
                                     m_UseMaterial, m_Color);
         }
 
+        /* 
+        This is for testing purposes
+        This is commented out as this block calls LOG three times 
+        per frame for any model with a full material set, 
+        which floods logs and tanks framerate.
         if (m_Material.Diffuse && m_Material.Normal && m_Material.Specular)
         {
-            LOG_INFO("Diffuse: {}", m_Material.Diffuse->GetPath());
-            LOG_INFO("Normal: {}", m_Material.Normal->GetPath());
-            LOG_INFO("Specular: {}", m_Material.Specular->GetPath());
+            LOG_DEBUG("Diffuse: {}", m_Material.Diffuse->GetPath());
+            LOG_DEBUG("Normal: {}", m_Material.Normal->GetPath());
+            LOG_DEBUG("Specular: {}", m_Material.Specular->GetPath());
         }
+        */
     }
 
 

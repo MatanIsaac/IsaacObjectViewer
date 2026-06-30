@@ -454,33 +454,21 @@ namespace isaacObjectViewer
                     engine->ToggleWireframeMode();
                 }
 
-                // Wireframe Mode
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0); 
-                ImGui::TextUnformatted("Unlit");
-                ImGui::TableSetColumnIndex(1);
-                ImGui::SetNextItemWidth(-FLT_MIN);
-                if (ImGui::Checkbox("##Unlit", &engine->SceneUnlit()))
-                {
-                    engine->ToggleWireframeMode();
-                }
-
-                /* 
+                /*
                  *  TODO:
                  *  1. Add Anti-Aliasing
                 */
 
-                // Lighting settings
-                bool changed = false;
+                // Shading model: Unlit / Phong / Blinn-Phong
                 ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0); ImGui::TextUnformatted("Blinn-Phong Shading");
+                ImGui::TableSetColumnIndex(0); ImGui::TextUnformatted("Shading");
                 ImGui::TableSetColumnIndex(1);
                 ImGui::SetNextItemWidth(-FLT_MIN);
-                changed |= ImGui::Checkbox("##Blinn-Phong Shading", &engine->GetBlinnPhongShading());
-                if(changed)
+                const char* shadingModes[] = { "Unlit", "Phong", "Blinn-Phong" };
+                int shadingMode = engine->GetShadingMode(); // 0=unlit, 1=Phong, 2=Blinn-Phong
+                if (ImGui::Combo("##Shading", &shadingMode, shadingModes, IM_ARRAYSIZE(shadingModes)))
                 {
-                    engine->SetShading(engine->GetBlinnPhongShading() ? ShadingType::BLINNPHONG : ShadingType::PHONG);
-                    changed = false;
+                    engine->SetShading(static_cast<ShadingType>(shadingMode));
                 }
 
                 ImGui::EndTable();
@@ -782,7 +770,7 @@ namespace isaacObjectViewer
 
         for (size_t i = 0; i < sceneObjects.size(); ++i) 
         {
-            IObject* obj = sceneObjects[i];
+            IObject* obj = sceneObjects[i].get();
             ImGui::PushID(obj->GetID());                        // push a unique ID for this object (e.g., index)
             bool isSelected = false;
             if(selected)

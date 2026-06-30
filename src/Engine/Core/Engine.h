@@ -202,12 +202,12 @@ namespace isaacObjectViewer
                 return;
             }
             
-            m_SelectedObject = obj;
-            m_SceneObjects.push_back(obj);
             if (obj->GetType() == ObjectType::PointLight)
             {
-                m_LightObjects.push_back(std::unique_ptr<PointLight>(static_cast<PointLight*>(obj)));
+                m_LightObjects.push_back(static_cast<PointLight*>(obj));
             }
+            m_SelectedObject = obj;
+            m_SceneObjects.emplace_back(obj); // m_SceneObjects takes ownership
         }
 
         /// @brief Adds a scene object to the engine.
@@ -247,12 +247,12 @@ namespace isaacObjectViewer
             }
             if(obj)
             {
-                m_SelectedObject = obj;
-                m_SceneObjects.push_back(obj);
                 if (type == ObjectType::PointLight)
                 {
-                    m_LightObjects.push_back(std::unique_ptr<PointLight>(static_cast<PointLight*>(obj)));
+                    m_LightObjects.push_back(static_cast<PointLight*>(obj));
                 }
+                m_SelectedObject = obj;
+                m_SceneObjects.emplace_back(obj); // m_SceneObjects takes ownership
             }
         }
 
@@ -271,46 +271,39 @@ namespace isaacObjectViewer
                 m_SelectedObject = nullptr;
             m_ImGuiLayer.ResetSelectedObject();
 
-            // If it’s a light, prune that list too
+            // If it’s a light, prune the non-owning view list too
             if (object->GetType() == ObjectType::PointLight)
             {
-                // Use std::remove_if with a lambda to compare the raw pointer
-                // held by the unique_ptr (.get()) to the pointer being removed (object).
-                m_LightObjects.erase(std::remove_if(m_LightObjects.begin(),
-                                                    m_LightObjects.end(),
-                                                    [&](const std::unique_ptr<PointLight>& light_ptr) {
-                                                        return light_ptr.get() == object;
-                                                    }),
-                                                m_LightObjects.end());
+                m_LightObjects.erase(std::remove(m_LightObjects.begin(),
+                                                 m_LightObjects.end(),
+                                                 static_cast<PointLight*>(object)),
+                                     m_LightObjects.end());
             }
 
-            // Remove pointer from the main list
-            m_SceneObjects.erase(std::remove(m_SceneObjects.begin(),
-                                            m_SceneObjects.end(),
-                                            object),
-                                m_SceneObjects.end());                          
+            // Remove from the owning list — this frees the object (any type).
+            m_SceneObjects.erase(std::remove_if(m_SceneObjects.begin(),
+                                                m_SceneObjects.end(),
+                                                [&](const std::unique_ptr<IObject>& p) {
+                                                    return p.get() == object;
+                                                }),
+                                 m_SceneObjects.end());
         }
 
         /// @brief Clears all scene objects from the engine.
         inline void ClearSceneObjects()
         {
-            for (auto* obj : m_SceneObjects)
-            {
-                if(obj != nullptr && obj->GetType() != ObjectType::PointLight)
-                    delete obj;
-            }
             m_SelectedObject = nullptr;
-            m_LightObjects.clear();
-            m_SceneObjects.clear();
+            m_LightObjects.clear();   // non-owning views
+            m_SceneObjects.clear();   // frees every object
         }
 
         /// @brief Gets all scene objects in the engine.
-        /// @return A vector of pointers to all scene objects.
-        std::vector<IObject*>& GetSceneObjects() { return m_SceneObjects; }
-        std::vector<std::unique_ptr<PointLight>>& GetLightObjects()
-        {
-            return m_LightObjects;
-        }
+        /// @return The owning vector of all scene objects.
+        std::vector<std::unique_ptr<IObject>>& GetSceneObjects() { return m_SceneObjects; }
+
+        /// @brief Gets the point lights in the scene (non-owning views).
+        /// @return A vector of non-owning PointLight pointers.
+        std::vector<PointLight*>& GetLightObjects() { return m_LightObjects; }
 
         /// @brief Gets the currently selected scene object.
         /// @return A pointer to the currently selected scene object.
@@ -324,42 +317,22 @@ namespace isaacObjectViewer
         /// @brief Sends all light objects to the shader.
         void SendAllLightsToShader();
         
-        /// @brief Gets the Blinn-Phong shading state.
-        /// @return A reference to the Blinn-Phong shading state.
-        bool& GetBlinnPhongShading() { return m_BlinnPhongShading; }
+        // @brief returns the currently used shading mode
+        int  GetShadingMode() const { return m_ShadingMode; }
+
+        // @brief returns true if blinn-phong shading is used
+        // otherwise returns false
+        bool GetBlinnPhongShading() const { return m_ShadingMode == 2; }   // derived
         
-        /// @brief Sets the Blinn-Phong shading state.
-        /// @param value The new Blinn-Phong shading state.
-        void SetBlinnPhongShading(bool value) { m_BlinnPhongShading = value; }
         /// @brief Sets the shading type.
         /// @param type The new shading type.
         void SetShading(ShadingType type) 
         { 
-            switch(type)
-            {
-                case ShadingType::NONE:
-                    m_BlinnPhongShading = false;
-                    break;
-                case ShadingType::PHONG:
-                    m_BlinnPhongShading = false;
-                    break;
-                case ShadingType::BLINNPHONG:
-                    m_BlinnPhongShading = true;
-                    break;
-            }
-            m_MainShader->Bind(); 
-            m_MainShader->setBool("useBlinnPhong", m_BlinnPhongShading); 
+            m_ShadingMode = static_cast<int>(type);   // NONE=0, PHONG=1, BLINNPHONG=2
+            m_MainShader->Bind();
+            m_MainShader->setInt("shadingMode", m_ShadingMode);
         }
 
-        /// @brief Gets the scene unlit state.
-        /// @return A reference to the scene unlit state.
-        bool& SceneUnlit() { return m_SceneUnlit; }
-
-        /// @brief Toggles wireframe mode.
-        void ToggleUnlit()
-        {
-            m_SceneUnlit = !m_SceneUnlit;
-        }
         //-----------------------------------------------------------------------
 
     private:
@@ -384,14 +357,13 @@ namespace isaacObjectViewer
         std::unique_ptr<Camera> m_Camera;
         std::unique_ptr<Shader> m_MainShader;
 
-        IObject* m_SelectedObject;
-        std::vector<IObject*> m_SceneObjects;
+        IObject* m_SelectedObject;                              // non-owning view into m_SceneObjects
+        std::vector<std::unique_ptr<IObject>> m_SceneObjects;   // sole owner of every scene object
         const int MAX_LIGHTS = 8;
-        std::vector<std::unique_ptr<PointLight>> m_LightObjects;
+        std::vector<PointLight*> m_LightObjects;                // non-owning views; owned by m_SceneObjects
         std::unique_ptr<DirectionalLight> m_DirLight;
-        bool m_BlinnPhongShading;
+        int m_ShadingMode = 2; // 0=unlit, 1=phong, 2=blinnphong
         bool m_UseMaterial = true;
-        bool m_SceneUnlit = false;
         Renderer m_Renderer;
 
         ImGuiLayer m_ImGuiLayer;

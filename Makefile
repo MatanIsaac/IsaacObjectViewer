@@ -102,7 +102,13 @@ OBJ_C   := $(patsubst %.c,$(OBJDIR)/%.o,$(SRC_C))
 OBJS    := $(OBJ_CPP) $(OBJ_C)
 
 # --------------------- Phony ---------------------
-.PHONY: all clean tests clean_tests run
+.PHONY: all clean tests clean_tests run compile_commands
+
+# --------------------- IDE: compile_commands.json ---------------------
+# Regenerate the clangd compilation database from a dry-run of this Makefile.
+PYTHON ?= python
+compile_commands:
+	$(PYTHON) tools/gen_compile_commands.py
 
 # --------------------- App Build ---------------------
 first: $(BINDIR)/$(EXE)
@@ -183,6 +189,7 @@ help:
 	@echo "  clean        Remove all build artifacts"
 	@echo "  clean_tests  Remove only test artifacts"
 	@echo "  clean_all    Remove all artifacts"
+	@echo "  compile_commands  Regenerate compile_commands.json for clangd/IDE"
 	@echo ""
 	@echo "Artifacts:"
 	@echo "  App:   $(BINDIR)/$(EXE)"

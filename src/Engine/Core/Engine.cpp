@@ -17,7 +17,7 @@ namespace isaacObjectViewer
           m_MainShader(nullptr),
           m_SelectedObject(nullptr),
           m_DirLight(std::make_unique<DirectionalLight>()),
-          m_BlinnPhongShading(true),
+          m_ShadingMode(2),
           m_UseMaterial(true),
           m_MouseModeEnabled(true),
           m_FreeCameraModeEnabled(false),
@@ -27,8 +27,12 @@ namespace isaacObjectViewer
 
     void Engine::Run(bool fullscreen)
     {
-        assert(Init("Isaac's 3D Object Loader", SCREEN_WIDTH, SCREEN_HEIGHT, fullscreen));
-        
+        bool isInitialized = Init("Isaac's 3D Object Loader", SCREEN_WIDTH, SCREEN_HEIGHT, fullscreen);
+        if(!isInitialized)
+        {
+            LOG_ERROR("Failed to Initialize, closing..");
+            return;
+        }
         m_ImGuiLayer.Init(m_Window->GetSDLWindow(),m_Window->GetGLContext());
 
         // Seed the frame timer and a sane first delta
@@ -162,9 +166,19 @@ SDL_InitFlags init_flags = SDL_INIT_VIDEO;
             
             // Note: its important to process imgui events before checking if mouse is over UI
             // to make sure the UI acn take input.
-            if(m_ImGuiLayer.isMouseOverUI() || m_ImGuiLayer.isMouseOverGizmo())
+            // Only mouse-driven interactions (picking, camera) should be blocked when the
+            // cursor is over the UI or gizmo. Keyboard shortcuts (Delete, mode toggles) must
+            // work regardless of where the mouse is, otherwise e.g. deleting a small selected
+            // light fails because the cursor sits on its gizmo.
+            const bool isMouseEvent =
+                MainEvent.type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+                MainEvent.type == SDL_EVENT_MOUSE_BUTTON_UP   ||
+                MainEvent.type == SDL_EVENT_MOUSE_MOTION      ||
+                MainEvent.type == SDL_EVENT_MOUSE_WHEEL;
+
+            if(isMouseEvent && (m_ImGuiLayer.isMouseOverUI() || m_ImGuiLayer.isMouseOverGizmo()))
             {
-                continue; // Skip processing if mouse is over UI or gizmo
+                continue; // Skip mouse processing if cursor is over UI or gizmo
             }
             
             std::pair<float,float> mouseState;
@@ -275,29 +289,16 @@ SDL_InitFlags init_flags = SDL_INIT_VIDEO;
         
         SendAllLightsToShader();
         m_DirLight->SetUniforms(m_MainShader);
-        m_MainShader->setBool("useBlinnPhong", m_BlinnPhongShading);
+        m_MainShader->setInt("shadingMode", m_ShadingMode);
 
         glm::mat4 view = m_Camera->GetViewMatrix(); // VIEW
         glm::mat4 projection = m_Camera->GetProjectionMatrix(); 
 
-        for (auto* obj : m_SceneObjects)
+        for (auto& obj : m_SceneObjects)
         {
-            if(!m_SceneUnlit || obj->GetType() == ObjectType::Imported)
-            {
-                obj->Render(m_Renderer, view, projection, m_MainShader); 
-            }
-            else
-            {
-                // makes sure unlit fragment shader is loaded if not already loaded.
-                if(!obj->IsUnlit() && 
-                    !obj->EnableUnlit("src/Resources/Shaders/main.vs",GetProjectRootPath("src/Resources/Shaders/unlit.fs")))
-                {
-                    LOG_ERROR("Failed to enable unlit shader for Cylinder.");   
-                }
-                obj->GetUnlitShader()->Bind();
-                obj->Render(m_Renderer, view, projection, obj->GetUnlitShader()); 
-            }
+            obj->Render(m_Renderer, view, projection, m_MainShader);
         }
+        
         Tracer::GetInstance()->Render(m_Renderer, view, projection, display_w, display_h);
     }
 

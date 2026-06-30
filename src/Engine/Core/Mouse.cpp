@@ -60,13 +60,13 @@ namespace isaacObjectViewer
         IObject* selected = nullptr;
         float minDist = std::numeric_limits<float>::max();
             
-        for(auto* obj : engine->GetSceneObjects())
+        for(auto& obj : engine->GetSceneObjects())
         {
             float dist;
             if (obj->IntersectRay(pickingRay, &dist) && dist < minDist)
             {
                 minDist = dist;
-                selected = obj;
+                selected = obj.get();
             }
         }
         

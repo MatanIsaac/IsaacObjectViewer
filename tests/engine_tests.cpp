@@ -103,13 +103,39 @@ TEST(LightingTest, AddPointLightIncreasesLightList)
     EXPECT_EQ(engine->GetLightObjects().size(), startLights+1);
 }
 
-TEST(LightingTest, SetShadingUpdatesFlag) 
+TEST(LightingTest, RemovePointLightShrinksBothLists)
+{
+    const auto& engine = Engine::GetInstance();
+    engine->Init("LightRemoveTest", 800, 600);
+    engine->ClearSceneObjects();
+
+    engine->AddSceneObject(ObjectType::PointLight);
+    IObject* light = engine->GetSelectedObject();
+    ASSERT_NE(light, nullptr);
+    EXPECT_EQ(engine->GetSceneObjects().size(), 1u);
+    EXPECT_EQ(engine->GetLightObjects().size(), 1u);
+
+    // Must free the light exactly once (a double-free here would crash the runner).
+    engine->RemoveSceneObject(light);
+    EXPECT_TRUE(engine->GetSceneObjects().empty());
+    EXPECT_TRUE(engine->GetLightObjects().empty());
+    EXPECT_EQ(engine->GetSelectedObject(), nullptr);
+}
+
+TEST(LightingTest, SetShadingUpdatesFlag)
 {
     const auto& engine = Engine::GetInstance();
     engine->Init("ShadeTest", 800, 600);
     engine->SetShading(ShadingType::BLINNPHONG);
+    EXPECT_EQ(engine->GetShadingMode(), 2);
     EXPECT_TRUE(engine->GetBlinnPhongShading());
+
     engine->SetShading(ShadingType::PHONG);
+    EXPECT_EQ(engine->GetShadingMode(), 1);
+    EXPECT_FALSE(engine->GetBlinnPhongShading());
+
+    engine->SetShading(ShadingType::NONE);
+    EXPECT_EQ(engine->GetShadingMode(), 0);
     EXPECT_FALSE(engine->GetBlinnPhongShading());
 }
 

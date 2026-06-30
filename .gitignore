@@ -39,6 +39,9 @@ src/Resources/Models/**
 # Build directories - ignore, but keep dependencies/bin
 /build/
 
+# Generated IDE index (machine-specific absolute paths)
+/compile_commands.json
+
 # Dependencies: explicitly keep this folder and everything inside it
 !dependencies/
 !dependencies/bin/

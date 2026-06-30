@@ -58,7 +58,7 @@ uniform bool useMaterial;
 uniform bool hasDiffuseMap;
 uniform bool hasSpecularMap;
 uniform bool hasNormalMap;
-uniform bool useBlinnPhong;
+uniform int shadingMode; // 0 = unlit, 1 = Phong, 2 = Blinn-Phong
 
 vec3 CalcDirLight(DirLight L, vec3 N, vec3 V, vec3 albedo, vec3 specTint);
 vec3 CalcPointLight(PointLight L, vec3 N, vec3 P, vec3 V, vec3 albedo, vec3 specTint);
@@ -84,6 +84,13 @@ void main()
     vec3 specTint = (useMaterial && hasSpecularMap) ? texture(material.specular, fs_in.TexCoords).rgb
                                                     : vec3(1.0);
 
+    // Unlit: show albedo straight, no lighting
+    if (shadingMode == 0)
+    {
+        FragColor = vec4(albedo, 1.0);
+        return;
+    }
+
     vec3 color = vec3(0.0);
 
     if (dirLight.enabled)
@@ -103,12 +110,12 @@ float SpecularTerm(vec3 N, vec3 L, vec3 V)
     float blinnExp = max(material.shininess, 1.0);
     float phongExp = blinnExp * 4.0;
 
-    if (useBlinnPhong) 
+    if (shadingMode == 2) // Blinn-Phong 
     {
         vec3 H = normalize(L + V);
         return pow(max(dot(N, H), 0.0), blinnExp);
     } 
-    else 
+    else                  // Phone (mode 1)
     {
         vec3 R = reflect(-L, N);
         return pow(max(dot(V, R), 0.0), phongExp);

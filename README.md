@@ -49,7 +49,7 @@ It aims to serve as:
 
 - Rendering
   - Real-time rendering with OpenGL 4.6 Core Profile.
-  - Phong/Blinn-Phong specular shading toggle.
+  - Selectable shading model: Unlit, Phong, or Blinn-Phong.
   - Directional light + up to 8 point lights with attenuation.
 - Assets and Materials
   - Import 3D models via Assimp (OBJ; FBX if your Assimp build includes it).
@@ -112,6 +112,14 @@ To Build The Program & The Tests run
 To Clean The Program & The Tests run 
     
     make clean_all
+
+To Regenerate The IDE Index (compile_commands.json for clangd/IntelliSense) run
+
+    make compile_commands
+
+To List All Available Make Targets run
+
+    make help
 
 
 ### Running the Application
@@ -233,7 +241,7 @@ Note: The UI uses a fixed tab layout; tabs cannot be rearranged.
 
 - Scene Settings
   - Background Color.
-  - Shading: Phong vs Blinn-Phong toggle (affects specular model).
+  - Shading: select Unlit, Phong, or Blinn-Phong (Unlit skips lighting; Phong/Blinn-Phong differ in the specular model).
   - Camera: Position, movement speed, FOV (zoom).
   - Performance: FPS display, VSync toggle, optional FPS cap.
 

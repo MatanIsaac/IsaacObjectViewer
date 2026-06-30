@@ -271,14 +271,16 @@ namespace isaacObjectViewer
                 m_SelectedObject = nullptr;
             m_ImGuiLayer.ResetSelectedObject();
 
-            // If it’s a light, prune the non-owning view list too
-            if (object->GetType() == ObjectType::PointLight)
-            {
-                m_LightObjects.erase(std::remove(m_LightObjects.begin(),
-                                                 m_LightObjects.end(),
-                                                 static_cast<PointLight*>(object)),
-                                     m_LightObjects.end());
-            }
+            // Prune the non-owning light views by pointer value (a no-op for
+            // non-lights). We compare by address and never dereference 'object',
+            // so removing the same pointer twice is safe even though the first
+            // removal already freed it.
+            m_LightObjects.erase(std::remove_if(m_LightObjects.begin(),
+                                                m_LightObjects.end(),
+                                                [&](PointLight* p) {
+                                                    return static_cast<IObject*>(p) == object;
+                                                }),
+                                 m_LightObjects.end());
 
             // Remove from the owning list — this frees the object (any type).
             m_SceneObjects.erase(std::remove_if(m_SceneObjects.begin(),

@@ -304,10 +304,16 @@ SDL_InitFlags init_flags = SDL_INIT_VIDEO;
 
     // @brief cleans all of the engine resources.
     void Engine::Clean()
-    {       
+    {
         Exit();
         TextureManager::UnloadAll();
         ClearSceneObjects();
+        // Release GL-dependent resources while the context is still current, and
+        // drop the window before SDL_Quit. Otherwise a later Init() builds a new
+        // window/context and only then destroys this old one, which unsets the
+        // current GL context right before glad loads -> "Failed to load OpenGL!".
+        m_MainShader.reset();
+        m_Window.reset();
         m_IsRunning = false;
         SDL_Quit();
     }

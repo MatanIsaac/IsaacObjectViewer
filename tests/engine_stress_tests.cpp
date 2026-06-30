@@ -33,18 +33,18 @@ TEST(EngineStressTest, DoubleAddRemoveObjects)
 
     auto* obj1 = new Cube({0.0f, 0.0f, 0.0f});
     auto* obj2 = new Cube({0.0f, 0.0f, 0.0f});
-    engine->AddSceneObject(obj1);
-    engine->AddSceneObject(obj2); // adding same object again should not crash
     ASSERT_NE(obj1, nullptr);
     ASSERT_NE(obj2, nullptr);
 
-    engine->RemoveSceneObject(obj1);
-    EXPECT_NO_THROW(engine->RemoveSceneObject(obj1)); // removing again should not crash
-    engine->RemoveSceneObject(obj2);
-    EXPECT_NO_THROW(engine->RemoveSceneObject(obj2)); // removing again should not crash
+    // AddSceneObject takes ownership; the engine frees these on removal.
+    engine->AddSceneObject(obj1);
+    engine->AddSceneObject(obj2);
 
-    delete obj1;
-    delete obj2;
+    engine->RemoveSceneObject(obj1);
+    EXPECT_NO_THROW(engine->RemoveSceneObject(obj1)); // removing again is a safe no-op
+    engine->RemoveSceneObject(obj2);
+    EXPECT_NO_THROW(engine->RemoveSceneObject(obj2)); // removing again is a safe no-op
+    // No manual delete: the engine owns obj1/obj2 and already freed them above.
 }
 
 //-------------------------

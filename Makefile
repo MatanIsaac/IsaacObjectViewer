@@ -44,6 +44,7 @@ ifeq ($(OS),Windows_NT)
   mkdir_p = if not exist "$(subst /,\,$(patsubst %/,%,$1))" mkdir "$(subst /,\,$(patsubst %/,%,$1))"
   rm_rf   = if exist "$(subst /,\,$1)" rmdir /s /q "$(subst /,\,$1)"
   rm_f    = del /q /f $(subst /,\,$1) 2>nul
+  ECHO_NL = echo.
 else
   EXE       = iov
   TEST_EXE  = test_runner
@@ -55,6 +56,7 @@ else
   mkdir_p = mkdir -p $1
   rm_rf   = rm -rf $1
   rm_f    = rm -f $1
+  ECHO_NL = echo
 endif
 
 # --------------------- Includes & Flags ---------------------
@@ -102,13 +104,10 @@ OBJ_C   := $(patsubst %.c,$(OBJDIR)/%.o,$(SRC_C))
 OBJS    := $(OBJ_CPP) $(OBJ_C)
 
 # --------------------- Phony ---------------------
-.PHONY: all clean tests clean_tests run compile_commands
+.PHONY: first all tests clean clean_tests clean_all compile_commands help
 
-# --------------------- IDE: compile_commands.json ---------------------
-# Regenerate the clangd compilation database from a dry-run of this Makefile.
-PYTHON ?= python
-compile_commands:
-	$(PYTHON) tools/gen_compile_commands.py
+# Bare `make` (and `make -j N`) builds only the app, not the tests.
+.DEFAULT_GOAL := first
 
 # --------------------- App Build ---------------------
 first: $(BINDIR)/$(EXE)
@@ -176,33 +175,37 @@ clean_tests:
 
 clean_all: clean clean_tests
 
+# --------------------- IDE: compile_commands.json ---------------------
+# Regenerate the clangd compilation database (compile_commands.json) from a
+# dry-run of this Makefile. The output is machine-specific and git-ignored.
+PYTHON ?= python
+compile_commands:
+	$(PYTHON) tools/gen_compile_commands.py
+
 # --------------------- Help ---------------------
-.PHONY: help
 help:
-	@echo "Usage: make [target] [VAR=VALUE]..."
-	@echo ""
-	@echo "Targets:"
-	@echo "  help         Show this help"
-	@echo "  make         Build the application binary (default)"
-	@echo "  all          Build the application binary (default) & the tests"
-	@echo "  tests        Build the GoogleTest runner"
-	@echo "  clean        Remove all build artifacts"
-	@echo "  clean_tests  Remove only test artifacts"
-	@echo "  clean_all    Remove all artifacts"
-	@echo "  compile_commands  Regenerate compile_commands.json for clangd/IDE"
-	@echo ""
-	@echo "Artifacts:"
-	@echo "  App:   $(BINDIR)/$(EXE)"
-	@echo "  Tests: $(TEST_BIN)"
-	@echo ""
-	@echo "Variables (override on command line):"
-	@echo "  CXX=$(CXX)"
-	@echo "  BUILD_DIR=$(BUILD_DIR)"
-	@echo "  CXXFLAGS=$(CXXFLAGS)"
-	@echo "  LDFLAGS=$(LDFLAGS)"
-	@echo "  INCLUDE=$(INCLUDE)"
-	@echo ""
-	@echo "Examples:"
-	@echo "  make"
-	@echo "  make tests"
-	@echo "  make CXX=clang++ BUILD_DIR=out -j4"
+	@echo IsaacObjectViewer - Makefile targets
+	@$(ECHO_NL)
+	@echo Usage: make [target] [-j N] [VAR=VALUE]...
+	@$(ECHO_NL)
+	@echo Build:
+	@echo   make                  Build the app  [default]
+	@echo   make -j 8             Build the app using 8 parallel jobs
+	@echo   make all              Build the app and the tests
+	@echo   make tests            Build the GoogleTest runner
+	@$(ECHO_NL)
+	@echo Clean:
+	@echo   make clean            Remove the whole build/ directory
+	@echo   make clean_tests      Remove only the test objects and binary
+	@echo   make clean_all        Remove all build artifacts
+	@$(ECHO_NL)
+	@echo Tools:
+	@echo   make compile_commands Regenerate compile_commands.json for clangd/IDE
+	@echo   make help             Show this help
+	@$(ECHO_NL)
+	@echo Artifacts:
+	@echo   App:   $(BINDIR)/$(EXE)
+	@echo   Tests: $(TEST_BIN)
+	@$(ECHO_NL)
+	@echo Override variables on the command line, e.g.:
+	@echo   make CXX=clang++ BUILD_DIR=out -j 8
